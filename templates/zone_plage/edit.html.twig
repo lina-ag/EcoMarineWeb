@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit ZonePlage{% endblock %}
+
+{% block body %}
+    <h1>Edit ZonePlage</h1>
+
+    {{ include('zone_plage/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_zone_plage_index') }}">back to list</a>
+
+    {{ include('zone_plage/_delete_form.html.twig') }}
+{% endblock %}

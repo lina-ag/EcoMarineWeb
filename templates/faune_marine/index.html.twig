@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FauneMarine index{% endblock %}
+
+{% block body %}
+    <h1>FauneMarine index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_animal</th>
+                <th>Espece</th>
+                <th>Etat</th>
+                <th>Description</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for faune_marine in faune_marines %}
+            <tr>
+                <td>{{ faune_marine.idAnimal }}</td>
+                <td>{{ faune_marine.espece }}</td>
+                <td>{{ faune_marine.etat }}</td>
+                <td>{{ faune_marine.description }}</td>
+                <td>
+                    <a href="{{ path('app_faune_marine_show', {'id_animal': faune_marine.id_animal}) }}">show</a>
+                    <a href="{{ path('app_faune_marine_edit', {'id_animal': faune_marine.id_animal}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_faune_marine_new') }}">Create new</a>
+{% endblock %}

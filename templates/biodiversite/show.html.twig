@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Biodiversite{% endblock %}
+
+{% block body %}
+    <h1>Biodiversite</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ biodiversite.id }}</td>
+            </tr>
+            <tr>
+                <th>Espece</th>
+                <td>{{ biodiversite.espece }}</td>
+            </tr>
+            <tr>
+                <th>Zone</th>
+                <td>{{ biodiversite.zone }}</td>
+            </tr>
+            <tr>
+                <th>Nombre</th>
+                <td>{{ biodiversite.nombre }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ biodiversite.date }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_biodiversite_index') }}">back to list</a>
+
+    <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}">edit</a>
+
+    {{ include('biodiversite/_delete_form.html.twig') }}
+{% endblock %}

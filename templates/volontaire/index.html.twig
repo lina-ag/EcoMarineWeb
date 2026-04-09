@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Volontaire index{% endblock %}
+
+{% block body %}
+    <h1>Volontaire index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_volontaire</th>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Id_action</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for volontaire in volontaires %}
+            <tr>
+                <td>{{ volontaire.idVolontaire }}</td>
+                <td>{{ volontaire.nom }}</td>
+                <td>{{ volontaire.contact }}</td>
+                <td>{{ volontaire.idAction }}</td>
+                <td>
+                    <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}">show</a>
+                    <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_volontaire_new') }}">Create new</a>
+{% endblock %}

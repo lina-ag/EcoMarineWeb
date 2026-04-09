@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Volontaire{% endblock %}
+
+{% block body %}
+    <h1>Edit Volontaire</h1>
+
+    {{ include('volontaire/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_volontaire_index') }}">back to list</a>
+
+    {{ include('volontaire/_delete_form.html.twig') }}
+{% endblock %}

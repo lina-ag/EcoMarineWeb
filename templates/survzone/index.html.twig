@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Survzone index{% endblock %}
+
+{% block body %}
+    <h1>Survzone index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>IdSurv</th>
+                <th>DateSurv</th>
+                <th>Observation</th>
+                <th>IdZone</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for survzone in survzones %}
+            <tr>
+                <td>{{ survzone.idSurv }}</td>
+                <td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td>
+                <td>{{ survzone.observation }}</td>
+                <td>{{ survzone.idZone }}</td>
+                <td>
+                    <a href="{{ path('app_survzone_show', {'idSurv': survzone.idSurv}) }}">show</a>
+                    <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_survzone_new') }}">Create new</a>
+{% endblock %}

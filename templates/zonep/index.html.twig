@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Zonep index{% endblock %}
+
+{% block body %}
+    <h1>Zonep index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>IdZone</th>
+                <th>NomZone</th>
+                <th>CategorieZone</th>
+                <th>Status</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for zonep in zoneps %}
+            <tr>
+                <td>{{ zonep.idZone }}</td>
+                <td>{{ zonep.nomZone }}</td>
+                <td>{{ zonep.categorieZone }}</td>
+                <td>{{ zonep.status }}</td>
+                <td>
+                    <a href="{{ path('app_zonep_show', {'idZone': zonep.idZone}) }}">show</a>
+                    <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_zonep_new') }}">Create new</a>
+{% endblock %}

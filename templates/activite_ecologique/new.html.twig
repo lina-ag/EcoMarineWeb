@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New ActiviteEcologique{% endblock %}
+
+{% block body %}
+    <h1>Create new ActiviteEcologique</h1>
+
+    {{ include('activite_ecologique/_form.html.twig') }}
+
+    <a href="{{ path('app_activite_ecologique_index') }}">back to list</a>
+{% endblock %}

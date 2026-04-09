@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit ActiviteEcologique{% endblock %}
+
+{% block body %}
+    <h1>Edit ActiviteEcologique</h1>
+
+    {{ include('activite_ecologique/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_activite_ecologique_index') }}">back to list</a>
+
+    {{ include('activite_ecologique/_delete_form.html.twig') }}
+{% endblock %}
