@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New ActionNettoyage{% endblock %}
+
+{% block body %}
+    <h1>Create new ActionNettoyage</h1>
+
+    {{ include('action_nettoyage/_form.html.twig') }}
+
+    <a href="{{ path('app_action_nettoyage_index') }}">back to list</a>
+{% endblock %}

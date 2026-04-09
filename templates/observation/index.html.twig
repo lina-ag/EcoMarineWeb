@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Observation index{% endblock %}
+
+{% block body %}
+    <h1>Observation index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_observation</th>
+                <th>Date_observation</th>
+                <th>Temperature</th>
+                <th>Meteo</th>
+                <th>Id_animal</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for observation in observations %}
+            <tr>
+                <td>{{ observation.idObservation }}</td>
+                <td>{{ observation.dateObservation ? observation.dateObservation|date('Y-m-d') : '' }}</td>
+                <td>{{ observation.temperature }}</td>
+                <td>{{ observation.meteo }}</td>
+                <td>{{ observation.idAnimal }}</td>
+                <td>
+                    <a href="{{ path('app_observation_show', {'id_observation': observation.id_observation}) }}">show</a>
+                    <a href="{{ path('app_observation_edit', {'id_observation': observation.id_observation}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_observation_new') }}">Create new</a>
+{% endblock %}

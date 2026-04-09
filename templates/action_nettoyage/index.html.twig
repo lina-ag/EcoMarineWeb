@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ActionNettoyage index{% endblock %}
+
+{% block body %}
+    <h1>ActionNettoyage index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_action</th>
+                <th>Date_action</th>
+                <th>Lieu</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for action_nettoyage in action_nettoyages %}
+            <tr>
+                <td>{{ action_nettoyage.idAction }}</td>
+                <td>{{ action_nettoyage.dateAction }}</td>
+                <td>{{ action_nettoyage.lieu }}</td>
+                <td>
+                    <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}">show</a>
+                    <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_action_nettoyage_new') }}">Create new</a>
+{% endblock %}

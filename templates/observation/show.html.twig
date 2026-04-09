@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Observation{% endblock %}
+
+{% block body %}
+    <h1>Observation</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id_observation</th>
+                <td>{{ observation.idObservation }}</td>
+            </tr>
+            <tr>
+                <th>Date_observation</th>
+                <td>{{ observation.dateObservation ? observation.dateObservation|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Temperature</th>
+                <td>{{ observation.temperature }}</td>
+            </tr>
+            <tr>
+                <th>Meteo</th>
+                <td>{{ observation.meteo }}</td>
+            </tr>
+            <tr>
+                <th>Id_animal</th>
+                <td>{{ observation.idAnimal }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_observation_index') }}">back to list</a>
+
+    <a href="{{ path('app_observation_edit', {'id_observation': observation.id_observation}) }}">edit</a>
+
+    {{ include('observation/_delete_form.html.twig') }}
+{% endblock %}

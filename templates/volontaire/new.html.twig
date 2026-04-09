@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Volontaire{% endblock %}
+
+{% block body %}
+    <h1>Create new Volontaire</h1>
+
+    {{ include('volontaire/_form.html.twig') }}
+
+    <a href="{{ path('app_volontaire_index') }}">back to list</a>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New FauneMarine{% endblock %}
+
+{% block body %}
+    <h1>Create new FauneMarine</h1>
+
+    {{ include('faune_marine/_form.html.twig') }}
+
+    <a href="{{ path('app_faune_marine_index') }}">back to list</a>
+{% endblock %}

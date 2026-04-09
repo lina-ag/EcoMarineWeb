@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PredictionEchouage index{% endblock %}
+
+{% block body %}
+    <h1>PredictionEchouage index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id_prediction</th>
+                <th>Date_prediction</th>
+                <th>Zone</th>
+                <th>Niveau_risque</th>
+                <th>Espece_concernee</th>
+                <th>Temperature_eau</th>
+                <th>Conditions_meteo</th>
+                <th>Recommandations</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for prediction_echouage in prediction_echouages %}
+            <tr>
+                <td>{{ prediction_echouage.idPrediction }}</td>
+                <td>{{ prediction_echouage.datePrediction ? prediction_echouage.datePrediction|date('Y-m-d') : '' }}</td>
+                <td>{{ prediction_echouage.zone }}</td>
+                <td>{{ prediction_echouage.niveauRisque }}</td>
+                <td>{{ prediction_echouage.especeConcernee }}</td>
+                <td>{{ prediction_echouage.temperatureEau }}</td>
+                <td>{{ prediction_echouage.conditionsMeteo }}</td>
+                <td>{{ prediction_echouage.recommandations }}</td>
+                <td>
+                    <a href="{{ path('app_prediction_echouage_show', {'id_prediction': prediction_echouage.id_prediction}) }}">show</a>
+                    <a href="{{ path('app_prediction_echouage_edit', {'id_prediction': prediction_echouage.id_prediction}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_prediction_echouage_new') }}">Create new</a>
+{% endblock %}
