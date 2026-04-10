@@ -1,4 +1,34 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.date_observation, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.date_observation, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.date_observation) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.temperature, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.temperature, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.temperature) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.meteo, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.meteo, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.meteo) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.id_animal, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.id_animal, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.id_animal) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_observation_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

@@ -3,9 +3,14 @@
 {% block title %}New Dechet{% endblock %}
 
 {% block body %}
-    <h1>Create new Dechet</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new Dechet</h2>
+                <p class="card-subtitle">Ajouter un nouveau dechet.</p>
+            </div>
+        </div>
 
-    {{ include('dechet/_form.html.twig') }}
-
-    <a href="{{ path('app_dechet_index') }}">back to list</a>
+        {{ include('dechet/_form.html.twig') }}
+    </section>
 {% endblock %}

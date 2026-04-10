@@ -3,9 +3,14 @@
 {% block title %}New ActionNettoyage{% endblock %}
 
 {% block body %}
-    <h1>Create new ActionNettoyage</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new ActionNettoyage</h2>
+                <p class="card-subtitle">Ajouter une nouvelle action de nettoyage.</p>
+            </div>
+        </div>
 
-    {{ include('action_nettoyage/_form.html.twig') }}
-
-    <a href="{{ path('app_action_nettoyage_index') }}">back to list</a>
+        {{ include('action_nettoyage/_form.html.twig') }}
+    </section>
 {% endblock %}

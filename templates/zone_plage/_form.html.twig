@@ -1,4 +1,28 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nom, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Plage Kuriat'}}) }}
+            {{ form_errors(form.nom) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.localisation, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.localisation, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Monastir'}}) }}
+            {{ form_errors(form.localisation) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.statut, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.statut, {'attr': {'class': 'form-input', 'placeholder': 'Actif, Ferme, En maintenance...'}}) }}
+            {{ form_errors(form.statut) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_zone_plage_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

@@ -3,32 +3,29 @@
 {% block title %}Zonep{% endblock %}
 
 {% block body %}
-    <h1>Zonep</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Zone #{{ zonep.idZone }}</h2>
+                <p class="card-subtitle">Details de la zone.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>IdZone</th>
-                <td>{{ zonep.idZone }}</td>
-            </tr>
-            <tr>
-                <th>NomZone</th>
-                <td>{{ zonep.nomZone }}</td>
-            </tr>
-            <tr>
-                <th>CategorieZone</th>
-                <td>{{ zonep.categorieZone }}</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>{{ zonep.status }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ zonep.idZone }}</td></tr>
+                    <tr><th>Nom zone</th><td>{{ zonep.nomZone }}</td></tr>
+                    <tr><th>Categorie</th><td>{{ zonep.categorieZone }}</td></tr>
+                    <tr><th>Status</th><td>{{ zonep.status }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_zonep_index') }}">back to list</a>
-
-    <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}">edit</a>
-
-    {{ include('zonep/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">edit</a>
+            {{ include('zonep/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

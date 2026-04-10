@@ -128,15 +128,23 @@ class Utilisateur
     }
 
     #[ORM\Column(type: 'blob', nullable: true)]
-    private ?string $face_encoding = null;
+    private mixed $face_encoding = null;
 
     public function getFace_encoding(): ?string
     {
+        if (is_resource($this->face_encoding)) {
+            return stream_get_contents($this->face_encoding) ?: null;
+        }
+
         return $this->face_encoding;
     }
 
-    public function setFace_encoding(?string $face_encoding): self
+    public function setFace_encoding(mixed $face_encoding): self
     {
+        if (is_resource($face_encoding)) {
+            $face_encoding = stream_get_contents($face_encoding) ?: null;
+        }
+
         $this->face_encoding = $face_encoding;
         return $this;
     }
@@ -198,8 +206,12 @@ class Utilisateur
         return $this;
     }
 
-    public function getFaceEncoding(): mixed
+    public function getFaceEncoding(): ?string
     {
+        if (is_resource($this->face_encoding)) {
+            return stream_get_contents($this->face_encoding) ?: null;
+        }
+
         return $this->face_encoding;
     }
 

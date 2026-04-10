@@ -3,60 +3,36 @@
 {% block title %}Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>Utilisateur</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Utilisateur #{{ utilisateur.idUtilisateur }}</h2>
+                <p class="card-subtitle">Details du compte utilisateur.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id_utilisateur</th>
-                <td>{{ utilisateur.idUtilisateur }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ utilisateur.nom }}</td>
-            </tr>
-            <tr>
-                <th>Prenom</th>
-                <td>{{ utilisateur.prenom }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ utilisateur.email }}</td>
-            </tr>
-            <tr>
-                <th>Mot_de_passe</th>
-                <td>{{ utilisateur.motDePasse }}</td>
-            </tr>
-            <tr>
-                <th>Telephone</th>
-                <td>{{ utilisateur.telephone }}</td>
-            </tr>
-            <tr>
-                <th>Role</th>
-                <td>{{ utilisateur.role }}</td>
-            </tr>
-            <tr>
-                <th>Date_naissance</th>
-                <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Face_encoding</th>
-                <td>{{ utilisateur.faceEncoding }}</td>
-            </tr>
-            <tr>
-                <th>Face_image</th>
-                <td>{{ utilisateur.faceImage }}</td>
-            </tr>
-            <tr>
-                <th>Created_at</th>
-                <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ utilisateur.idUtilisateur }}</td></tr>
+                    <tr><th>Nom</th><td>{{ utilisateur.nom }}</td></tr>
+                    <tr><th>Prenom</th><td>{{ utilisateur.prenom }}</td></tr>
+                    <tr><th>Email</th><td>{{ utilisateur.email }}</td></tr>
+                    <tr><th>Mot de passe</th><td>{{ utilisateur.motDePasse }}</td></tr>
+                    <tr><th>Telephone</th><td>{{ utilisateur.telephone }}</td></tr>
+                    <tr><th>Role</th><td>{{ utilisateur.role }}</td></tr>
+                    <tr><th>Date naissance</th><td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}</td></tr>
+                    <tr><th>Face encoding</th><td>{{ utilisateur.faceEncoding }}</td></tr>
+                    <tr><th>Face image</th><td>{{ utilisateur.faceImage }}</td></tr>
+                    <tr><th>Created at</th><td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i:s') : '' }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_utilisateur_index') }}">back to list</a>
-
-    <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.id_utilisateur}) }}">edit</a>
-
-    {{ include('utilisateur/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-primary">edit</a>
+            {{ include('utilisateur/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

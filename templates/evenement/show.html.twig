@@ -3,36 +3,30 @@
 {% block title %}Evenement{% endblock %}
 
 {% block body %}
-    <h1>Evenement</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Evenement #{{ evenement.id }}</h2>
+                <p class="card-subtitle">Details de l evenement.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ evenement.id }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ evenement.nom }}</td>
-            </tr>
-            <tr>
-                <th>Date</th>
-                <td>{{ evenement.date }}</td>
-            </tr>
-            <tr>
-                <th>Lieu</th>
-                <td>{{ evenement.lieu }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ evenement.description }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ evenement.id }}</td></tr>
+                    <tr><th>Nom</th><td>{{ evenement.nom }}</td></tr>
+                    <tr><th>Date</th><td>{{ evenement.date }}</td></tr>
+                    <tr><th>Lieu</th><td>{{ evenement.lieu }}</td></tr>
+                    <tr><th>Description</th><td>{{ evenement.description }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_evenement_index') }}">back to list</a>
-
-    <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}">edit</a>
-
-    {{ include('evenement/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_evenement_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-primary">edit</a>
+            {{ include('evenement/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

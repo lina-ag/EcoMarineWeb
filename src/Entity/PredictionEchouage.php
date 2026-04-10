@@ -85,7 +85,7 @@ class PredictionEchouage
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $temperature_eau = null;
 
     public function getTemperature_eau(): ?float

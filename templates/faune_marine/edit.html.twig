@@ -3,11 +3,19 @@
 {% block title %}Edit FauneMarine{% endblock %}
 
 {% block body %}
-    <h1>Edit FauneMarine</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Edit FauneMarine</h2>
+                <p class="card-subtitle">Mettre a jour l etat et la description de l espece.</p>
+            </div>
+        </div>
 
-    {{ include('faune_marine/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('faune_marine/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_faune_marine_index') }}">back to list</a>
-
-    {{ include('faune_marine/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_faune_marine_index') }}" class="btn btn-secondary">back to list</a>
+            {{ include('faune_marine/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

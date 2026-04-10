@@ -15,7 +15,7 @@ class Survzone
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idSurv', type: 'integer')]
     private ?int $idSurv = null;
 
     public function getIdSurv(): ?int
@@ -29,7 +29,7 @@ class Survzone
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: false)]
+    #[ORM\Column(name: 'dateSurv', type: 'date', nullable: false)]
     private ?\DateTimeInterface $dateSurv = null;
 
     public function getDateSurv(): ?\DateTimeInterface
@@ -57,7 +57,7 @@ class Survzone
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
+    #[ORM\Column(name: 'idZone', type: 'integer', nullable: false)]
     private ?int $idZone = null;
 
     public function getIdZone(): ?int

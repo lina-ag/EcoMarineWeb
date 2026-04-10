@@ -1,4 +1,70 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nom, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.nom) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prenom, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.prenom) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.email) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.mot_de_passe, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.mot_de_passe, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.mot_de_passe) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.telephone, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.telephone, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.telephone) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.role, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.role, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.role) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.date_naissance, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.date_naissance, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.date_naissance) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.face_image, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.face_image, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.face_image) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.face_encoding, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.face_encoding, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.face_encoding) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.created_at, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.created_at, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.created_at) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

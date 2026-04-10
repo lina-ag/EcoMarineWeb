@@ -44,28 +44,28 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'time', nullable: false)]
-    private ?string $heure_debut = null;
+    private ?\DateTimeInterface $heure_debut = null;
 
-    public function getHeure_debut(): ?string
+    public function getHeure_debut(): ?\DateTimeInterface
     {
         return $this->heure_debut;
     }
 
-    public function setHeure_debut(string $heure_debut): self
+    public function setHeure_debut(\DateTimeInterface $heure_debut): self
     {
         $this->heure_debut = $heure_debut;
         return $this;
     }
 
     #[ORM\Column(type: 'time', nullable: false)]
-    private ?string $heure_fin = null;
+    private ?\DateTimeInterface $heure_fin = null;
 
-    public function getHeure_fin(): ?string
+    public function getHeure_fin(): ?\DateTimeInterface
     {
         return $this->heure_fin;
     }
 
-    public function setHeure_fin(string $heure_fin): self
+    public function setHeure_fin(\DateTimeInterface $heure_fin): self
     {
         $this->heure_fin = $heure_fin;
         return $this;
@@ -85,7 +85,7 @@ class MissionDrone
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $distance_parcourue = null;
 
     public function getDistance_parcourue(): ?float
@@ -158,24 +158,24 @@ class MissionDrone
         return $this;
     }
 
-    public function getHeureDebut(): ?\DateTime
+    public function getHeureDebut(): ?\DateTimeInterface
     {
         return $this->heure_debut;
     }
 
-    public function setHeureDebut(\DateTime $heure_debut): static
+    public function setHeureDebut(\DateTimeInterface $heure_debut): static
     {
         $this->heure_debut = $heure_debut;
 
         return $this;
     }
 
-    public function getHeureFin(): ?\DateTime
+    public function getHeureFin(): ?\DateTimeInterface
     {
         return $this->heure_fin;
     }
 
-    public function setHeureFin(\DateTime $heure_fin): static
+    public function setHeureFin(\DateTimeInterface $heure_fin): static
     {
         $this->heure_fin = $heure_fin;
 

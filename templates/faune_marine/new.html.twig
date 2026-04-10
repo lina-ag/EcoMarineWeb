@@ -3,9 +3,14 @@
 {% block title %}New FauneMarine{% endblock %}
 
 {% block body %}
-    <h1>Create new FauneMarine</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new FauneMarine</h2>
+                <p class="card-subtitle">Ajouter une nouvelle espece.</p>
+            </div>
+        </div>
 
-    {{ include('faune_marine/_form.html.twig') }}
-
-    <a href="{{ path('app_faune_marine_index') }}">back to list</a>
+        {{ include('faune_marine/_form.html.twig') }}
+    </section>
 {% endblock %}

@@ -1,41 +1,52 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}ActiviteEcologique index{% endblock %}
+{% block page_title %}Activités écologiques{% endblock %}
+{% block navbar_title %}Activités écologiques{% endblock %}
 
-{% block body %}
-    <h1>ActiviteEcologique index</h1>
+{% block admin_content %}
+    <section class="glass-card table-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Liste des activités écologiques</h2>
+                <p class="card-subtitle">Suivi des activités enregistrées dans la plateforme.</p>
+            </div>
+            <div class="card-actions">
+                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary">Créer une activité</a>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_activite</th>
-                <th>Nom_activite</th>
-                <th>Date_activite</th>
-                <th>Capacite</th>
-                <th>Description</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for activite_ecologique in activite_ecologiques %}
-            <tr>
-                <td>{{ activite_ecologique.idActivite }}</td>
-                <td>{{ activite_ecologique.nomActivite }}</td>
-                <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
-                <td>{{ activite_ecologique.capacite }}</td>
-                <td>{{ activite_ecologique.description }}</td>
-                <td>
-                    <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}">show</a>
-                    <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_activite_ecologique_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id activité</th>
+                        <th>Nom activité</th>
+                        <th>Date activité</th>
+                        <th>Capacité</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for activite_ecologique in activite_ecologiques %}
+                    <tr>
+                        <td>{{ activite_ecologique.idActivite }}</td>
+                        <td>{{ activite_ecologique.nomActivite }}</td>
+                        <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
+                        <td>{{ activite_ecologique.capacite }}</td>
+                        <td>{{ activite_ecologique.description }}</td>
+                        <td>
+                            <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary">Voir</a>
+                            <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary">Modifier</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">Aucun enregistrement trouvé</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

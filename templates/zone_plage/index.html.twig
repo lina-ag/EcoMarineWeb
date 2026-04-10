@@ -3,37 +3,45 @@
 {% block title %}ZonePlage index{% endblock %}
 
 {% block body %}
-    <h1>ZonePlage index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Zones de plage</h2>
+                <p class="card-subtitle">Gestion des zones littorales et de leur statut.</p>
+            </div>
+            <a href="{{ path('app_zone_plage_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_zone</th>
-                <th>Nom</th>
-                <th>Localisation</th>
-                <th>Statut</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for zone_plage in zone_plages %}
-            <tr>
-                <td>{{ zone_plage.idZone }}</td>
-                <td>{{ zone_plage.nom }}</td>
-                <td>{{ zone_plage.localisation }}</td>
-                <td>{{ zone_plage.statut }}</td>
-                <td>
-                    <a href="{{ path('app_zone_plage_show', {'id_zone': zone_plage.id_zone}) }}">show</a>
-                    <a href="{{ path('app_zone_plage_edit', {'id_zone': zone_plage.id_zone}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_zone_plage_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nom</th>
+                        <th>Localisation</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for zone_plage in zone_plages %}
+                    <tr>
+                        <td>{{ zone_plage.id_zone }}</td>
+                        <td>{{ zone_plage.nom }}</td>
+                        <td>{{ zone_plage.localisation }}</td>
+                        <td>{{ zone_plage.statut }}</td>
+                        <td>
+                            <a href="{{ path('app_zone_plage_show', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_zone_plage_edit', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

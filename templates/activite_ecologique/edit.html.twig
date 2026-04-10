@@ -1,13 +1,19 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}Edit ActiviteEcologique{% endblock %}
+{% block page_title %}Modifier activité écologique{% endblock %}
+{% block navbar_title %}Modifier activité écologique{% endblock %}
 
-{% block body %}
-    <h1>Edit ActiviteEcologique</h1>
+{% block admin_content %}
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Modifier l'activité</h2>
+                <p class="card-subtitle">Ajustez les informations puis enregistrez les changements.</p>
+            </div>
+        </div>
 
-    {{ include('activite_ecologique/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('activite_ecologique/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
 
-    <a href="{{ path('app_activite_ecologique_index') }}">back to list</a>
-
-    {{ include('activite_ecologique/_delete_form.html.twig') }}
+        {{ include('activite_ecologique/_delete_form.html.twig') }}
+    </section>
 {% endblock %}

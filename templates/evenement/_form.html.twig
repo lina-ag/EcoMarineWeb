@@ -1,4 +1,34 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nom, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.nom) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.date, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.date, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.date) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.lieu, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.lieu, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.lieu) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_evenement_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

@@ -1,11 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Reservation{% endblock %}
+{% block title %}Nouvelle réservation{% endblock %}
 
 {% block body %}
-    <h1>Create new Reservation</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Créer une réservation</h2>
+                <p class="card-subtitle">Renseignez les informations du visiteur et de l'activité.</p>
+            </div>
+        </div>
 
-    {{ include('reservation/_form.html.twig') }}
-
-    <a href="{{ path('app_reservation_index') }}">back to list</a>
+        {{ include('reservation/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+    </section>
 {% endblock %}

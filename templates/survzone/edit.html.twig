@@ -3,11 +3,19 @@
 {% block title %}Edit Survzone{% endblock %}
 
 {% block body %}
-    <h1>Edit Survzone</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Edit Survzone</h2>
+                <p class="card-subtitle">Mettre a jour la date, l'observation et l'identifiant de zone.</p>
+            </div>
+        </div>
 
-    {{ include('survzone/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('survzone/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_survzone_index') }}">back to list</a>
-
-    {{ include('survzone/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">back to list</a>
+            {{ include('survzone/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

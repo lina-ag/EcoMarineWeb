@@ -1,4 +1,28 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dateSurv, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.dateSurv) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.idZone, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.idZone, {'attr': {'class': 'form-input', 'placeholder': 'Ex. 12'}}) }}
+            {{ form_errors(form.idZone) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.observation, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.observation, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Details de la surveillance'}}) }}
+            {{ form_errors(form.observation) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

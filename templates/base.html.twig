@@ -1,24 +1,89 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+{% set current_route = app.request ? app.request.get('_route') : null %}
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="EcoMarine - Écotourisme et recherche marine à Kuriat, Monastir">
+    <meta name="author" content="EcoMarine Team">
+
+    <link href="https://fonts.googleapis.com/css?family=Raleway:100,300,400,500,700,900" rel="stylesheet">
+
+    {% block stylesheets %}
+        {% if current_route == 'app_home' %}
+            <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
+            <link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.css">
+            <link rel="stylesheet" type="text/css" href="/assets/css/fullpage.min.css">
+            <link rel="stylesheet" type="text/css" href="/assets/css/owl.carousel.css">
+            <link rel="stylesheet" href="/assets/css/animate.css">
+            <link rel="stylesheet" href="/assets/css/templatemo-style.css">
+            <link rel="stylesheet" href="/assets/css/responsive.css">
+        {% else %}
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="/assets_admin/templatemo-glass-admin-style.css">
         {% endif %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+        <link rel="stylesheet" href="/assets/styles/app.css">
+    {% endblock %}
+
+    <title>{% block title %}EcoMarine{% endblock %}</title>
+</head>
+
+<body>
+
+{% if current_route != 'app_home' %}
+
+    <div class="background"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="dashboard">
+
+        {% include 'admin/partials/sidebar_admin.html.twig' %}
+
+        <main class="main-content">
+
+            {% include 'admin/partials/navbar_admin.html.twig' %}
+{% endif %}
+
+{% block body %}{% endblock %}
+
+{% if current_route != 'app_home' %}
+
+        </main>
+    </div>
+
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+
+    <footer class="site-footer">
+        <p>EcoMarine &copy; {{ "now"|date("Y") }} — Plateforme d'écotourisme marin, Kuriat, Monastir</p>
+    </footer>
+{% endif %}
+
+{% block javascripts %}
+    {% if current_route == 'app_home' %}
+        <script src="/assets/js/jquery.js"></script>
+        <script src="/assets/js/bootstrap.min.js"></script>
+        <script src="/assets/js/fullpage.min.js"></script>
+        <script src="/assets/js/scrolloverflow.js"></script>
+        <script src="/assets/js/owl.carousel.min.js"></script>
+        <script src="/assets/js/jquery.inview.min.js"></script>
+        <script src="/assets/js/form.js"></script>
+        <script src="/assets/js/custom.js"></script>
+    {% else %}
+        <script src="/assets_admin/templatemo-glass-admin-script.js"></script>
+    {% endif %}
+{% endblock %}
+
+</body>
 </html>

@@ -1,11 +1,18 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}New ActiviteEcologique{% endblock %}
+{% block page_title %}Nouvelle activité écologique{% endblock %}
 
-{% block body %}
-    <h1>Create new ActiviteEcologique</h1>
+{% block navbar_title %}Nouvelle activité écologique{% endblock %}
 
-    {{ include('activite_ecologique/_form.html.twig') }}
+{% block admin_content %}
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Créer une activité écologique</h2>
+                <p class="card-subtitle">Renseignez les informations de l'activité avant l'enregistrement.</p>
+            </div>
+        </div>
 
-    <a href="{{ path('app_activite_ecologique_index') }}">back to list</a>
+        {{ include('activite_ecologique/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+    </section>
 {% endblock %}

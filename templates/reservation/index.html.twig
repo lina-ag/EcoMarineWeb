@@ -1,41 +1,51 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservation index{% endblock %}
+{% block title %}Réservations{% endblock %}
 
 {% block body %}
-    <h1>Reservation index</h1>
+    <section class="glass-card table-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Liste des réservations</h2>
+                <p class="card-subtitle">Suivi des réservations enregistrées.</p>
+            </div>
+            <div class="card-actions">
+                <a href="{{ path('app_reservation_new') }}" class="btn btn-primary">Créer une réservation</a>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_reservation</th>
-                <th>Nom</th>
-                <th>Date_reservation</th>
-                <th>Email</th>
-                <th>Nombre_personnes</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for reservation in reservations %}
-            <tr>
-                <td>{{ reservation.idReservation }}</td>
-                <td>{{ reservation.nom }}</td>
-                <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
-                <td>{{ reservation.email }}</td>
-                <td>{{ reservation.nombrePersonnes }}</td>
-                <td>
-                    <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}">show</a>
-                    <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_reservation_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id réservation</th>
+                        <th>Nom</th>
+                        <th>Date réservation</th>
+                        <th>Email</th>
+                        <th>Nombre personnes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.idReservation }}</td>
+                        <td>{{ reservation.nom }}</td>
+                        <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
+                        <td>{{ reservation.email }}</td>
+                        <td>{{ reservation.nombrePersonnes }}</td>
+                        <td>
+                            <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-secondary">Voir</a>
+                            <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary">Modifier</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">Aucun enregistrement trouvé</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

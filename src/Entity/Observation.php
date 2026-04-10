@@ -43,7 +43,7 @@ class Observation
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $temperature = null;
 
     public function getTemperature(): ?float

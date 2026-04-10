@@ -3,11 +3,19 @@
 {% block title %}Edit Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>Edit Utilisateur</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Edit Utilisateur</h2>
+                <p class="card-subtitle">Modifier les informations du compte utilisateur.</p>
+            </div>
+        </div>
 
-    {{ include('utilisateur/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('utilisateur/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_utilisateur_index') }}">back to list</a>
-
-    {{ include('utilisateur/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
+            {{ include('utilisateur/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

@@ -3,52 +3,34 @@
 {% block title %}MissionDrone{% endblock %}
 
 {% block body %}
-    <h1>MissionDrone</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Mission #{{ mission_drone.idMission }}</h2>
+                <p class="card-subtitle">Details de la mission drone.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id_mission</th>
-                <td>{{ mission_drone.idMission }}</td>
-            </tr>
-            <tr>
-                <th>Date_mission</th>
-                <td>{{ mission_drone.dateMission ? mission_drone.dateMission|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Heure_debut</th>
-                <td>{{ mission_drone.heureDebut ? mission_drone.heureDebut|date('H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Heure_fin</th>
-                <td>{{ mission_drone.heureFin ? mission_drone.heureFin|date('H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Zone_survolee</th>
-                <td>{{ mission_drone.zoneSurvolee }}</td>
-            </tr>
-            <tr>
-                <th>Distance_parcourue</th>
-                <td>{{ mission_drone.distanceParcourue }}</td>
-            </tr>
-            <tr>
-                <th>Altitude_vol</th>
-                <td>{{ mission_drone.altitudeVol }}</td>
-            </tr>
-            <tr>
-                <th>Conditions_vol</th>
-                <td>{{ mission_drone.conditionsVol }}</td>
-            </tr>
-            <tr>
-                <th>Observations</th>
-                <td>{{ mission_drone.observations }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ mission_drone.idMission }}</td></tr>
+                    <tr><th>Date</th><td>{{ mission_drone.dateMission ? mission_drone.dateMission|date('Y-m-d') : '' }}</td></tr>
+                    <tr><th>Heure debut</th><td>{{ mission_drone.heureDebut ? mission_drone.heureDebut|date('H:i:s') : '' }}</td></tr>
+                    <tr><th>Heure fin</th><td>{{ mission_drone.heureFin ? mission_drone.heureFin|date('H:i:s') : '' }}</td></tr>
+                    <tr><th>Zone</th><td>{{ mission_drone.zoneSurvolee }}</td></tr>
+                    <tr><th>Distance</th><td>{{ mission_drone.distanceParcourue }}</td></tr>
+                    <tr><th>Altitude</th><td>{{ mission_drone.altitudeVol }}</td></tr>
+                    <tr><th>Conditions</th><td>{{ mission_drone.conditionsVol }}</td></tr>
+                    <tr><th>Observations</th><td>{{ mission_drone.observations }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_mission_drone_index') }}">back to list</a>
-
-    <a href="{{ path('app_mission_drone_edit', {'id_mission': mission_drone.id_mission}) }}">edit</a>
-
-    {{ include('mission_drone/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_mission_drone_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_mission_drone_edit', {'id_mission': mission_drone.id_mission}) }}" class="btn btn-primary">edit</a>
+            {{ include('mission_drone/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

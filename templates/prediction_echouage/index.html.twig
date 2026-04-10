@@ -3,45 +3,51 @@
 {% block title %}PredictionEchouage index{% endblock %}
 
 {% block body %}
-    <h1>PredictionEchouage index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Predictions d echouage</h2>
+                <p class="card-subtitle">Suivi des risques et recommandations par zone.</p>
+            </div>
+            <a href="{{ path('app_prediction_echouage_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_prediction</th>
-                <th>Date_prediction</th>
-                <th>Zone</th>
-                <th>Niveau_risque</th>
-                <th>Espece_concernee</th>
-                <th>Temperature_eau</th>
-                <th>Conditions_meteo</th>
-                <th>Recommandations</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for prediction_echouage in prediction_echouages %}
-            <tr>
-                <td>{{ prediction_echouage.idPrediction }}</td>
-                <td>{{ prediction_echouage.datePrediction ? prediction_echouage.datePrediction|date('Y-m-d') : '' }}</td>
-                <td>{{ prediction_echouage.zone }}</td>
-                <td>{{ prediction_echouage.niveauRisque }}</td>
-                <td>{{ prediction_echouage.especeConcernee }}</td>
-                <td>{{ prediction_echouage.temperatureEau }}</td>
-                <td>{{ prediction_echouage.conditionsMeteo }}</td>
-                <td>{{ prediction_echouage.recommandations }}</td>
-                <td>
-                    <a href="{{ path('app_prediction_echouage_show', {'id_prediction': prediction_echouage.id_prediction}) }}">show</a>
-                    <a href="{{ path('app_prediction_echouage_edit', {'id_prediction': prediction_echouage.id_prediction}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="9">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_prediction_echouage_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Date</th>
+                        <th>Zone</th>
+                        <th>Risque</th>
+                        <th>Espece</th>
+                        <th>Temperature</th>
+                        <th>Meteo</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for prediction_echouage in prediction_echouages %}
+                    <tr>
+                        <td>{{ prediction_echouage.idPrediction }}</td>
+                        <td>{{ prediction_echouage.datePrediction ? prediction_echouage.datePrediction|date('Y-m-d') : '' }}</td>
+                        <td>{{ prediction_echouage.zone }}</td>
+                        <td>{{ prediction_echouage.niveauRisque }}</td>
+                        <td>{{ prediction_echouage.especeConcernee }}</td>
+                        <td>{{ prediction_echouage.temperatureEau }}</td>
+                        <td>{{ prediction_echouage.conditionsMeteo }}</td>
+                        <td>
+                            <a href="{{ path('app_prediction_echouage_show', {'id_prediction': prediction_echouage.id_prediction}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_prediction_echouage_edit', {'id_prediction': prediction_echouage.id_prediction}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

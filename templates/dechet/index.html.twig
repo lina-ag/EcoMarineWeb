@@ -3,37 +3,45 @@
 {% block title %}Dechet index{% endblock %}
 
 {% block body %}
-    <h1>Dechet index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Dechets</h2>
+                <p class="card-subtitle">Suivi des dechets recenses par zone.</p>
+            </div>
+            <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_dechet</th>
-                <th>Type</th>
-                <th>Quantite</th>
-                <th>Zone</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for dechet in dechets %}
-            <tr>
-                <td>{{ dechet.idDechet }}</td>
-                <td>{{ dechet.type }}</td>
-                <td>{{ dechet.quantite }}</td>
-                <td>{{ dechet.zone }}</td>
-                <td>
-                    <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}">show</a>
-                    <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_dechet_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Type</th>
+                        <th>Quantite</th>
+                        <th>Zone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for dechet in dechets %}
+                    <tr>
+                        <td>{{ dechet.idDechet }}</td>
+                        <td>{{ dechet.type }}</td>
+                        <td>{{ dechet.quantite }}</td>
+                        <td>{{ dechet.zone }}</td>
+                        <td>
+                            <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

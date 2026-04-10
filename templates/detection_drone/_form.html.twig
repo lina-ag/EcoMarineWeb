@@ -1,4 +1,64 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.id_mission, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.id_mission, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.id_mission) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.espece, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.espece, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.espece) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.nombre_individus, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nombre_individus, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.nombre_individus) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.latitude, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.latitude, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.latitude) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.longitude, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.longitude, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.longitude) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.confiance_ia, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.confiance_ia, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.confiance_ia) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.comportement, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.comportement, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.comportement) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.image_path, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.image_path, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.image_path) }}
+        </div>
+
+        <div class="form-group-settings full-width">
+            {{ form_label(form.timestamp, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.timestamp, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.timestamp) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_detection_drone_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}
