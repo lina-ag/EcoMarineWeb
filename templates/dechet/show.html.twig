@@ -3,32 +3,29 @@
 {% block title %}Dechet{% endblock %}
 
 {% block body %}
-    <h1>Dechet</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Dechet #{{ dechet.idDechet }}</h2>
+                <p class="card-subtitle">Detail du dechet recense.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id_dechet</th>
-                <td>{{ dechet.idDechet }}</td>
-            </tr>
-            <tr>
-                <th>Type</th>
-                <td>{{ dechet.type }}</td>
-            </tr>
-            <tr>
-                <th>Quantite</th>
-                <td>{{ dechet.quantite }}</td>
-            </tr>
-            <tr>
-                <th>Zone</th>
-                <td>{{ dechet.zone }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ dechet.idDechet }}</td></tr>
+                    <tr><th>Type</th><td>{{ dechet.type }}</td></tr>
+                    <tr><th>Quantite</th><td>{{ dechet.quantite }}</td></tr>
+                    <tr><th>Zone</th><td>{{ dechet.zone }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_dechet_index') }}">back to list</a>
-
-    <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}">edit</a>
-
-    {{ include('dechet/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">edit</a>
+            {{ include('dechet/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

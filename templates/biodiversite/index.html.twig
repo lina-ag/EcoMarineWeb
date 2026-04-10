@@ -3,39 +3,47 @@
 {% block title %}Biodiversite index{% endblock %}
 
 {% block body %}
-    <h1>Biodiversite index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Biodiversite</h2>
+                <p class="card-subtitle">Suivi des especes et observations par zone.</p>
+            </div>
+            <a href="{{ path('app_biodiversite_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Espece</th>
-                <th>Zone</th>
-                <th>Nombre</th>
-                <th>Date</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for biodiversite in biodiversites %}
-            <tr>
-                <td>{{ biodiversite.id }}</td>
-                <td>{{ biodiversite.espece }}</td>
-                <td>{{ biodiversite.zone }}</td>
-                <td>{{ biodiversite.nombre }}</td>
-                <td>{{ biodiversite.date }}</td>
-                <td>
-                    <a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}">show</a>
-                    <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_biodiversite_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Espece</th>
+                        <th>Zone</th>
+                        <th>Nombre</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for biodiversite in biodiversites %}
+                    <tr>
+                        <td>{{ biodiversite.id }}</td>
+                        <td>{{ biodiversite.espece }}</td>
+                        <td>{{ biodiversite.zone }}</td>
+                        <td>{{ biodiversite.nombre }}</td>
+                        <td>{{ biodiversite.date }}</td>
+                        <td>
+                            <a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

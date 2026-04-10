@@ -1,0 +1,430 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}EcoMarine - Écotourisme à Kuriat{% endblock %}
+
+{% block body %}
+
+<div id="video">
+
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="preloader-bounce">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header id="header">
+        <div class="container-fluid">
+            <div class="navbar">
+                <a href="#" id="logo" title="EcoMarine">
+                    🐚 EcoMarine
+                </a>
+                <div class="navigation-row">
+                    <nav id="navigation">
+                        <button type="button" class="navbar-toggle">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <div class="nav-box navbar-collapse">
+                            <ul class="navigation-menu nav navbar-nav navbars" id="nav">
+                                <li data-menuanchor="slide01" class="active"><a href="#slide01">Accueil</a></li>
+                                <li data-menuanchor="slide02"><a href="#slide02">À Propos</a></li>
+                                <li data-menuanchor="slide03"><a href="#slide03">Activités</a></li>
+                                <li data-menuanchor="slide04"><a href="#slide04">Notre Mission</a></li>
+                                <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
+                                <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
+                                <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Vidéo de fond -->
+    <video autoplay muted loop id="myVideo">
+        <source src="/assets/images/video-bg.mp4" type="video/mp4">
+    </video>
+
+    <div id="fullpage" class="fullpage-default">
+
+        <!-- SLIDE 01 — Accueil -->
+        <div class="section animated-row" data-section="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
+            <div class="section-inner">
+                <div class="welcome-box">
+                    <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
+                    <h1 class="welcome-title animate" data-animate="fadeInUp">EcoMarine</h1>
+                    <p class="animate" data-animate="fadeInUp">
+                        Explorez l'écotourisme marin autour de l'île de Kuriat, Monastir.
+                        Réservez vos activités, plongées et excursions en préservant la biodiversité marine.
+                    </p>
+                    <div class="scroll-down next-section animate" data-animate="fadeInUp">
+                        <img src="/assets/images/mouse-scroll.png" alt="Défiler">
+                        <span>Défiler</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 02 — À Propos -->
+        <div class="section animated-row" data-section="slide02">
+            <div class="section-inner">
+                <div class="about-section">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8 wide-col-laptop">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="about-contentbox">
+                                        <div class="animate" data-animate="fadeInUp">
+                                            <span>À Propos de Nous</span>
+                                            <h2>Qui sommes-nous ?</h2>
+                                            <p>
+                                                EcoMarine est une plateforme dédiée à la recherche marine et à l'écotourisme
+                                                responsable autour de l'île de Kuriat. Nous connectons les visiteurs passionnés
+                                                de nature avec des expériences uniques tout en protégeant l'écosystème marin.
+                                            </p>
+                                        </div>
+                                        <div class="facts-list owl-carousel">
+                                            <div class="item animate" data-animate="fadeInUp">
+                                                <div class="counter-box">
+                                                    <i class="fa fa-ship counter-icon" aria-hidden="true"></i>
+                                                    <span class="count-number">120</span> Excursions
+                                                </div>
+                                            </div>
+                                            <div class="item animate" data-animate="fadeInUp">
+                                                <div class="counter-box">
+                                                    <i class="fa fa-users counter-icon" aria-hidden="true"></i>
+                                                    <span class="count-number">850</span> Visiteurs
+                                                </div>
+                                            </div>
+                                            <div class="item animate" data-animate="fadeInUp">
+                                                <div class="counter-box">
+                                                    <i class="fa fa-leaf counter-icon" aria-hidden="true"></i>
+                                                    <span class="count-number">15</span> Espèces protégées
+                                                </div>
+                                            </div>
+                                            <div class="item animate" data-animate="fadeInUp">
+                                                <div class="counter-box">
+                                                    <i class="fa fa-star counter-icon" aria-hidden="true"></i>
+                                                    <span class="count-number">5</span> Années d'expérience
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <figure class="about-img animate" data-animate="fadeInUp">
+                                        <img src="/assets/images/profile-girl.jpg" class="rounded" alt="EcoMarine Team">
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 03 — Activités -->
+        <div class="section animated-row" data-section="slide03">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nos Activités</span>
+                            <h2>Que proposons-nous ?</h2>
+                        </div>
+                        <div class="services-section">
+                            <div class="services-list owl-carousel">
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-ship" aria-hidden="true"></i></span>
+                                        <h3>Excursions en mer</h3>
+                                        <p>Partez découvrir les fonds marins de Kuriat lors de sorties en bateau encadrées par nos experts.</p>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-life-ring" aria-hidden="true"></i></span>
+                                        <h3>Plongée sous-marine</h3>
+                                        <p>Explorez les récifs et grottes sous-marines avec nos moniteurs diplômés d'État.</p>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-camera" aria-hidden="true"></i></span>
+                                        <h3>Photo & Vidéo marine</h3>
+                                        <p>Immortalisez vos découvertes avec notre matériel de prise de vue sous-marine.</p>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-leaf" aria-hidden="true"></i></span>
+                                        <h3>Recherche scientifique</h3>
+                                        <p>Participez à nos programmes de suivi des tortues marines et de protection des coraux.</p>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span>
+                                        <h3>Randonnées côtières</h3>
+                                        <p>Découvrez la faune et la flore de l'île de Kuriat lors de balades guidées sur le littoral.</p>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="service-box">
+                                        <span class="service-icon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                                        <h3>Réservations en ligne</h3>
+                                        <p>Réservez facilement vos activités via notre plateforme sécurisée, 24h/24.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 04 — Notre Mission -->
+        <div class="section animated-row" data-section="slide04">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-7 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Notre Mission</span>
+                            <h2>Nos engagements</h2>
+                        </div>
+                        <div class="skills-row animate" data-animate="fadeInDown">
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2">
+                                    <div class="skill-item">
+                                        <h6>Protection Marine</h6>
+                                        <div class="skill-bar">
+                                            <span>95%</span>
+                                            <div class="filled-bar-2"></div>
+                                        </div>
+                                    </div>
+                                    <div class="skill-item">
+                                        <h6>Satisfaction des visiteurs</h6>
+                                        <div class="skill-bar">
+                                            <span>90%</span>
+                                            <div class="filled-bar"></div>
+                                        </div>
+                                    </div>
+                                    <div class="skill-item">
+                                        <h6>Recherche scientifique</h6>
+                                        <div class="skill-bar">
+                                            <span>80%</span>
+                                            <div class="filled-bar-2"></div>
+                                        </div>
+                                    </div>
+                                    <div class="skill-item last-skill">
+                                        <h6>Tourisme durable</h6>
+                                        <div class="skill-bar">
+                                            <span>85%</span>
+                                            <div class="filled-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 05 — Galerie -->
+        <div class="section animated-row" data-section="slide05">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Galerie</span>
+                            <h2>Nos plus beaux moments</h2>
+                        </div>
+                        <div class="gallery-section">
+                            <div class="gallery-list owl-carousel">
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="portfolio-item">
+                                        <div class="thumb">
+                                            <img src="/assets/images/item-1.jpg" alt="Plongée à Kuriat">
+                                        </div>
+                                        <div class="thumb-inner animate" data-animate="fadeInUp">
+                                            <h4>Plongée à Kuriat</h4>
+                                            <p>Une immersion unique dans les eaux cristallines de l'île de Kuriat.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="portfolio-item">
+                                        <div class="thumb">
+                                            <img src="/assets/images/item-2.jpg" alt="Tortues marines">
+                                        </div>
+                                        <div class="thumb-inner animate" data-animate="fadeInUp">
+                                            <h4>Tortues marines</h4>
+                                            <p>Observation et suivi des tortues Caouannes dans leur habitat naturel.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="portfolio-item">
+                                        <div class="thumb">
+                                            <img src="/assets/images/item-3.jpg" alt="Excursion en mer">
+                                        </div>
+                                        <div class="thumb-inner animate" data-animate="fadeInUp">
+                                            <h4>Excursion en mer</h4>
+                                            <p>Découverte des côtes de Monastir à bord de nos embarcations.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="portfolio-item">
+                                        <div class="thumb">
+                                            <img src="/assets/images/item-1.jpg" alt="Faune marine">
+                                        </div>
+                                        <div class="thumb-inner animate" data-animate="fadeInUp">
+                                            <h4>Faune marine</h4>
+                                            <p>Richesse et diversité des espèces marines méditerranéennes.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item animate" data-animate="fadeInUp">
+                                    <div class="portfolio-item">
+                                        <div class="thumb">
+                                            <img src="/assets/images/item-2.jpg" alt="Coucher de soleil">
+                                        </div>
+                                        <div class="thumb-inner animate" data-animate="fadeInUp">
+                                            <h4>Coucher de soleil</h4>
+                                            <p>Des paysages à couper le souffle depuis les rivages de Kuriat.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 06 — Témoignages -->
+        <div class="section animated-row" data-section="slide06">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Témoignages</span>
+                            <h2>Ce qu'ils disent</h2>
+                        </div>
+                        <div class="col-md-8 offset-md-2">
+                            <div class="testimonials-section">
+                                <div class="testimonials-slider owl-carousel">
+                                    <div class="item animate" data-animate="fadeInUp">
+                                        <div class="testimonial-item">
+                                            <div class="client-row">
+                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Yasmine">
+                                            </div>
+                                            <div class="testimonial-content">
+                                                <h4>Yasmine B.</h4>
+                                                <p>"Une expérience inoubliable ! L'équipe EcoMarine est passionnée et très professionnelle. Je recommande vivement."</p>
+                                                <span>Biologiste marine</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item animate" data-animate="fadeInUp">
+                                        <div class="testimonial-item">
+                                            <div class="client-row">
+                                                <img src="/assets/images/profile-girl.jpg" class="rounded-circle" alt="Karim">
+                                            </div>
+                                            <div class="testimonial-content">
+                                                <h4>Karim M.</h4>
+                                                <p>"La plongée à Kuriat était magique. Voir les tortues dans leur milieu naturel est une expérience unique."</p>
+                                                <span>Photographe nature</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item animate" data-animate="fadeInUp">
+                                        <div class="testimonial-item">
+                                            <div class="client-row">
+                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Sofia">
+                                            </div>
+                                            <div class="testimonial-content">
+                                                <h4>Sofia L.</h4>
+                                                <p>"Parfait pour une escapade écologique. La réservation en ligne est simple et l'accueil chaleureux."</p>
+                                                <span>Éco-touriste passionnée</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 07 — Contact -->
+        <div class="section animated-row" data-section="slide07">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-7 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Contact</span>
+                            <h2>Contactez-nous !</h2>
+                        </div>
+                        <div class="contact-section">
+                            <div class="row">
+                                <div class="col-md-6 animate" data-animate="fadeInUp">
+                                    <div class="contact-box">
+                                        <div class="contact-row">
+                                            <i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie
+                                        </div>
+                                        <div class="contact-row">
+                                            <i class="fa fa-phone"></i> +216 73 000 000
+                                        </div>
+                                        <div class="contact-row">
+                                            <i class="fa fa-envelope"></i> contact@ecomarine.tn
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 animate" data-animate="fadeInUp">
+                                    <form id="ajax-contact" method="post" action="#">
+                                        <div class="input-field">
+                                            <input type="text" class="form-control" name="name" id="name" required placeholder="Votre nom">
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="email" class="form-control" name="email" id="email" required placeholder="Votre email">
+                                        </div>
+                                        <div class="input-field">
+                                            <textarea class="form-control" name="message" id="message" required placeholder="Votre message"></textarea>
+                                        </div>
+                                        <button class="btn" type="submit">Envoyer</button>
+                                    </form>
+                                    <div id="form-messages" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>{# fin #fullpage #}
+
+    <!-- Réseaux sociaux -->
+    <div id="social-icons">
+        <div class="text-right">
+            <ul class="social-icons">
+                <li><a href="#" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+                <li><a href="#" title="Instagram"><i class="fa fa-instagram"></i></a></li>
+                <li><a href="#" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+                <li><a href="#" title="LinkedIn"><i class="fa fa-linkedin"></i></a></li>
+            </ul>
+        </div>
+    </div>
+
+</div>{# fin #video #}
+
+{% endblock %}
+

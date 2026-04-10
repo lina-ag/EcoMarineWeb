@@ -1,4 +1,34 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-grid">
+        <div class="form-group-settings">
+            {{ form_label(form.espece, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.espece, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.espece) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.zone, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.zone, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.zone) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.nombre, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nombre, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.nombre) }}
+        </div>
+
+        <div class="form-group-settings">
+            {{ form_label(form.date, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.date, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.date) }}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        <a href="{{ path('app_biodiversite_index') }}" class="btn btn-secondary">back to list</a>
+    </div>
+
+    {{ form_rest(form) }}
 {{ form_end(form) }}

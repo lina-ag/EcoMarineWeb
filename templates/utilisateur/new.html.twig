@@ -3,9 +3,14 @@
 {% block title %}New Utilisateur{% endblock %}
 
 {% block body %}
-    <h1>Create new Utilisateur</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new Utilisateur</h2>
+                <p class="card-subtitle">Ajouter un nouvel utilisateur a la plateforme.</p>
+            </div>
+        </div>
 
-    {{ include('utilisateur/_form.html.twig') }}
-
-    <a href="{{ path('app_utilisateur_index') }}">back to list</a>
+        {{ include('utilisateur/_form.html.twig') }}
+    </section>
 {% endblock %}

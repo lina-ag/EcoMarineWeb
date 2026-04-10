@@ -3,49 +3,51 @@
 {% block title %}DetectionDrone index{% endblock %}
 
 {% block body %}
-    <h1>DetectionDrone index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Detections drone</h2>
+                <p class="card-subtitle">Analyse des detections pendant les missions.</p>
+            </div>
+            <a href="{{ path('app_detection_drone_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_detection</th>
-                <th>Id_mission</th>
-                <th>Espece</th>
-                <th>Nombre_individus</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Comportement</th>
-                <th>Confiance_ia</th>
-                <th>Image_path</th>
-                <th>Timestamp</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for detection_drone in detection_drones %}
-            <tr>
-                <td>{{ detection_drone.idDetection }}</td>
-                <td>{{ detection_drone.idMission }}</td>
-                <td>{{ detection_drone.espece }}</td>
-                <td>{{ detection_drone.nombreIndividus }}</td>
-                <td>{{ detection_drone.latitude }}</td>
-                <td>{{ detection_drone.longitude }}</td>
-                <td>{{ detection_drone.comportement }}</td>
-                <td>{{ detection_drone.confianceIa }}</td>
-                <td>{{ detection_drone.imagePath }}</td>
-                <td>{{ detection_drone.timestamp }}</td>
-                <td>
-                    <a href="{{ path('app_detection_drone_show', {'id_detection': detection_drone.id_detection}) }}">show</a>
-                    <a href="{{ path('app_detection_drone_edit', {'id_detection': detection_drone.id_detection}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="11">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_detection_drone_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Mission</th>
+                        <th>Espece</th>
+                        <th>Individus</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Confiance IA</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for detection_drone in detection_drones %}
+                    <tr>
+                        <td>{{ detection_drone.idDetection }}</td>
+                        <td>{{ detection_drone.idMission }}</td>
+                        <td>{{ detection_drone.espece }}</td>
+                        <td>{{ detection_drone.nombreIndividus }}</td>
+                        <td>{{ detection_drone.latitude }}</td>
+                        <td>{{ detection_drone.longitude }}</td>
+                        <td>{{ detection_drone.confianceIa }}</td>
+                        <td>
+                            <a href="{{ path('app_detection_drone_show', {'id_detection': detection_drone.id_detection}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_detection_drone_edit', {'id_detection': detection_drone.id_detection}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

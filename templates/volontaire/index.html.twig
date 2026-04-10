@@ -3,37 +3,45 @@
 {% block title %}Volontaire index{% endblock %}
 
 {% block body %}
-    <h1>Volontaire index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Volontaires</h2>
+                <p class="card-subtitle">Gestion des volontaires mobilises.</p>
+            </div>
+            <a href="{{ path('app_volontaire_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_volontaire</th>
-                <th>Nom</th>
-                <th>Contact</th>
-                <th>Id_action</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for volontaire in volontaires %}
-            <tr>
-                <td>{{ volontaire.idVolontaire }}</td>
-                <td>{{ volontaire.nom }}</td>
-                <td>{{ volontaire.contact }}</td>
-                <td>{{ volontaire.idAction }}</td>
-                <td>
-                    <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}">show</a>
-                    <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_volontaire_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nom</th>
+                        <th>Contact</th>
+                        <th>Id action</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for volontaire in volontaires %}
+                    <tr>
+                        <td>{{ volontaire.idVolontaire }}</td>
+                        <td>{{ volontaire.nom }}</td>
+                        <td>{{ volontaire.contact }}</td>
+                        <td>{{ volontaire.idAction }}</td>
+                        <td>
+                            <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

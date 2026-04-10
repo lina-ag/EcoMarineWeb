@@ -3,9 +3,14 @@
 {% block title %}New Zonep{% endblock %}
 
 {% block body %}
-    <h1>Create new Zonep</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new Zone</h2>
+                <p class="card-subtitle">Ajouter une nouvelle zone au systeme.</p>
+            </div>
+        </div>
 
-    {{ include('zonep/_form.html.twig') }}
-
-    <a href="{{ path('app_zonep_index') }}">back to list</a>
+        {{ include('zonep/_form.html.twig') }}
+    </section>
 {% endblock %}

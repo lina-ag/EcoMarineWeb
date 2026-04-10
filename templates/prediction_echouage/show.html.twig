@@ -3,48 +3,33 @@
 {% block title %}PredictionEchouage{% endblock %}
 
 {% block body %}
-    <h1>PredictionEchouage</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Prediction #{{ prediction_echouage.idPrediction }}</h2>
+                <p class="card-subtitle">Detail de la prediction d echouage.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id_prediction</th>
-                <td>{{ prediction_echouage.idPrediction }}</td>
-            </tr>
-            <tr>
-                <th>Date_prediction</th>
-                <td>{{ prediction_echouage.datePrediction ? prediction_echouage.datePrediction|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Zone</th>
-                <td>{{ prediction_echouage.zone }}</td>
-            </tr>
-            <tr>
-                <th>Niveau_risque</th>
-                <td>{{ prediction_echouage.niveauRisque }}</td>
-            </tr>
-            <tr>
-                <th>Espece_concernee</th>
-                <td>{{ prediction_echouage.especeConcernee }}</td>
-            </tr>
-            <tr>
-                <th>Temperature_eau</th>
-                <td>{{ prediction_echouage.temperatureEau }}</td>
-            </tr>
-            <tr>
-                <th>Conditions_meteo</th>
-                <td>{{ prediction_echouage.conditionsMeteo }}</td>
-            </tr>
-            <tr>
-                <th>Recommandations</th>
-                <td>{{ prediction_echouage.recommandations }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ prediction_echouage.idPrediction }}</td></tr>
+                    <tr><th>Date</th><td>{{ prediction_echouage.datePrediction ? prediction_echouage.datePrediction|date('Y-m-d') : '' }}</td></tr>
+                    <tr><th>Zone</th><td>{{ prediction_echouage.zone }}</td></tr>
+                    <tr><th>Niveau risque</th><td>{{ prediction_echouage.niveauRisque }}</td></tr>
+                    <tr><th>Espece concernee</th><td>{{ prediction_echouage.especeConcernee }}</td></tr>
+                    <tr><th>Temperature eau</th><td>{{ prediction_echouage.temperatureEau }}</td></tr>
+                    <tr><th>Conditions meteo</th><td>{{ prediction_echouage.conditionsMeteo }}</td></tr>
+                    <tr><th>Recommandations</th><td>{{ prediction_echouage.recommandations }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_prediction_echouage_index') }}">back to list</a>
-
-    <a href="{{ path('app_prediction_echouage_edit', {'id_prediction': prediction_echouage.id_prediction}) }}">edit</a>
-
-    {{ include('prediction_echouage/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_prediction_echouage_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_prediction_echouage_edit', {'id_prediction': prediction_echouage.id_prediction}) }}" class="btn btn-primary">edit</a>
+            {{ include('prediction_echouage/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

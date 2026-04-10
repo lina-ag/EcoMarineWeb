@@ -71,7 +71,7 @@ class DetectionDrone
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $latitude = null;
 
     public function getLatitude(): ?float
@@ -85,7 +85,7 @@ class DetectionDrone
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $longitude = null;
 
     public function getLongitude(): ?float

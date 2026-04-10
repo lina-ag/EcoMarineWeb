@@ -14,7 +14,7 @@ class Zonep
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idZone', type: 'integer')]
     private ?int $idZone = null;
 
     public function getIdZone(): ?int
@@ -28,7 +28,7 @@ class Zonep
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'nomZone', type: 'string', nullable: false)]
     private ?string $nomZone = null;
 
     public function getNomZone(): ?string
@@ -42,7 +42,7 @@ class Zonep
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'categorieZone', type: 'string', nullable: false)]
     private ?string $categorieZone = null;
 
     public function getCategorieZone(): ?string

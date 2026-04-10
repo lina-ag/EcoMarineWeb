@@ -3,9 +3,14 @@
 {% block title %}New Volontaire{% endblock %}
 
 {% block body %}
-    <h1>Create new Volontaire</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Create new Volontaire</h2>
+                <p class="card-subtitle">Ajouter un nouveau volontaire.</p>
+            </div>
+        </div>
 
-    {{ include('volontaire/_form.html.twig') }}
-
-    <a href="{{ path('app_volontaire_index') }}">back to list</a>
+        {{ include('volontaire/_form.html.twig') }}
+    </section>
 {% endblock %}

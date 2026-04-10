@@ -3,47 +3,53 @@
 {% block title %}MissionDrone index{% endblock %}
 
 {% block body %}
-    <h1>MissionDrone index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Missions Drone</h2>
+                <p class="card-subtitle">Suivi des missions de surveillance aerienne.</p>
+            </div>
+            <a href="{{ path('app_mission_drone_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_mission</th>
-                <th>Date_mission</th>
-                <th>Heure_debut</th>
-                <th>Heure_fin</th>
-                <th>Zone_survolee</th>
-                <th>Distance_parcourue</th>
-                <th>Altitude_vol</th>
-                <th>Conditions_vol</th>
-                <th>Observations</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for mission_drone in mission_drones %}
-            <tr>
-                <td>{{ mission_drone.idMission }}</td>
-                <td>{{ mission_drone.dateMission ? mission_drone.dateMission|date('Y-m-d') : '' }}</td>
-                <td>{{ mission_drone.heureDebut ? mission_drone.heureDebut|date('H:i:s') : '' }}</td>
-                <td>{{ mission_drone.heureFin ? mission_drone.heureFin|date('H:i:s') : '' }}</td>
-                <td>{{ mission_drone.zoneSurvolee }}</td>
-                <td>{{ mission_drone.distanceParcourue }}</td>
-                <td>{{ mission_drone.altitudeVol }}</td>
-                <td>{{ mission_drone.conditionsVol }}</td>
-                <td>{{ mission_drone.observations }}</td>
-                <td>
-                    <a href="{{ path('app_mission_drone_show', {'id_mission': mission_drone.id_mission}) }}">show</a>
-                    <a href="{{ path('app_mission_drone_edit', {'id_mission': mission_drone.id_mission}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="10">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_mission_drone_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Date</th>
+                        <th>Debut</th>
+                        <th>Fin</th>
+                        <th>Zone</th>
+                        <th>Distance</th>
+                        <th>Altitude</th>
+                        <th>Conditions</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for mission_drone in mission_drones %}
+                    <tr>
+                        <td>{{ mission_drone.idMission }}</td>
+                        <td>{{ mission_drone.dateMission ? mission_drone.dateMission|date('Y-m-d') : '' }}</td>
+                        <td>{{ mission_drone.heureDebut ? mission_drone.heureDebut|date('H:i:s') : '' }}</td>
+                        <td>{{ mission_drone.heureFin ? mission_drone.heureFin|date('H:i:s') : '' }}</td>
+                        <td>{{ mission_drone.zoneSurvolee }}</td>
+                        <td>{{ mission_drone.distanceParcourue }}</td>
+                        <td>{{ mission_drone.altitudeVol }}</td>
+                        <td>{{ mission_drone.conditionsVol }}</td>
+                        <td>
+                            <a href="{{ path('app_mission_drone_show', {'id_mission': mission_drone.id_mission}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_mission_drone_edit', {'id_mission': mission_drone.id_mission}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

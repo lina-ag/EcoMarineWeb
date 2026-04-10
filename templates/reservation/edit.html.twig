@@ -1,13 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Reservation{% endblock %}
+{% block title %}Modifier réservation{% endblock %}
 
 {% block body %}
-    <h1>Edit Reservation</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Modifier la réservation</h2>
+                <p class="card-subtitle">Mettez à jour les données puis enregistrez.</p>
+            </div>
+        </div>
 
-    {{ include('reservation/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('reservation/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
 
-    <a href="{{ path('app_reservation_index') }}">back to list</a>
-
-    {{ include('reservation/_delete_form.html.twig') }}
+        {{ include('reservation/_delete_form.html.twig') }}
+    </section>
 {% endblock %}

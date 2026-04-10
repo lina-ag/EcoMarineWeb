@@ -3,35 +3,43 @@
 {% block title %}ActionNettoyage index{% endblock %}
 
 {% block body %}
-    <h1>ActionNettoyage index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Actions de nettoyage</h2>
+                <p class="card-subtitle">Planification et suivi des actions de nettoyage.</p>
+            </div>
+            <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_action</th>
-                <th>Date_action</th>
-                <th>Lieu</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for action_nettoyage in action_nettoyages %}
-            <tr>
-                <td>{{ action_nettoyage.idAction }}</td>
-                <td>{{ action_nettoyage.dateAction }}</td>
-                <td>{{ action_nettoyage.lieu }}</td>
-                <td>
-                    <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}">show</a>
-                    <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_action_nettoyage_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Date</th>
+                        <th>Lieu</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for action_nettoyage in action_nettoyages %}
+                    <tr>
+                        <td>{{ action_nettoyage.idAction }}</td>
+                        <td>{{ action_nettoyage.dateAction }}</td>
+                        <td>{{ action_nettoyage.lieu }}</td>
+                        <td>
+                            <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

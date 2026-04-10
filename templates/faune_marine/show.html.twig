@@ -3,32 +3,29 @@
 {% block title %}FauneMarine{% endblock %}
 
 {% block body %}
-    <h1>FauneMarine</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Faune #{{ faune_marine.idAnimal }}</h2>
+                <p class="card-subtitle">Details de l espece marine.</p>
+            </div>
+        </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id_animal</th>
-                <td>{{ faune_marine.idAnimal }}</td>
-            </tr>
-            <tr>
-                <th>Espece</th>
-                <td>{{ faune_marine.espece }}</td>
-            </tr>
-            <tr>
-                <th>Etat</th>
-                <td>{{ faune_marine.etat }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ faune_marine.description }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr><th>Id</th><td>{{ faune_marine.idAnimal }}</td></tr>
+                    <tr><th>Espece</th><td>{{ faune_marine.espece }}</td></tr>
+                    <tr><th>Etat</th><td>{{ faune_marine.etat }}</td></tr>
+                    <tr><th>Description</th><td>{{ faune_marine.description }}</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-    <a href="{{ path('app_faune_marine_index') }}">back to list</a>
-
-    <a href="{{ path('app_faune_marine_edit', {'id_animal': faune_marine.id_animal}) }}">edit</a>
-
-    {{ include('faune_marine/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_faune_marine_index') }}" class="btn btn-secondary">back to list</a>
+            <a href="{{ path('app_faune_marine_edit', {'id_animal': faune_marine.id_animal}) }}" class="btn btn-primary">edit</a>
+            {{ include('faune_marine/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

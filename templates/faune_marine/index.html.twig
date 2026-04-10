@@ -3,37 +3,45 @@
 {% block title %}FauneMarine index{% endblock %}
 
 {% block body %}
-    <h1>FauneMarine index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Faune marine</h2>
+                <p class="card-subtitle">Gestion des especes observees et de leur etat.</p>
+            </div>
+            <a href="{{ path('app_faune_marine_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_animal</th>
-                <th>Espece</th>
-                <th>Etat</th>
-                <th>Description</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for faune_marine in faune_marines %}
-            <tr>
-                <td>{{ faune_marine.idAnimal }}</td>
-                <td>{{ faune_marine.espece }}</td>
-                <td>{{ faune_marine.etat }}</td>
-                <td>{{ faune_marine.description }}</td>
-                <td>
-                    <a href="{{ path('app_faune_marine_show', {'id_animal': faune_marine.id_animal}) }}">show</a>
-                    <a href="{{ path('app_faune_marine_edit', {'id_animal': faune_marine.id_animal}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_faune_marine_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Espece</th>
+                        <th>Etat</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for faune_marine in faune_marines %}
+                    <tr>
+                        <td>{{ faune_marine.idAnimal }}</td>
+                        <td>{{ faune_marine.espece }}</td>
+                        <td>{{ faune_marine.etat }}</td>
+                        <td>{{ faune_marine.description }}</td>
+                        <td>
+                            <a href="{{ path('app_faune_marine_show', {'id_animal': faune_marine.id_animal}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_faune_marine_edit', {'id_animal': faune_marine.id_animal}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}

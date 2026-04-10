@@ -3,11 +3,19 @@
 {% block title %}Edit Dechet{% endblock %}
 
 {% block body %}
-    <h1>Edit Dechet</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Edit Dechet</h2>
+                <p class="card-subtitle">Modifier les informations du dechet.</p>
+            </div>
+        </div>
 
-    {{ include('dechet/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('dechet/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_dechet_index') }}">back to list</a>
-
-    {{ include('dechet/_delete_form.html.twig') }}
+        <div class="btn-group">
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">back to list</a>
+            {{ include('dechet/_delete_form.html.twig') }}
+        </div>
+    </section>
 {% endblock %}

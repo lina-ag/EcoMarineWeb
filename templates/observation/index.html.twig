@@ -3,39 +3,47 @@
 {% block title %}Observation index{% endblock %}
 
 {% block body %}
-    <h1>Observation index</h1>
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Observations</h2>
+                <p class="card-subtitle">Suivi des observations de terrain.</p>
+            </div>
+            <a href="{{ path('app_observation_new') }}" class="btn btn-primary">Create new</a>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id_observation</th>
-                <th>Date_observation</th>
-                <th>Temperature</th>
-                <th>Meteo</th>
-                <th>Id_animal</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for observation in observations %}
-            <tr>
-                <td>{{ observation.idObservation }}</td>
-                <td>{{ observation.dateObservation ? observation.dateObservation|date('Y-m-d') : '' }}</td>
-                <td>{{ observation.temperature }}</td>
-                <td>{{ observation.meteo }}</td>
-                <td>{{ observation.idAnimal }}</td>
-                <td>
-                    <a href="{{ path('app_observation_show', {'id_observation': observation.id_observation}) }}">show</a>
-                    <a href="{{ path('app_observation_edit', {'id_observation': observation.id_observation}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_observation_new') }}">Create new</a>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Date</th>
+                        <th>Temperature</th>
+                        <th>Meteo</th>
+                        <th>Id animal</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for observation in observations %}
+                    <tr>
+                        <td>{{ observation.idObservation }}</td>
+                        <td>{{ observation.dateObservation ? observation.dateObservation|date('Y-m-d') : '' }}</td>
+                        <td>{{ observation.temperature }}</td>
+                        <td>{{ observation.meteo }}</td>
+                        <td>{{ observation.idAnimal }}</td>
+                        <td>
+                            <a href="{{ path('app_observation_show', {'id_observation': observation.id_observation}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_observation_edit', {'id_observation': observation.id_observation}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 {% endblock %}
