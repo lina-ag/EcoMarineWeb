@@ -4,6 +4,15 @@
 
 {% block body %}
 
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endfor %}
+
 <div id="video">
 
     <!-- Preloader -->
@@ -68,6 +77,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- SLIDE 02 — À Propos -->
         <div class="section animated-row" data-section="slide02">
