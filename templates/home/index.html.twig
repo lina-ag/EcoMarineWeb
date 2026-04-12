@@ -36,6 +36,7 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
+                                <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -52,7 +53,7 @@
     <div id="fullpage" class="fullpage-default">
 
         <!-- SLIDE 01 — Accueil -->
-        <div class="section animated-row" data-section="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
+        <div class="section animated-row" data-anchor="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
             <div class="section-inner">
                 <div class="welcome-box">
                     <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
@@ -70,7 +71,7 @@
         </div>
 
         <!-- SLIDE 02 — À Propos -->
-        <div class="section animated-row" data-section="slide02">
+        <div class="section animated-row" data-anchor="slide02">
             <div class="section-inner">
                 <div class="about-section">
                     <div class="row justify-content-center">
@@ -128,7 +129,7 @@
         </div>
 
         <!-- SLIDE 03 — Activités -->
-        <div class="section animated-row" data-section="slide03">
+        <div class="section animated-row" data-anchor="slide03">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -188,7 +189,7 @@
         </div>
 
         <!-- SLIDE 04 — Notre Mission -->
-        <div class="section animated-row" data-section="slide04">
+        <div class="section animated-row" data-anchor="slide04">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -236,7 +237,7 @@
         </div>
 
         <!-- SLIDE 05 — Galerie -->
-        <div class="section animated-row" data-section="slide05">
+        <div class="section animated-row" data-anchor="slide05">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -309,7 +310,7 @@
         </div>
 
         <!-- SLIDE 06 — Témoignages -->
-        <div class="section animated-row" data-section="slide06">
+        <div class="section animated-row" data-anchor="slide06">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -365,7 +366,7 @@
         </div>
 
         <!-- SLIDE 07 — Contact -->
-        <div class="section animated-row" data-section="slide07">
+        <div class="section animated-row" data-anchor="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -402,6 +403,37 @@
                                         <button class="btn" type="submit">Envoyer</button>
                                     </form>
                                     <div id="form-messages" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 08 — Réservations et Activités -->
+        <div class="section animated-row" data-anchor="slide08">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Réservez maintenant</span>
+                            <h2>Planifiez votre expérience</h2>
+                        </div>
+                        <div class="reservations-section">
+                            <div class="row">
+                                <!-- Formulaire Réservation -->
+                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card">
+                                        <h3>Faire une réservation</h3>
+                                        <p class="form-subtitle">Réservez votre place pour une activité</p>
+                                        {{ include('reservation/_form.html.twig', {
+                                            'form': form_reservation, 
+                                            'button_label': 'Réserver',
+                                            'form_action': path('app_reservation_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
