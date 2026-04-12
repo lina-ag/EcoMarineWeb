@@ -3,6 +3,7 @@
 namespace App\Tests\Controller;
 
 use App\Entity\Survzone;
+use App\Entity\Zonep;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -63,15 +64,20 @@ final class SurvzoneControllerTest extends WebTestCase
 
     public function testShow(): void
     {
+        $zonep = new Zonep();
+        $zonep->setNomZone('Test Zone');
+        $zonep->setCategorieZone('Test Category');
+        $this->manager->persist($zonep);
+
         $fixture = new Survzone();
-        $fixture->setDateSurv('My Title');
+        $fixture->setDateSurv(new \DateTime('2023-01-01'));
         $fixture->setObservation('My Title');
-        $fixture->setIdZone('My Title');
+        $fixture->setZonep($zonep);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getIdSurv()));
 
         self::assertResponseStatusCodeSame(200);
         self::assertPageTitleContains('Survzone');
@@ -82,39 +88,49 @@ final class SurvzoneControllerTest extends WebTestCase
 
     public function testEdit(): void
     {
+        $zonep = new Zonep();
+        $zonep->setNomZone('Test Zone');
+        $zonep->setCategorieZone('Test Category');
+        $this->manager->persist($zonep);
+
         $fixture = new Survzone();
-        $fixture->setDateSurv('Value');
+        $fixture->setDateSurv(new \DateTime('2023-01-01'));
         $fixture->setObservation('Value');
-        $fixture->setIdZone('Value');
+        $fixture->setZonep($zonep);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getIdSurv()));
 
         $this->client->submitForm('Update', [
-            'survzone[dateSurv]' => 'Something New',
+            'survzone[dateSurv]' => '2023-02-01',
             'survzone[observation]' => 'Something New',
-            'survzone[idZone]' => 'Something New',
+            'survzone[zonep]' => $zonep->getIdZone(),
         ]);
 
         self::assertResponseRedirects('/survzone');
 
         $fixture = $this->survzoneRepository->findAll();
 
-        self::assertSame('Something New', $fixture[0]->getDateSurv());
+        self::assertSame('2023-02-01', $fixture[0]->getDateSurv()->format('Y-m-d'));
         self::assertSame('Something New', $fixture[0]->getObservation());
-        self::assertSame('Something New', $fixture[0]->getIdZone());
+        self::assertSame($zonep->getIdZone(), $fixture[0]->getZonep()->getIdZone());
 
         $this->markTestIncomplete('This test was generated');
     }
 
     public function testRemove(): void
     {
+        $zonep = new Zonep();
+        $zonep->setNomZone('Test Zone');
+        $zonep->setCategorieZone('Test Category');
+        $this->manager->persist($zonep);
+
         $fixture = new Survzone();
-        $fixture->setDateSurv('Value');
+        $fixture->setDateSurv(new \DateTime('2023-01-01'));
         $fixture->setObservation('Value');
-        $fixture->setIdZone('Value');
+        $fixture->setZonep($zonep);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
