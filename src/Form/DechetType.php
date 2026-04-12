@@ -20,45 +20,57 @@ class DechetType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de déchet',
                 'choices' => [
-                    'Plastique' => 'plastique',
-                    'Verre' => 'verre',
-                    'Métal' => 'metal',
-                    'Organique' => 'organique',
-                    'Papier' => 'papier',
-                    'Autre' => 'autre',
+                    '♻️ Plastique' => 'plastique',
+                    '🧴 Verre' => 'verre',
+                    '🔩 Métal' => 'metal',
+                    '🍃 Organique' => 'organique',
+                    '📄 Papier' => 'papier',
+                    '🗑️ Autre' => 'autre',
                 ],
-                'placeholder' => 'Choisir un type'
+                'placeholder' => 'Choisir un type',
+                'attr' => [
+                    'class' => 'form-input'
+                ]
             ])
             ->add('quantite', NumberType::class, [
                 'label' => 'Quantité',
                 'attr' => [
-                    'placeholder' => 'Entrer la quantité'
+                    'placeholder' => 'Entrer la quantité',
+                    'class' => 'form-input'
                 ]
             ])
             ->add('zone', TextType::class, [
                 'label' => 'Localisation / plage',
                 'attr' => [
-                    'placeholder' => 'Entrer la zone ou la plage'
+                    'placeholder' => 'Entrer la zone ou la plage',
+                    'class' => 'form-input'
                 ]
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description du signalement',
                 'attr' => [
-                    'placeholder' => 'Décrire le déchet ou la situation'
+                    'placeholder' => 'Décrire le déchet ou la situation',
+                    'class' => 'form-input'
                 ]
             ])
             ->add('dateSignalement', DateType::class, [
                 'label' => 'Date de signalement',
-                'widget' => 'single_text'
+                'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'form-input'
+                ]
             ])
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
-                    'Signalé' => 'signale',
-                    'En cours' => 'en_cours',
-                    'Traité' => 'traite',
+                    '🚨 Signalé' => 'signale',
+                    '⏳ En cours' => 'en_cours',
+                    '✅ Traité' => 'traite',
                 ],
-                'placeholder' => 'Choisir un statut'
+                'placeholder' => 'Choisir un statut',
+                'attr' => [
+                    'class' => 'form-input'
+                ]
             ]);
     }
 
