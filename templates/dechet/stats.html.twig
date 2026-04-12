@@ -7,24 +7,38 @@
         <div class="card-header">
             <div>
                 <h2 class="card-title">Statistiques pollution</h2>
-                <p class="card-subtitle">Vue d’ensemble des signalements de déchets sur les plages.</p>
+                <p class="card-subtitle">Vue d’ensemble moderne des signalements de déchets.</p>
             </div>
-            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <div class="btn-group">
+                <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
+                <a href="{{ path('app_dechet_export_csv') }}" class="btn btn-secondary">Exporter CSV</a>
+                <button onclick="window.print()" class="btn btn-primary" type="button">Imprimer</button>
+            </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper" style="margin-bottom: 20px;">
             <table class="data-table">
-                <tbody>
+                <thead>
                     <tr>
                         <th>Total des signalements</th>
-                        <td>{{ totalDechets }}</td>
-                    </tr>
-                    <tr>
                         <th>Quantité totale signalée</th>
+                        <th>Type le plus fréquent</th>
+                        <th>Zone la plus touchée</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ totalDechets }}</td>
                         <td>{{ totalQuantite }}</td>
+                        <td>{{ topType }}</td>
+                        <td>{{ topZone }}</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 20px;">
+            <canvas id="dechetChart" height="100"></canvas>
         </div>
 
         <div class="table-wrapper" style="margin-top: 20px;">
@@ -99,4 +113,27 @@
             </table>
         </div>
     </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('dechetChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ chartLabels|json_encode|raw }},
+                    datasets: [{
+                        label: 'Déchets par type',
+                        data: {{ chartValues|json_encode|raw }}
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+    </script>
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\DechetRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class DechetStatsController extends AbstractController
@@ -32,12 +33,55 @@ final class DechetStatsController extends AbstractController
             $parStatut[$statut] = ($parStatut[$statut] ?? 0) + 1;
         }
 
+        arsort($parType);
+        arsort($parZone);
+        arsort($parStatut);
+
+        $topType = !empty($parType) ? array_key_first($parType) : 'Aucune donnée';
+        $topZone = !empty($parZone) ? array_key_first($parZone) : 'Aucune donnée';
+
+        $chartLabels = array_keys($parType);
+        $chartValues = array_values($parType);
+
         return $this->render('dechet/stats.html.twig', [
             'totalDechets' => $totalDechets,
             'totalQuantite' => $totalQuantite,
             'parType' => $parType,
             'parZone' => $parZone,
             'parStatut' => $parStatut,
+            'topType' => $topType,
+            'topZone' => $topZone,
+            'chartLabels' => $chartLabels,
+            'chartValues' => $chartValues,
         ]);
+    }
+
+    #[Route('/dechet/export/csv', name: 'app_dechet_export_csv', methods: ['GET'])]
+    public function exportCsv(DechetRepository $dechetRepository): StreamedResponse
+    {
+        $response = new StreamedResponse(function () use ($dechetRepository) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, ['ID', 'Type', 'Quantite', 'Zone', 'Description', 'Date signalement', 'Statut']);
+
+            foreach ($dechetRepository->findAll() as $dechet) {
+                fputcsv($handle, [
+                    $dechet->getIdDechet(),
+                    $dechet->getType(),
+                    $dechet->getQuantite(),
+                    $dechet->getZone(),
+                    $dechet->getDescription(),
+                    $dechet->getDateSignalement()?->format('Y-m-d'),
+                    $dechet->getStatut(),
+                ]);
+            }
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="dechets.csv"');
+
+        return $response;
     }
 }

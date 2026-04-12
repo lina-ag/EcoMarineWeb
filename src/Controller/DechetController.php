@@ -21,6 +21,8 @@ final class DechetController extends AbstractController
         $type = trim((string) $request->query->get('type', ''));
         $statut = trim((string) $request->query->get('statut', ''));
         $zone = trim((string) $request->query->get('zone', ''));
+        $sort = trim((string) $request->query->get('sort', 'date'));
+        $direction = strtolower(trim((string) $request->query->get('direction', 'desc'))) === 'asc' ? 'asc' : 'desc';
 
         $dechets = $dechetRepository->findAll();
 
@@ -53,10 +55,47 @@ final class DechetController extends AbstractController
             return true;
         }));
 
+        usort($dechets, function (Dechet $a, Dechet $b) use ($sort, $direction) {
+            $valueA = null;
+            $valueB = null;
+
+            switch ($sort) {
+                case 'type':
+                    $valueA = mb_strtolower($a->getType() ?? '');
+                    $valueB = mb_strtolower($b->getType() ?? '');
+                    break;
+                case 'quantite':
+                    $valueA = $a->getQuantite() ?? 0;
+                    $valueB = $b->getQuantite() ?? 0;
+                    break;
+                case 'statut':
+                    $valueA = mb_strtolower($a->getStatut() ?? '');
+                    $valueB = mb_strtolower($b->getStatut() ?? '');
+                    break;
+                case 'zone':
+                    $valueA = mb_strtolower($a->getZone() ?? '');
+                    $valueB = mb_strtolower($b->getZone() ?? '');
+                    break;
+                case 'date':
+                default:
+                    $valueA = $a->getDateSignalement()?->format('Y-m-d') ?? '';
+                    $valueB = $b->getDateSignalement()?->format('Y-m-d') ?? '';
+                    break;
+            }
+
+            $result = $valueA <=> $valueB;
+            return $direction === 'asc' ? $result : -$result;
+        });
+
         $totalSignalements = count($dechets);
         $totalQuantite = 0;
         $zones = [];
         $pollutionElevee = 0;
+        $statusCounts = [
+            'signale' => 0,
+            'en_cours' => 0,
+            'traite' => 0,
+        ];
 
         foreach ($dechets as $dechet) {
             $quantite = $dechet->getQuantite() ?? 0;
@@ -70,6 +109,11 @@ final class DechetController extends AbstractController
             if ($quantite > 15) {
                 $pollutionElevee++;
             }
+
+            $currentStatut = $dechet->getStatut();
+            if (isset($statusCounts[$currentStatut])) {
+                $statusCounts[$currentStatut]++;
+            }
         }
 
         return $this->render('dechet/index.html.twig', [
@@ -79,6 +123,8 @@ final class DechetController extends AbstractController
                 'type' => $type,
                 'statut' => $statut,
                 'zone' => $zone,
+                'sort' => $sort,
+                'direction' => $direction,
             ],
             'statsCards' => [
                 'totalSignalements' => $totalSignalements,
@@ -86,6 +132,7 @@ final class DechetController extends AbstractController
                 'zonesTouchees' => count($zones),
                 'pollutionElevee' => $pollutionElevee,
             ],
+            'statusCounts' => $statusCounts,
         ]);
     }
 
@@ -99,6 +146,8 @@ final class DechetController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($dechet);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Signalement ajouté avec succès.');
 
             return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -126,6 +175,8 @@ final class DechetController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', 'Signalement mis à jour avec succès.');
+
             return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -141,6 +192,7 @@ final class DechetController extends AbstractController
         if ($this->isCsrfTokenValid('traiter' . $dechet->getId_dechet(), $request->request->get('_token'))) {
             $dechet->setStatut('traite');
             $entityManager->flush();
+            $this->addFlash('success', 'Le signalement a été marqué comme traité.');
         }
 
         return $this->redirectToRoute('app_dechet_index', $request->query->all(), Response::HTTP_SEE_OTHER);
@@ -152,6 +204,7 @@ final class DechetController extends AbstractController
         if ($this->isCsrfTokenValid('delete' . $dechet->getId_dechet(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($dechet);
             $entityManager->flush();
+            $this->addFlash('success', 'Le signalement a été supprimé.');
         }
 
         return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
