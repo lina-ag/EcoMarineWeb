@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques Déchets{% endblock %}
+
+{% block body %}
+    <section class="glass-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Statistiques pollution</h2>
+                <p class="card-subtitle">Vue d’ensemble des signalements de déchets sur les plages.</p>
+            </div>
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <th>Total des signalements</th>
+                        <td>{{ totalDechets }}</td>
+                    </tr>
+                    <tr>
+                        <th>Quantité totale signalée</th>
+                        <td>{{ totalQuantite }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: 20px;">
+            <h3>Répartition par type</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type, nombre in parType %}
+                        <tr>
+                            <td>{{ type }}</td>
+                            <td>{{ nombre }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="2">Aucune donnée.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: 20px;">
+            <h3>Répartition par zone</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for zone, nombre in parZone %}
+                        <tr>
+                            <td>{{ zone }}</td>
+                            <td>{{ nombre }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="2">Aucune donnée.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: 20px;">
+            <h3>Répartition par statut</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Statut</th>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for statut, nombre in parStatut %}
+                        <tr>
+                            <td>{{ statut }}</td>
+                            <td>{{ nombre }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="2">Aucune donnée.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

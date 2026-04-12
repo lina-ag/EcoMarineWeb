@@ -42,7 +42,7 @@ final class DechetController extends AbstractController
         ]);
     }
 
-    #[Route('/{id_dechet}', name: 'app_dechet_show', methods: ['GET'])]
+    #[Route('/{id_dechet<\d+>}', name: 'app_dechet_show', methods: ['GET'])]
     public function show(Dechet $dechet): Response
     {
         return $this->render('dechet/show.html.twig', [
@@ -50,7 +50,7 @@ final class DechetController extends AbstractController
         ]);
     }
 
-    #[Route('/{id_dechet}/edit', name: 'app_dechet_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id_dechet<\d+>}/edit', name: 'app_dechet_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(DechetType::class, $dechet);
@@ -68,10 +68,10 @@ final class DechetController extends AbstractController
         ]);
     }
 
-    #[Route('/{id_dechet}', name: 'app_dechet_delete', methods: ['POST'])]
+    #[Route('/{id_dechet<\d+>}', name: 'app_dechet_delete', methods: ['POST'])]
     public function delete(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$dechet->getId_dechet(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $dechet->getId_dechet(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($dechet);
             $entityManager->flush();
         }
