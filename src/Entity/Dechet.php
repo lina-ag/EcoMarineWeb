@@ -2,12 +2,9 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\DechetRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DechetRepository::class)]
 #[ORM\Table(name: 'dechet')]
@@ -17,6 +14,31 @@ class Dechet
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id_dechet = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank(message: "Le type de déchet est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Le type de déchet doit contenir au moins 3 caractères.",
+        maxMessage: "Le type de déchet ne doit pas dépasser 255 caractères."
+    )]
+    private ?string $type = null;
+
+    #[ORM\Column(type: 'float', nullable: false)]
+    #[Assert\NotNull(message: "La quantité est obligatoire.")]
+    #[Assert\Positive(message: "La quantité doit être supérieure à 0.")]
+    private ?float $quantite = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank(message: "La zone est obligatoire.")]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: "La zone doit contenir au moins 2 caractères.",
+        maxMessage: "La zone ne doit pas dépasser 255 caractères."
+    )]
+    private ?string $zone = null;
 
     public function getId_dechet(): ?int
     {
@@ -29,9 +51,6 @@ class Dechet
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $type = null;
-
     public function getType(): ?string
     {
         return $this->type;
@@ -43,9 +62,6 @@ class Dechet
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $quantite = null;
-
     public function getQuantite(): ?float
     {
         return $this->quantite;
@@ -56,9 +72,6 @@ class Dechet
         $this->quantite = $quantite;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $zone = null;
 
     public function getZone(): ?string
     {
@@ -75,5 +88,4 @@ class Dechet
     {
         return $this->id_dechet;
     }
-
 }

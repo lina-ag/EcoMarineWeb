@@ -1,8 +1,7 @@
-{% extends 'base.html.twig' %}
-
+{% extends 'base_admin.html.twig' %}
 {% block title %}ActionNettoyage{% endblock %}
 
-{% block body %}
+{% block admin_content %}
     <section class="glass-card">
         <div class="card-header">
             <div>
@@ -14,9 +13,36 @@
         <div class="table-wrapper">
             <table class="data-table">
                 <tbody>
-                    <tr><th>Id</th><td>{{ action_nettoyage.idAction }}</td></tr>
-                    <tr><th>Date</th><td>{{ action_nettoyage.dateAction }}</td></tr>
-                    <tr><th>Lieu</th><td>{{ action_nettoyage.lieu }}</td></tr>
+                    <tr>
+                        <th>Id</th>
+                        <td>{{ action_nettoyage.idAction }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date</th>
+                        <td>{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('Y-m-d') : '' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Lieu</th>
+                        <td>{{ action_nettoyage.lieu }}</td>
+                    </tr>
+                    <tr>
+                        <th>Limite bénévoles</th>
+                        <td>{{ action_nettoyage.limiteBenevoles }}</td>
+                    </tr>
+                    <tr>
+                        <th>Participants</th>
+                        <td>{{ action_nettoyage.nombreVolontaires }}</td>
+                    </tr>
+                    <tr>
+                        <th>Statut</th>
+                        <td>
+                            {% if action_nettoyage.estComplete %}
+                                Complète
+                            {% else %}
+                                Disponible
+                            {% endif %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
