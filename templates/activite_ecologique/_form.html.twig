@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'activity-form'}}) }}
+{{ form_start(form, {'attr': {'class': 'activity-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nom_activite, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -27,7 +27,9 @@
 
     <div class="btn-group">
         <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
-        <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        {% if show_back_button|default(true) %}
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        {% endif %}
     </div>
 
     {{ form_rest(form) }}
