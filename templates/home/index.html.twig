@@ -2,6 +2,170 @@
 
 {% block title %}EcoMarine - Écotourisme à Kuriat{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 36px;
+        }
+
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 2.3rem;
+            margin-bottom: .4rem;
+            color: #ffffff;
+        }
+
+        .card-subtitle {
+            color: rgba(255, 255, 255, 0.78);
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .form-group-settings.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #f5f7ff;
+        }
+
+        .form-input {
+            width: 100%;
+            min-height: 52px;
+            padding: 1rem 1.1rem;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 18px;
+            color: #ffffff;
+            transition: all 0.25s ease;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .form-input:focus,
+        .form-input:focus-visible {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+        }
+
+        textarea.form-input {
+            min-height: 170px;
+            resize: vertical;
+        }
+
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.68);
+            opacity: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
+            border: none;
+            color: #ffffff;
+            padding: 1rem 1.6rem;
+            border-radius: 16px;
+            min-width: 180px;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 18px 30px rgba(22, 194, 226, 0.22);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 40px rgba(22, 194, 226, 0.28);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .form-errors,
+        .form-errors li {
+            color: #ffccd5;
+            margin-top: 0.35rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Styles pour les select/dropdown */
+        .form-input[type="select"],
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+        }
+
+        select.form-input option {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            padding: 0.75rem;
+        }
+
+        select.form-input option:checked {
+            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
+            background-color: #5268e4;
+            color: #ffffff;
+        }
+
+        select.form-input option:hover {
+            background-color: #2d2d44;
+        }
+
+        @media (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .glass-card {
+                padding: 28px;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 
 <div id="video">
@@ -39,6 +203,8 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
+                                <li data-menuanchor="slide08"><a href="#slide08">Ajouter zone</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Surveillance</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -408,6 +574,92 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 08 — Ajouter Zone -->
+        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle zone</span>
+                            <h2>Ajouter une zone protégée</h2>
+                        </div>
+                        <section class="glass-card animate" data-animate="fadeInUp">
+                            {{ form_start(zonepForm) }}
+                                <div class="form-grid">
+                                    <div class="form-group-settings">
+                                        {{ form_label(zonepForm.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.nomZone, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Zone Kuriat Nord'}}) }}
+                                        {{ form_errors(zonepForm.nomZone) }}
+                                    </div>
+
+                                    <div class="form-group-settings">
+                                        {{ form_label(zonepForm.categorieZone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.categorieZone, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Protection'}}) }}
+                                        {{ form_errors(zonepForm.categorieZone) }}
+                                    </div>
+
+                                    <div class="form-group-settings full-width">
+                                        {{ form_label(zonepForm.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.status, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(zonepForm.status) }}
+                                    </div>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button class="btn btn-primary" type="submit">Ajouter la zone</button>
+                                </div>
+
+                                {{ form_rest(zonepForm) }}
+                            {{ form_end(zonepForm) }}
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 09 — Surveillance -->
+        <div class="section animated-row" data-section="slide09" data-anchor="slide09">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle surveillance</span>
+                            <h2>Ajouter un suivi de zone</h2>
+                        </div>
+                        <section class="glass-card animate" data-animate="fadeInUp">
+                            {{ form_start(survzoneForm) }}
+                                <div class="form-grid">
+                                    <div class="form-group-settings">
+                                        {{ form_label(survzoneForm.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.dateSurv, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(survzoneForm.dateSurv) }}
+                                    </div>
+
+                                    <div class="form-group-settings">
+                                        {{ form_label(survzoneForm.zone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.zone, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(survzoneForm.zone) }}
+                                    </div>
+
+                                    <div class="form-group-settings full-width">
+                                        {{ form_label(survzoneForm.observation, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.observation, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Détails de la surveillance'}}) }}
+                                        {{ form_errors(survzoneForm.observation) }}
+                                    </div>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button class="btn btn-primary" type="submit">Ajouter la surveillance</button>
+                                </div>
+
+                                {{ form_rest(survzoneForm) }}
+                            {{ form_end(survzoneForm) }}
+                        </section>
                     </div>
                 </div>
             </div>
