@@ -12,8 +12,15 @@
             <div class="btn-group">
                 <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">+ Ajouter un signalement</a>
                 <a href="{{ path('app_dechet_stats') }}" class="btn btn-secondary">Statistiques</a>
+                <a href="{{ path('app_dechet_export_csv') }}" class="btn btn-secondary">Exporter CSV</a>
             </div>
         </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="glass-card" style="margin-bottom: 16px; border-left: 4px solid #22c55e;">
+                <strong>Succès :</strong> {{ message }}
+            </div>
+        {% endfor %}
 
         <div class="table-wrapper" style="margin-bottom: 24px;">
             <table class="data-table">
@@ -36,13 +43,30 @@
             </table>
         </div>
 
+        <div class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Signalé</th>
+                        <th>En cours</th>
+                        <th>Traité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ statusCounts.signale }}</td>
+                        <td>{{ statusCounts.en_cours }}</td>
+                        <td>{{ statusCounts.traite }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <form method="get" class="table-wrapper" style="margin-bottom: 24px;">
             <table class="data-table">
                 <tbody>
                     <tr>
-                        <td>
-                            <input type="text" name="q" value="{{ filters.q }}" placeholder="Recherche globale..." class="form-input">
-                        </td>
+                        <td><input type="text" name="q" value="{{ filters.q }}" placeholder="Recherche globale..." class="form-input"></td>
                         <td>
                             <select name="type" class="form-input">
                                 <option value="">Tous les types</option>
@@ -59,8 +83,21 @@
                                 {% endfor %}
                             </select>
                         </td>
+                        <td><input type="text" name="zone" value="{{ filters.zone }}" placeholder="Filtrer par zone..." class="form-input"></td>
                         <td>
-                            <input type="text" name="zone" value="{{ filters.zone }}" placeholder="Filtrer par zone..." class="form-input">
+                            <select name="sort" class="form-input">
+                                <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>Trier par date</option>
+                                <option value="type" {% if filters.sort == 'type' %}selected{% endif %}>Trier par type</option>
+                                <option value="quantite" {% if filters.sort == 'quantite' %}selected{% endif %}>Trier par quantité</option>
+                                <option value="zone" {% if filters.sort == 'zone' %}selected{% endif %}>Trier par zone</option>
+                                <option value="statut" {% if filters.sort == 'statut' %}selected{% endif %}>Trier par statut</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select name="direction" class="form-input">
+                                <option value="desc" {% if filters.direction == 'desc' %}selected{% endif %}>Desc</option>
+                                <option value="asc" {% if filters.direction == 'asc' %}selected{% endif %}>Asc</option>
+                            </select>
                         </td>
                         <td>
                             <button class="btn btn-primary" type="submit">Filtrer</button>
@@ -71,78 +108,82 @@
             </table>
         </form>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Type</th>
-                        <th>Quantité</th>
-                        <th>Zone</th>
-                        <th>Date</th>
-                        <th>Statut</th>
-                        <th>Niveau pollution</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for dechet in dechets %}
-                    {% set quantite = dechet.quantite ?? 0 %}
-                    {% set niveau = quantite <= 5 ? 'Faible' : (quantite <= 15 ? 'Moyenne' : 'Élevée') %}
-                    {% set typeIcon = {
-                        'plastique': '♻️',
-                        'verre': '🧴',
-                        'metal': '🔩',
-                        'organique': '🍃',
-                        'papier': '📄',
-                        'autre': '🗑️'
-                    }[dechet.type] ?? '🗑️' %}
+        {% if dechets is empty %}
+            <div class="glass-card" style="text-align:center;">
+                <h3>🗑️ Aucun signalement trouvé</h3>
+                <p>Commencez par ajouter un nouveau signalement de déchet.</p>
+                <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">Ajouter un signalement</a>
+            </div>
+        {% else %}
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Type</th>
+                            <th>Quantité</th>
+                            <th>Zone</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Niveau pollution</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for dechet in dechets %}
+                        {% set quantite = dechet.quantite ?? 0 %}
+                        {% set niveau = quantite <= 5 ? 'Faible' : (quantite <= 15 ? 'Moyenne' : 'Élevée') %}
+                        {% set typeIcon = {
+                            'plastique': '♻️',
+                            'verre': '🧴',
+                            'metal': '🔩',
+                            'organique': '🍃',
+                            'papier': '📄',
+                            'autre': '🗑️'
+                        }[dechet.type] ?? '🗑️' %}
 
-                    <tr>
-                        <td>{{ dechet.idDechet }}</td>
-                        <td>{{ typeIcon }} {{ dechet.type|capitalize }}</td>
-                        <td>{{ dechet.quantite }}</td>
-                        <td>{{ dechet.zone }}</td>
-                        <td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td>
-                        <td>
-                            {% if dechet.statut == 'signale' %}
-                                <span class="btn btn-secondary">Signalé</span>
-                            {% elseif dechet.statut == 'en_cours' %}
-                                <span class="btn btn-secondary">En cours</span>
-                            {% else %}
-                                <span class="btn btn-primary">Traité</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if niveau == 'Faible' %}
-                                <span class="btn btn-secondary">Faible</span>
-                            {% elseif niveau == 'Moyenne' %}
-                                <span class="btn btn-secondary">Moyenne</span>
-                            {% else %}
-                                <span class="btn btn-primary">Élevée</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">Voir</a>
-                                <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">Modifier</a>
-
-                                {% if dechet.statut != 'traite' %}
-                                    <form method="post" action="{{ path('app_dechet_traiter', {'id_dechet': dechet.id_dechet}) }}" style="display:inline-block;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('traiter' ~ dechet.id_dechet) }}">
-                                        <button class="btn btn-primary" type="submit">Marquer traité</button>
-                                    </form>
+                        <tr>
+                            <td>{{ dechet.idDechet }}</td>
+                            <td>{{ typeIcon }} {{ dechet.type|capitalize }}</td>
+                            <td>{{ dechet.quantite }}</td>
+                            <td>{{ dechet.zone }}</td>
+                            <td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td>
+                            <td>
+                                {% if dechet.statut == 'signale' %}
+                                    <span class="btn btn-secondary">Signalé</span>
+                                {% elseif dechet.statut == 'en_cours' %}
+                                    <span class="btn btn-secondary">En cours</span>
+                                {% else %}
+                                    <span class="btn btn-primary">Traité</span>
                                 {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="8">Aucun signalement trouvé.</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            </td>
+                            <td>
+                                {% if niveau == 'Faible' %}
+                                    <span class="btn btn-secondary">Faible</span>
+                                {% elseif niveau == 'Moyenne' %}
+                                    <span class="btn btn-secondary">Moyenne</span>
+                                {% else %}
+                                    <span class="btn btn-primary">Élevée</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">Voir</a>
+                                    <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">Modifier</a>
+
+                                    {% if dechet.statut != 'traite' %}
+                                        <form method="post" action="{{ path('app_dechet_traiter', {'id_dechet': dechet.id_dechet}) }}" style="display:inline-block;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('traiter' ~ dechet.id_dechet) }}">
+                                            <button class="btn btn-primary" type="submit">Marquer traité</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
     </section>
 {% endblock %}
