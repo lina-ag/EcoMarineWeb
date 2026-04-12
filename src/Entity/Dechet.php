@@ -16,29 +16,32 @@ class Dechet
     private ?int $id_dechet = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    #[Assert\NotBlank(message: "Le type de déchet est obligatoire.")]
-    #[Assert\Length(
-        min: 3,
-        max: 255,
-        minMessage: "Le type de déchet doit contenir au moins 3 caractères.",
-        maxMessage: "Le type de déchet ne doit pas dépasser 255 caractères."
-    )]
+    #[Assert\NotBlank(message: 'Le type de déchet est obligatoire.')]
+    #[Assert\Length(min: 3, max: 255)]
     private ?string $type = null;
 
     #[ORM\Column(type: 'float', nullable: false)]
-    #[Assert\NotNull(message: "La quantité est obligatoire.")]
-    #[Assert\Positive(message: "La quantité doit être supérieure à 0.")]
+    #[Assert\NotNull(message: 'La quantité est obligatoire.')]
+    #[Assert\Positive(message: 'La quantité doit être supérieure à 0.')]
     private ?float $quantite = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    #[Assert\NotBlank(message: "La zone est obligatoire.")]
-    #[Assert\Length(
-        min: 2,
-        max: 255,
-        minMessage: "La zone doit contenir au moins 2 caractères.",
-        maxMessage: "La zone ne doit pas dépasser 255 caractères."
-    )]
+    #[Assert\NotBlank(message: 'La zone est obligatoire.')]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $zone = null;
+
+    #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'La description est obligatoire.')]
+    #[Assert\Length(min: 5)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotNull(message: 'La date de signalement est obligatoire.')]
+    private ?\DateTimeInterface $dateSignalement = null;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: false)]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    private ?string $statut = null;
 
     public function getId_dechet(): ?int
     {
@@ -49,6 +52,11 @@ class Dechet
     {
         $this->id_dechet = $id_dechet;
         return $this;
+    }
+
+    public function getIdDechet(): ?int
+    {
+        return $this->id_dechet;
     }
 
     public function getType(): ?string
@@ -84,8 +92,36 @@ class Dechet
         return $this;
     }
 
-    public function getIdDechet(): ?int
+    public function getDescription(): ?string
     {
-        return $this->id_dechet;
+        return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getDateSignalement(): ?\DateTimeInterface
+    {
+        return $this->dateSignalement;
+    }
+
+    public function setDateSignalement(\DateTimeInterface $dateSignalement): self
+    {
+        $this->dateSignalement = $dateSignalement;
+        return $this;
+    }
+
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(string $statut): self
+    {
+        $this->statut = $statut;
+        return $this;
     }
 }
