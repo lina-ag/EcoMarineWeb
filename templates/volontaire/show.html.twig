@@ -1,9 +1,8 @@
-{% extends 'base.html.twig' %}
-
+{% extends 'base_admin.html.twig' %}
 {% block title %}Volontaire{% endblock %}
 
-{% block body %}
-    <section class="glass-card">
+{% block admin_content %}
+        <section class="glass-card">
         <div class="card-header">
             <div>
                 <h2 class="card-title">Volontaire #{{ volontaire.idVolontaire }}</h2>
@@ -14,10 +13,28 @@
         <div class="table-wrapper">
             <table class="data-table">
                 <tbody>
-                    <tr><th>Id</th><td>{{ volontaire.idVolontaire }}</td></tr>
-                    <tr><th>Nom</th><td>{{ volontaire.nom }}</td></tr>
-                    <tr><th>Contact</th><td>{{ volontaire.contact }}</td></tr>
-                    <tr><th>Id action</th><td>{{ volontaire.idAction }}</td></tr>
+                    <tr>
+                        <th>Id</th>
+                        <td>{{ volontaire.idVolontaire }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nom</th>
+                        <td>{{ volontaire.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact</th>
+                        <td>{{ volontaire.contact }}</td>
+                    </tr>
+                    <tr>
+                        <th>Action</th>
+                        <td>
+                            {% if volontaire.idAction %}
+                                {{ volontaire.idAction.lieu }} - {{ volontaire.idAction.dateAction|date('Y-m-d') }}
+                            {% else %}
+                                Aucune
+                            {% endif %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
