@@ -4,10 +4,8 @@ namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\SurvzoneRepository;
+use App\Entity\Zonep;
 
 #[ORM\Entity(repositoryClass: SurvzoneRepository::class)]
 #[ORM\Table(name: 'survzone')]
@@ -57,18 +55,18 @@ class Survzone
         return $this;
     }
 
-    #[ORM\Column(name: 'idZone', type: 'integer', nullable: false)]
-    private ?int $idZone = null;
+    #[ORM\ManyToOne(targetEntity: Zonep::class)]
+    #[ORM\JoinColumn(name: "idZone", referencedColumnName: "idZone", nullable: false)]
+    private ?Zonep $zone = null;
 
-    public function getIdZone(): ?int
+    public function getZone(): ?Zonep
     {
-        return $this->idZone;
+        return $this->zone;
     }
 
-    public function setIdZone(int $idZone): self
+    public function setZone(?Zonep $zone): self
     {
-        $this->idZone = $idZone;
+        $this->zone = $zone;
         return $this;
     }
-
 }
