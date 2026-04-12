@@ -70,33 +70,36 @@
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;">
                 <input type="text" name="q" value="{{ filters.q }}" placeholder="Recherche globale..." class="form-input">
 
-                <select name="type" class="form-input">
-                    <option value="">Tous les types</option>
-                    {% for t in ['plastique', 'verre', 'metal', 'organique', 'papier', 'autre'] %}
-                        <option value="{{ t }}" {% if filters.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
-                    {% endfor %}
+                <select name="type" class="form-input" style="color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;">
+                    <option value="">🧩 Tous les types</option>
+                    <option value="plastique" {% if filters.type == 'plastique' %}selected{% endif %}>♻️ Plastique</option>
+                    <option value="verre" {% if filters.type == 'verre' %}selected{% endif %}>🧴 Verre</option>
+                    <option value="metal" {% if filters.type == 'metal' %}selected{% endif %}>🔩 Métal</option>
+                    <option value="organique" {% if filters.type == 'organique' %}selected{% endif %}>🍃 Organique</option>
+                    <option value="papier" {% if filters.type == 'papier' %}selected{% endif %}>📄 Papier</option>
+                    <option value="autre" {% if filters.type == 'autre' %}selected{% endif %}>🗑️ Autre</option>
                 </select>
 
-                <select name="statut" class="form-input">
-                    <option value="">Tous les statuts</option>
-                    {% for s in ['signale', 'en_cours', 'traite'] %}
-                        <option value="{{ s }}" {% if filters.statut == s %}selected{% endif %}>{{ s|replace({'_':' '})|capitalize }}</option>
-                    {% endfor %}
+                <select name="statut" class="form-input" style="color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;">
+                    <option value="">📌 Tous les statuts</option>
+                    <option value="signale" {% if filters.statut == 'signale' %}selected{% endif %}>🚨 Signalé</option>
+                    <option value="en_cours" {% if filters.statut == 'en_cours' %}selected{% endif %}>⏳ En cours</option>
+                    <option value="traite" {% if filters.statut == 'traite' %}selected{% endif %}>✅ Traité</option>
                 </select>
 
                 <input type="text" name="zone" value="{{ filters.zone }}" placeholder="Filtrer par zone..." class="form-input">
 
-                <select name="sort" class="form-input">
-                    <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>Trier par date</option>
-                    <option value="type" {% if filters.sort == 'type' %}selected{% endif %}>Trier par type</option>
-                    <option value="quantite" {% if filters.sort == 'quantite' %}selected{% endif %}>Trier par quantité</option>
-                    <option value="zone" {% if filters.sort == 'zone' %}selected{% endif %}>Trier par zone</option>
-                    <option value="statut" {% if filters.sort == 'statut' %}selected{% endif %}>Trier par statut</option>
+                <select name="sort" class="form-input" style="color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;">
+                    <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>📅 Trier par date</option>
+                    <option value="type" {% if filters.sort == 'type' %}selected{% endif %}>🧩 Trier par type</option>
+                    <option value="quantite" {% if filters.sort == 'quantite' %}selected{% endif %}>📦 Trier par quantité</option>
+                    <option value="zone" {% if filters.sort == 'zone' %}selected{% endif %}>🏖️ Trier par zone</option>
+                    <option value="statut" {% if filters.sort == 'statut' %}selected{% endif %}>📌 Trier par statut</option>
                 </select>
 
-                <select name="direction" class="form-input">
-                    <option value="desc" {% if filters.direction == 'desc' %}selected{% endif %}>Desc</option>
-                    <option value="asc" {% if filters.direction == 'asc' %}selected{% endif %}>Asc</option>
+                <select name="direction" class="form-input" style="color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;">
+                    <option value="desc" {% if filters.direction == 'desc' %}selected{% endif %}>⬇️ Desc</option>
+                    <option value="asc" {% if filters.direction == 'asc' %}selected{% endif %}>⬆️ Asc</option>
                 </select>
             </div>
 
