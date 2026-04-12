@@ -1,13 +1,24 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dechet{% endblock %}
+{% block title %}Détail du déchet{% endblock %}
 
 {% block body %}
+    {% set quantite = dechet.quantite ?? 0 %}
+    {% set niveau = quantite <= 5 ? 'Faible' : (quantite <= 15 ? 'Moyenne' : 'Élevée') %}
+    {% set typeIcon = {
+        'plastique': '♻️',
+        'verre': '🧴',
+        'metal': '🔩',
+        'organique': '🍃',
+        'papier': '📄',
+        'autre': '🗑️'
+    }[dechet.type] ?? '🗑️' %}
+
     <section class="glass-card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Dechet #{{ dechet.idDechet }}</h2>
-                <p class="card-subtitle">Detail du dechet recense.</p>
+                <h2 class="card-title">Signalement #{{ dechet.idDechet }}</h2>
+                <p class="card-subtitle">Vue détaillée du signalement.</p>
             </div>
         </div>
 
@@ -15,16 +26,50 @@
             <table class="data-table">
                 <tbody>
                     <tr><th>Id</th><td>{{ dechet.idDechet }}</td></tr>
-                    <tr><th>Type</th><td>{{ dechet.type }}</td></tr>
-                    <tr><th>Quantite</th><td>{{ dechet.quantite }}</td></tr>
+                    <tr><th>Type</th><td>{{ typeIcon }} {{ dechet.type|capitalize }}</td></tr>
+                    <tr><th>Quantité</th><td>{{ dechet.quantite }}</td></tr>
                     <tr><th>Zone</th><td>{{ dechet.zone }}</td></tr>
+                    <tr><th>Description</th><td>{{ dechet.description }}</td></tr>
+                    <tr><th>Date de signalement</th><td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td></tr>
+                    <tr>
+                        <th>Statut</th>
+                        <td>
+                            {% if dechet.statut == 'signale' %}
+                                <span class="btn btn-secondary">Signalé</span>
+                            {% elseif dechet.statut == 'en_cours' %}
+                                <span class="btn btn-secondary">En cours</span>
+                            {% else %}
+                                <span class="btn btn-primary">Traité</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Niveau pollution</th>
+                        <td>
+                            {% if niveau == 'Faible' %}
+                                <span class="btn btn-secondary">Faible</span>
+                            {% elseif niveau == 'Moyenne' %}
+                                <span class="btn btn-secondary">Moyenne</span>
+                            {% else %}
+                                <span class="btn btn-primary">Élevée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="btn-group">
-            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">back to list</a>
-            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">edit</a>
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">Modifier</a>
+
+            {% if dechet.statut != 'traite' %}
+                <form method="post" action="{{ path('app_dechet_traiter', {'id_dechet': dechet.id_dechet}) }}" style="display:inline-block;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('traiter' ~ dechet.id_dechet) }}">
+                    <button class="btn btn-primary" type="submit">Marquer traité</button>
+                </form>
+            {% endif %}
+
             {{ include('dechet/_delete_form.html.twig') }}
         </div>
     </section>

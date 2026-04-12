@@ -1,16 +1,75 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dechet index{% endblock %}
+{% block title %}Gestion des déchets{% endblock %}
 
 {% block body %}
     <section class="glass-card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Dechets</h2>
-                <p class="card-subtitle">Suivi des dechets recenses par zone.</p>
+                <h2 class="card-title">Gestion des déchets</h2>
+                <p class="card-subtitle">Suivi moderne des signalements sur les plages.</p>
             </div>
-            <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">Create new</a>
+            <div class="btn-group">
+                <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">+ Ajouter un signalement</a>
+                <a href="{{ path('app_dechet_stats') }}" class="btn btn-secondary">Statistiques</a>
+            </div>
         </div>
+
+        <div class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Total signalements</th>
+                        <th>Quantité totale</th>
+                        <th>Zones touchées</th>
+                        <th>Pollution élevée</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ statsCards.totalSignalements }}</td>
+                        <td>{{ statsCards.totalQuantite }}</td>
+                        <td>{{ statsCards.zonesTouchees }}</td>
+                        <td>{{ statsCards.pollutionElevee }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <form method="get" class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="text" name="q" value="{{ filters.q }}" placeholder="Recherche globale..." class="form-input">
+                        </td>
+                        <td>
+                            <select name="type" class="form-input">
+                                <option value="">Tous les types</option>
+                                {% for t in ['plastique', 'verre', 'metal', 'organique', 'papier', 'autre'] %}
+                                    <option value="{{ t }}" {% if filters.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select name="statut" class="form-input">
+                                <option value="">Tous les statuts</option>
+                                {% for s in ['signale', 'en_cours', 'traite'] %}
+                                    <option value="{{ s }}" {% if filters.statut == s %}selected{% endif %}>{{ s|replace({'_':' '})|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="zone" value="{{ filters.zone }}" placeholder="Filtrer par zone..." class="form-input">
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" type="submit">Filtrer</button>
+                            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Réinitialiser</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
 
         <div class="table-wrapper">
             <table class="data-table">
@@ -18,26 +77,68 @@
                     <tr>
                         <th>Id</th>
                         <th>Type</th>
-                        <th>Quantite</th>
+                        <th>Quantité</th>
                         <th>Zone</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Niveau pollution</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for dechet in dechets %}
+                    {% set quantite = dechet.quantite ?? 0 %}
+                    {% set niveau = quantite <= 5 ? 'Faible' : (quantite <= 15 ? 'Moyenne' : 'Élevée') %}
+                    {% set typeIcon = {
+                        'plastique': '♻️',
+                        'verre': '🧴',
+                        'metal': '🔩',
+                        'organique': '🍃',
+                        'papier': '📄',
+                        'autre': '🗑️'
+                    }[dechet.type] ?? '🗑️' %}
+
                     <tr>
                         <td>{{ dechet.idDechet }}</td>
-                        <td>{{ dechet.type }}</td>
+                        <td>{{ typeIcon }} {{ dechet.type|capitalize }}</td>
                         <td>{{ dechet.quantite }}</td>
                         <td>{{ dechet.zone }}</td>
+                        <td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td>
                         <td>
-                            <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">edit</a>
+                            {% if dechet.statut == 'signale' %}
+                                <span class="btn btn-secondary">Signalé</span>
+                            {% elseif dechet.statut == 'en_cours' %}
+                                <span class="btn btn-secondary">En cours</span>
+                            {% else %}
+                                <span class="btn btn-primary">Traité</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if niveau == 'Faible' %}
+                                <span class="btn btn-secondary">Faible</span>
+                            {% elseif niveau == 'Moyenne' %}
+                                <span class="btn btn-secondary">Moyenne</span>
+                            {% else %}
+                                <span class="btn btn-primary">Élevée</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">Voir</a>
+                                <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">Modifier</a>
+
+                                {% if dechet.statut != 'traite' %}
+                                    <form method="post" action="{{ path('app_dechet_traiter', {'id_dechet': dechet.id_dechet}) }}" style="display:inline-block;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('traiter' ~ dechet.id_dechet) }}">
+                                        <button class="btn btn-primary" type="submit">Marquer traité</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5">no records found</td>
+                        <td colspan="8">Aucun signalement trouvé.</td>
                     </tr>
                 {% endfor %}
                 </tbody>

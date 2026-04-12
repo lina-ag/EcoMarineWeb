@@ -15,10 +15,77 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DechetController extends AbstractController
 {
     #[Route(name: 'app_dechet_index', methods: ['GET'])]
-    public function index(DechetRepository $dechetRepository): Response
+    public function index(Request $request, DechetRepository $dechetRepository): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
+        $type = trim((string) $request->query->get('type', ''));
+        $statut = trim((string) $request->query->get('statut', ''));
+        $zone = trim((string) $request->query->get('zone', ''));
+
+        $dechets = $dechetRepository->findAll();
+
+        $dechets = array_values(array_filter($dechets, function (Dechet $dechet) use ($q, $type, $statut, $zone) {
+            if ($q !== '') {
+                $haystack = mb_strtolower(
+                    ($dechet->getType() ?? '') . ' ' .
+                    ($dechet->getZone() ?? '') . ' ' .
+                    ($dechet->getDescription() ?? '') . ' ' .
+                    ($dechet->getStatut() ?? '')
+                );
+
+                if (!str_contains($haystack, mb_strtolower($q))) {
+                    return false;
+                }
+            }
+
+            if ($type !== '' && $dechet->getType() !== $type) {
+                return false;
+            }
+
+            if ($statut !== '' && $dechet->getStatut() !== $statut) {
+                return false;
+            }
+
+            if ($zone !== '' && !str_contains(mb_strtolower($dechet->getZone() ?? ''), mb_strtolower($zone))) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        $totalSignalements = count($dechets);
+        $totalQuantite = 0;
+        $zones = [];
+        $pollutionElevee = 0;
+
+        foreach ($dechets as $dechet) {
+            $quantite = $dechet->getQuantite() ?? 0;
+            $totalQuantite += $quantite;
+
+            $zoneName = trim((string) $dechet->getZone());
+            if ($zoneName !== '') {
+                $zones[$zoneName] = true;
+            }
+
+            if ($quantite > 15) {
+                $pollutionElevee++;
+            }
+        }
+
         return $this->render('dechet/index.html.twig', [
-            'dechets' => $dechetRepository->findAll(),
+            'dechets' => $dechets,
+            'filters' => [
+                'q' => $q,
+                'type' => $type,
+                'statut' => $statut,
+                'zone' => $zone,
+            ],
+            'statsCards' => [
+                'totalSignalements' => $totalSignalements,
+                'totalQuantite' => $totalQuantite,
+                'zonesTouchees' => count($zones),
+                'pollutionElevee' => $pollutionElevee,
+            ],
         ]);
     }
 
@@ -66,6 +133,17 @@ final class DechetController extends AbstractController
             'dechet' => $dechet,
             'form' => $form,
         ]);
+    }
+
+    #[Route('/{id_dechet<\d+>}/traiter', name: 'app_dechet_traiter', methods: ['POST'])]
+    public function traiter(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('traiter' . $dechet->getId_dechet(), $request->request->get('_token'))) {
+            $dechet->setStatut('traite');
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_dechet_index', $request->query->all(), Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id_dechet<\d+>}', name: 'app_dechet_delete', methods: ['POST'])]
