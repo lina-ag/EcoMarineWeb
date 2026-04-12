@@ -20,23 +20,18 @@ class DechetType extends AbstractType
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de déchet',
                 'choices' => [
-                    'Plastique' => 'plastique',
-                    'Verre' => 'verre',
-                    'Métal' => 'metal',
-                    'Organique' => 'organique',
-                    'Papier' => 'papier',
-                    'Autre' => 'autre',
+                    '♻️ Plastique' => 'plastique',
+                    '🧴 Verre' => 'verre',
+                    '🔩 Métal' => 'metal',
+                    '🍃 Organique' => 'organique',
+                    '📄 Papier' => 'papier',
+                    '🗑️ Autre' => 'autre',
                 ],
                 'placeholder' => 'Choisir un type',
                 'attr' => [
                     'class' => 'form-input',
-                    'style' => 'color:#ffffff;background:rgba(255,255,255,0.08);'
-                ],
-                'choice_attr' => function () {
-                    return [
-                        'style' => 'color:#111827;background:#ffffff;'
-                    ];
-                }
+                    'style' => 'color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;'
+                ]
             ])
             ->add('quantite', NumberType::class, [
                 'label' => 'Quantité',
@@ -69,20 +64,15 @@ class DechetType extends AbstractType
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
-                    'Signalé' => 'signale',
-                    'En cours' => 'en_cours',
-                    'Traité' => 'traite',
+                    '🚨 Signalé' => 'signale',
+                    '⏳ En cours' => 'en_cours',
+                    '✅ Traité' => 'traite',
                 ],
                 'placeholder' => 'Choisir un statut',
                 'attr' => [
                     'class' => 'form-input',
-                    'style' => 'color:#ffffff;background:rgba(255,255,255,0.08);'
-                ],
-                'choice_attr' => function () {
-                    return [
-                        'style' => 'color:#111827;background:#ffffff;'
-                    ];
-                }
+                    'style' => 'color:#ffffff;background:rgba(255,255,255,0.08);font-weight:600;'
+                ]
             ]);
     }
 
