@@ -250,6 +250,7 @@ a {
     padding-bottom: 30px;
     border-bottom: 1px solid var(--glass-border);
     margin-bottom: 30px;
+      
 }
 
 .logo {
@@ -329,8 +330,8 @@ a {
 }
 
 .nav-icon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     opacity: 0.8;
 }
 
@@ -606,9 +607,9 @@ a {
 }
 
 .stat-icon {
-    width: 55px;
-    height: 55px;
-    border-radius: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -635,8 +636,8 @@ a {
 }
 
 .stat-icon svg {
-    width: 26px;
-    height: 26px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Sparkline in stat card */
@@ -657,6 +658,176 @@ a {
     grid-template-columns: 2fr 1fr;
     gap: 24px;
     margin-bottom: 30px;
+}
+
+/* ============================================
+   BUSINESS DOMAIN BLOCKS
+============================================ */
+.business-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.business-card {
+    min-height: 220px;
+    position: relative;
+    overflow: hidden;
+    border-width: 1px;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.business-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.08), transparent 42%);
+}
+
+.business-card:hover {
+    transform: translateY(-4px);
+}
+
+.business-card-cyan:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 20px 40px -20px rgba(56, 189, 248, 0.4);
+}
+
+.business-card-magenta:hover {
+    border-color: rgba(167, 139, 250, 0.4);
+    box-shadow: 0 20px 40px -20px rgba(167, 139, 250, 0.4);
+}
+
+.business-card-purple:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: 0 20px 40px -20px rgba(6, 182, 212, 0.35);
+}
+
+.business-card-success:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 20px 40px -20px rgba(34, 197, 94, 0.35);
+}
+
+.business-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.business-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.business-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.business-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.business-header h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.business-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.business-badge {
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 5px 10px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.business-badge.cyan {
+    color: var(--emerald-light);
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+.business-badge.magenta {
+    color: var(--gold-light);
+    background: rgba(167, 139, 250, 0.12);
+    border-color: rgba(167, 139, 250, 0.25);
+}
+
+.business-badge.purple {
+    color: var(--coral);
+    background: rgba(6, 182, 212, 0.12);
+    border-color: rgba(6, 182, 212, 0.25);
+}
+
+.business-badge.success {
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.business-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.business-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+}
+
+.business-row-cyan {
+    box-shadow: inset 3px 0 0 rgba(56, 189, 248, 0.8);
+}
+
+.business-row-magenta {
+    box-shadow: inset 3px 0 0 rgba(167, 139, 250, 0.85);
+}
+
+.business-row-purple {
+    box-shadow: inset 3px 0 0 rgba(6, 182, 212, 0.9);
+}
+
+.business-row-success {
+    box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.85);
+}
+
+.business-label {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.business-value {
+    color: var(--text-primary);
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
 }
 
 /* ============================================
@@ -2056,6 +2227,10 @@ a {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .business-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
     
     .bottom-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -2097,6 +2272,10 @@ a {
     }
     
     .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .business-grid {
         grid-template-columns: 1fr;
     }
 
