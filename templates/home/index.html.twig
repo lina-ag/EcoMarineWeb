@@ -2,234 +2,16 @@
 
 {% block title %}EcoMarine - Écotourisme à Kuriat{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px;
-            padding: 36px;
-        }
-
-        .card-header {
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 2.3rem;
-            margin-bottom: .4rem;
-            color: #ffffff;
-        }
-
-        .card-subtitle {
-            color: rgba(255, 255, 255, 0.78);
-            line-height: 1.6;
-        }
-
-        .reservations-section {
-            margin-top: 0.75rem;
-        }
-
-        .form-card {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 20px;
-            padding: 1.35rem;
-            max-width: 760px;
-            margin: 0 auto;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .form-card h3 {
-            margin-bottom: 0.4rem;
-            color: #ffffff;
-            font-size: 1.3rem;
-        }
-
-        .form-subtitle {
-            margin-bottom: 1rem;
-            color: rgba(255, 255, 255, 0.78);
-            line-height: 1.55;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem;
-        }
-
-        .form-group-settings {
-            display: flex;
-            flex-direction: column;
-            gap: 0.45rem;
-        }
-
-        .form-group-settings.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            color: #f5f7ff;
-        }
-
-        .form-input {
-            width: 100%;
-            min-height: 46px;
-            padding: 0.75rem 0.95rem;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 14px;
-            color: #ffffff;
-            transition: all 0.25s ease;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-        }
-
-        .form-input:focus,
-        .form-input:focus-visible {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.18);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
-        }
-
-        textarea.form-input {
-            min-height: 125px;
-            resize: vertical;
-        }
-
-        ::placeholder {
-            color: rgba(255, 255, 255, 0.68);
-            opacity: 1;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-top: 1.2rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
-            border: none;
-            color: #ffffff;
-            padding: 0.8rem 1.35rem;
-            border-radius: 14px;
-            min-width: 150px;
-            font-weight: 700;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 18px 30px rgba(22, 194, 226, 0.22);
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus {
-            transform: translateY(-1px);
-            box-shadow: 0 22px 40px rgba(22, 194, 226, 0.28);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            color: #ffffff;
-        }
-
-        .btn-secondary:hover,
-        .btn-secondary:focus {
-            background: rgba(255, 255, 255, 0.16);
-        }
-
-        .form-errors,
-        .form-errors li {
-            color: #ffccd5;
-            margin-top: 0.35rem;
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-
-        /* Styles pour les select/dropdown */
-        .form-input[type="select"],
-        select.form-input {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.5em 1.5em;
-            padding-right: 3rem;
-        }
-
-        select.form-input option {
-            background-color: #1a1a2e;
-            color: #ffffff;
-            padding: 0.75rem;
-        }
-
-        select.form-input option:checked {
-            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
-            background-color: #5268e4;
-            color: #ffffff;
-        }
-
-        select.form-input option:hover {
-            background-color: #2d2d44;
-        }
-
-        @media (max-width: 1024px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .glass-card {
-                padding: 28px;
-            }
-
-            .form-card {
-                max-width: 680px;
-            }
-        }
-
-        [data-anchor="slide08"] .section-inner,
-        [data-anchor="slide09"] .section-inner,
-        [data-anchor="slide10"] .section-inner {
-            padding-top: 120px;
-        }
-
-        @media (max-width: 768px) {
-            .form-card {
-                padding: 1rem;
-                border-radius: 16px;
-            }
-
-            .form-card h3 {
-                font-size: 1.15rem;
-            }
-
-            .form-subtitle {
-                font-size: 0.92rem;
-            }
-
-            .btn-primary {
-                width: 100%;
-            }
-
-            [data-anchor="slide08"] .section-inner,
-            [data-anchor="slide09"] .section-inner,
-            [data-anchor="slide10"] .section-inner {
-                padding-top: 90px;
-            }
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
+
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endfor %}
 
 <div id="video">
 
@@ -247,11 +29,8 @@
         <div class="container-fluid">
             <div class="navbar">
                 <a href="#" id="logo" title="EcoMarine">
-    <img src="/assets/images/logoeco.png" " 
-         alt="EcoMarine" 
-         style="height: 160px; width: auto; vertical-align: middle; margin-right: 8px;">
-    
-</a>
+                    🐚 EcoMarine
+                </a>
                 <div class="navigation-row">
                     <nav id="navigation">
                         <button type="button" class="navbar-toggle">
@@ -266,10 +45,6 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
-                                <li data-menuanchor="slide08"><a href="#slide08">Réservation</a></li>
-                                <li data-menuanchor="slide09"><a href="#slide09">Zones protégées</a></li>
-                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
-
                             </ul>
                         </div>
                     </nav>
@@ -286,7 +61,7 @@
     <div id="fullpage" class="fullpage-default">
 
         <!-- SLIDE 01 — Accueil -->
-        <div class="section animated-row" data-anchor="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
+        <div class="section animated-row" data-section="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
             <div class="section-inner">
                 <div class="welcome-box">
                     <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
@@ -303,8 +78,9 @@
             </div>
         </div>
 
+
         <!-- SLIDE 02 — À Propos -->
-        <div class="section animated-row" data-anchor="slide02">
+        <div class="section animated-row" data-section="slide02">
             <div class="section-inner">
                 <div class="about-section">
                     <div class="row justify-content-center">
@@ -362,7 +138,7 @@
         </div>
 
         <!-- SLIDE 03 — Activités -->
-        <div class="section animated-row" data-anchor="slide03">
+        <div class="section animated-row" data-section="slide03">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -422,7 +198,7 @@
         </div>
 
         <!-- SLIDE 04 — Notre Mission -->
-        <div class="section animated-row" data-anchor="slide04">
+        <div class="section animated-row" data-section="slide04">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -470,7 +246,7 @@
         </div>
 
         <!-- SLIDE 05 — Galerie -->
-        <div class="section animated-row" data-anchor="slide05">
+        <div class="section animated-row" data-section="slide05">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -543,7 +319,7 @@
         </div>
 
         <!-- SLIDE 06 — Témoignages -->
-        <div class="section animated-row" data-anchor="slide06">
+        <div class="section animated-row" data-section="slide06">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -599,7 +375,7 @@
         </div>
 
         <!-- SLIDE 07 — Contact -->
-        <div class="section animated-row" data-anchor="slide07">
+        <div class="section animated-row" data-section="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -737,6 +513,130 @@
         </div>
 
 
+        <!-- SLIDE 08 — Réservations -->
+        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Réserver maintenant</span>
+                            <h2>Planifiez votre expérience</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            <div class="card-header">
+                                <h3 class="card-title">Faire une réservation</h3>
+                                <p class="card-subtitle">Réservez votre place pour une activité marine</p>
+                            </div>
+                            {{ include('reservation/_form.html.twig', {
+                                'form': form_reservation,
+                                'button_label': 'Réserver maintenant',
+                                'form_action': path('app_reservation_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 09 — Ajouter Zone -->
+        <div class="section animated-row" data-section="slide208" data-anchor="slide208">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle zone</span>
+                            <h2>Ajouter une zone protégée</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            <section class="zone-form">
+                                {{ form_start(zonepForm, {'attr': {'class': 'form-grid'}, 'action': path('app_zonep_new')}) }}
+                                <div class="form-group">
+                                    <div class="form-group-settings">
+                                        {{ form_label(zonepForm.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.nomZone, {'attr': {'class': 'form-input', 'placeholder': 'Nom de la zone'}}) }}
+                                        {{ form_errors(zonepForm.nomZone) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group-settings">
+                                        {{ form_label(zonepForm.categorieZone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.categorieZone, {'attr': {'class': 'form-input', 'placeholder': 'Catégorie de la zone'}}) }}
+                                        {{ form_errors(zonepForm.categorieZone) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group-settings">
+                                        {{ form_label(zonepForm.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(zonepForm.status, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(zonepForm.status) }}
+                                    </div>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button class="btn btn-primary" type="submit">Ajouter la zone</button>
+                                </div>
+
+                                {{ form_rest(zonepForm) }}
+                                {{ form_end(zonepForm) }}
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 09 — Surveillance -->
+        <div class="section animated-row" data-section="slide209" data-anchor="slide209">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle surveillance</span>
+                            <h2>Ajouter un suivi de zone</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            <section class="surveillance-form">
+                                {{ form_start(survzoneForm, {'attr': {'class': 'form-grid'}, 'action': path('app_survzone_new')}) }}
+                                <div class="form-group">
+                                    <div class="form-group-settings">
+                                        {{ form_label(survzoneForm.zone, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.zone, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(survzoneForm.zone) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group-settings">
+                                        {{ form_label(survzoneForm.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.dateSurv, {'attr': {'class': 'form-input'}}) }}
+                                        {{ form_errors(survzoneForm.dateSurv) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-group-settings full-width">
+                                        {{ form_label(survzoneForm.observation, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(survzoneForm.observation, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Détails de la surveillance'}}) }}
+                                        {{ form_errors(survzoneForm.observation) }}
+                                    </div>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button class="btn btn-primary" type="submit">Ajouter la surveillance</button>
+                                </div>
+
+                                {{ form_rest(survzoneForm) }}
+                                {{ form_end(survzoneForm) }}
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>{# fin #fullpage #}
 
     <!-- Réseaux sociaux -->
@@ -754,3 +654,4 @@
 </div>{# fin #video #}
 
 {% endblock %}
+
