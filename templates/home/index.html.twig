@@ -29,7 +29,7 @@
         <div class="container-fluid">
             <div class="navbar">
                 <a href="#" id="logo" title="EcoMarine">
-                    🐚 EcoMarine
+                    <img src="/assets/images/logoEco.png" alt="EcoMarine" style="height: 110px; width: auto; vertical-align: middle;">
                 </a>
                 <div class="navigation-row">
                     <nav id="navigation">
@@ -45,6 +45,10 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
+                                <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Activités Écologiques</a></li>
+                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
+                                <li data-menuanchor="slide11"><a href="#slide11">Zones Protégées</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -374,8 +378,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 07 — Contact -->
-        <div class="section animated-row" data-section="slide07">
+        <!-- SLIDE 11 — Contact -->
+        <div class="section animated-row" data-section="slide07" data-anchor="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -420,8 +424,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 08 — Réservations et Activités -->
-        <div class="section animated-row" data-anchor="slide08">
+        <!-- SLIDE 07 — Réservations -->
+        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-10 wide-col-laptop">
@@ -450,8 +454,40 @@
                 </div>
             </div>
         </div>
-        <!-- SLIDE 09 — Zone protégée -->
-        <div class="section animated-row" data-anchor="slide09">
+
+        <!-- SLIDE 08 — Activités Écologiques -->
+        <div class="section animated-row" data-section="slide09" data-anchor="slide09">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Activités Écologiques</span>
+                            <h2>Proposer une activité écologique</h2>
+                        </div>
+                        <div class="reservations-section">
+                            <div class="row">
+                                <!-- Formulaire Activité Écologique -->
+                                <div class="col-md-7 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card form-card-activity">
+                                        <h3>Créer une activité écologique</h3>
+                                        <p class="form-subtitle">Renseignez les détails de votre activité</p>
+                                        {{ include('activite_ecologique/_form.html.twig', {
+                                            'form': form_activite,
+                                            'button_label': 'Créer l\'activité',
+                                            'form_action': path('app_activite_ecologique_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 09 — Zones Protégées -->
+        <div class="section animated-row" data-section="slide11" data-anchor="slide11">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-10 wide-col-laptop">
@@ -481,8 +517,8 @@
             </div>
         </div>
 
-        <!-- SLIDE 10 — Survzone -->
-        <div class="section animated-row" data-anchor="slide10">
+        <!-- SLIDE 10 — Surveillance -->
+        <div class="section animated-row" data-section="slide10" data-anchor="slide10">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-10 wide-col-laptop">
@@ -506,131 +542,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- SLIDE 08 — Réservations -->
-        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Réserver maintenant</span>
-                            <h2>Planifiez votre expérience</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            <div class="card-header">
-                                <h3 class="card-title">Faire une réservation</h3>
-                                <p class="card-subtitle">Réservez votre place pour une activité marine</p>
-                            </div>
-                            {{ include('reservation/_form.html.twig', {
-                                'form': form_reservation,
-                                'button_label': 'Réserver maintenant',
-                                'form_action': path('app_reservation_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 09 — Ajouter Zone -->
-        <div class="section animated-row" data-section="slide208" data-anchor="slide208">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle zone</span>
-                            <h2>Ajouter une zone protégée</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            <section class="zone-form">
-                                {{ form_start(zonepForm, {'attr': {'class': 'form-grid'}, 'action': path('app_zonep_new')}) }}
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(zonepForm.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(zonepForm.nomZone, {'attr': {'class': 'form-input', 'placeholder': 'Nom de la zone'}}) }}
-                                        {{ form_errors(zonepForm.nomZone) }}
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(zonepForm.categorieZone, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(zonepForm.categorieZone, {'attr': {'class': 'form-input', 'placeholder': 'Catégorie de la zone'}}) }}
-                                        {{ form_errors(zonepForm.categorieZone) }}
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(zonepForm.status, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(zonepForm.status, {'attr': {'class': 'form-input'}}) }}
-                                        {{ form_errors(zonepForm.status) }}
-                                    </div>
-                                </div>
-
-                                <div class="btn-group">
-                                    <button class="btn btn-primary" type="submit">Ajouter la zone</button>
-                                </div>
-
-                                {{ form_rest(zonepForm) }}
-                                {{ form_end(zonepForm) }}
-                            </section>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 09 — Surveillance -->
-        <div class="section animated-row" data-section="slide209" data-anchor="slide209">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle surveillance</span>
-                            <h2>Ajouter un suivi de zone</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            <section class="surveillance-form">
-                                {{ form_start(survzoneForm, {'attr': {'class': 'form-grid'}, 'action': path('app_survzone_new')}) }}
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(survzoneForm.zone, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(survzoneForm.zone, {'attr': {'class': 'form-input'}}) }}
-                                        {{ form_errors(survzoneForm.zone) }}
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(survzoneForm.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(survzoneForm.dateSurv, {'attr': {'class': 'form-input'}}) }}
-                                        {{ form_errors(survzoneForm.dateSurv) }}
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings full-width">
-                                        {{ form_label(survzoneForm.observation, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(survzoneForm.observation, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Détails de la surveillance'}}) }}
-                                        {{ form_errors(survzoneForm.observation) }}
-                                    </div>
-                                </div>
-
-                                <div class="btn-group">
-                                    <button class="btn btn-primary" type="submit">Ajouter la surveillance</button>
-                                </div>
-
-                                {{ form_rest(survzoneForm) }}
-                                {{ form_end(survzoneForm) }}
-                            </section>
                         </div>
                     </div>
                 </div>
