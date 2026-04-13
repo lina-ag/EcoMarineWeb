@@ -6,8 +6,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\ObservationRepository;
+use App\Entity\FauneMarine;
 
 #[ORM\Entity(repositoryClass: ObservationRepository::class)]
 #[ORM\Table(name: 'observation')]
@@ -30,6 +32,8 @@ class Observation
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotBlank(message: "La date d'observation ne peut pas être vide.")]
+    #[Assert\LessThanOrEqual('today', message: "La date doit être aujourd'hui ou dans le passé.")]
     private ?\DateTimeInterface $date_observation = null;
 
     public function getDate_observation(): ?\DateTimeInterface
@@ -44,6 +48,7 @@ class Observation
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: -50, max: 50, notInRangeMessage: "La température doit être entre -50°C et 50°C.")]
     private ?float $temperature = null;
 
     public function getTemperature(): ?float
@@ -58,6 +63,7 @@ class Observation
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Choice(choices: ['Ensoleillé', 'Nuageux', 'Pluvieux', 'Tempête', 'Brumeux', 'Venteux'], message: "La météo doit être parmi les options proposées.")]
     private ?string $meteo = null;
 
     public function getMeteo(): ?string
@@ -71,17 +77,29 @@ class Observation
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $id_animal = null;
+    #[ORM\ManyToOne(targetEntity: FauneMarine::class)]
+    #[ORM\JoinColumn(name: 'id_animal', referencedColumnName: 'id_animal', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotBlank(message: "L'animal ne peut pas être vide.")]
+    private ?FauneMarine $animal = null;
+
+    public function getAnimal(): ?FauneMarine
+    {
+        return $this->animal;
+    }
+
+    public function setAnimal(?FauneMarine $animal): self
+    {
+        $this->animal = $animal;
+        return $this;
+    }
 
     public function getId_animal(): ?int
     {
-        return $this->id_animal;
+        return $this->animal?->getId_animal();
     }
 
     public function setId_animal(int $id_animal): self
     {
-        $this->id_animal = $id_animal;
         return $this;
     }
 
@@ -98,20 +116,16 @@ class Observation
     public function setDateObservation(\DateTime $date_observation): static
     {
         $this->date_observation = $date_observation;
-
         return $this;
     }
 
     public function getIdAnimal(): ?int
     {
-        return $this->id_animal;
+        return $this->animal?->getId_animal();
     }
 
     public function setIdAnimal(int $id_animal): static
     {
-        $this->id_animal = $id_animal;
-
         return $this;
     }
-
 }
