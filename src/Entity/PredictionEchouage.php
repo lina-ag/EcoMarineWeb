@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\PredictionEchouageRepository;
 
@@ -30,6 +31,8 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotBlank(message: "La date de prédiction ne peut pas être vide.")]
+    #[Assert\GreaterThanOrEqual('today', message: "La date doit être aujourd'hui ou dans le futur.")]
     private ?\DateTimeInterface $date_prediction = null;
 
     public function getDate_prediction(): ?\DateTimeInterface
@@ -44,6 +47,8 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: "La zone ne peut pas être vide.")]
+    #[Assert\Choice(choices: ['Nord', 'Nord-Est', 'Est', 'Sud-Est', 'Sud', 'Sud-Ouest', 'Ouest', 'Nord-Ouest'], message: "La zone doit \u00eatre parmi: Nord, Nord-Est, Est, Sud-Est, Sud, Sud-Ouest, Ouest, Nord-Ouest.")]
     private ?string $zone = null;
 
     public function getZone(): ?string
@@ -58,6 +63,8 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'integer', nullable: false)]
+    #[Assert\NotBlank(message: "Le niveau de risque ne peut pas être vide.")]
+    #[Assert\Range(min: 1, max: 5, notInRangeMessage: "Le niveau de risque doit être entre 1 et 5.")]
     private ?int $niveau_risque = null;
 
     public function getNiveau_risque(): ?int
@@ -72,6 +79,7 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: "L'espèce concernée ne peut pas dépasser 100 caractères.")]
     private ?string $espece_concernee = null;
 
     public function getEspece_concernee(): ?string
@@ -86,6 +94,7 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: -50, max: 50, notInRangeMessage: "La température doit être entre -50°C et 50°C.")]
     private ?float $temperature_eau = null;
 
     public function getTemperature_eau(): ?float
@@ -100,6 +109,7 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Choice(choices: ['Ensoleillé', 'Nuageux', 'Pluvieux', 'Tempête', 'Brumeux', 'Venteux'], message: "Les conditions météo doivent être: Ensoleillé, Nuageux, Pluvieux, Tempête, Brumeux ou Venteux.")]
     private ?string $conditions_meteo = null;
 
     public function getConditions_meteo(): ?string
@@ -114,6 +124,7 @@ class PredictionEchouage
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(max: 3000, maxMessage: "Les recommandations ne peuvent pas dépasser 3000 caractères.")]
     private ?string $recommandations = null;
 
     public function getRecommandations(): ?string
