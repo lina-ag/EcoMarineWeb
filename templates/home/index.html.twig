@@ -149,8 +149,44 @@
             color: #ffffff;
         }
 
+        .form-input[type="select"],
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+        }
+
+        select.form-input option {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            padding: 0.75rem;
+        }
+
+        select.form-input option:checked {
+            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
+            background-color: #5268e4;
+            color: #ffffff;
+        }
+
         select.form-input option:hover {
             background-color: #2d2d44;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            color: #d4edda;
+            background-color: rgba(40, 167, 69, 0.1);
+            border-color: rgba(40, 167, 69, 0.2);
         }
 
         @media (max-width: 1024px) {
@@ -592,6 +628,9 @@
                                 <h3 class="card-title">Faire une réservation</h3>
                                 <p class="card-subtitle">Réservez votre place pour une activité marine</p>
                             </div>
+                            {% for message in app.flashes('success') %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% endfor %}
                             {{ include('reservation/_form.html.twig', {
                                 'form': form_reservation,
                                 'button_label': 'Réserver maintenant',
@@ -613,6 +652,9 @@
                             <span>Nouvelle zone</span>
                             <h2>Ajouter une zone protégée</h2>
                         </div>
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">{{ message }}</div>
+                        {% endfor %}
                         <div class="glass-card animate" data-animate="fadeInUp">
                             <section class="zone-form">
                                 {{ form_start(zonepForm, {'attr': {'class': 'form-grid'}, 'action': path('app_zonep_new')}) }}
@@ -662,6 +704,9 @@
                             <span>Nouvelle surveillance</span>
                             <h2>Ajouter un suivi de zone</h2>
                         </div>
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">{{ message }}</div>
+                        {% endfor %}
                         <div class="glass-card animate" data-animate="fadeInUp">
                             <section class="surveillance-form">
                                 {{ form_start(survzoneForm, {'attr': {'class': 'form-grid'}, 'action': path('app_survzone_new')}) }}
