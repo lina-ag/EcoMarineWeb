@@ -137,7 +137,7 @@ final class UtilisateurController extends AbstractController
 
             if ($dateNaissance >= $today) {
                 $this->addFlash('error', 'La date de naissance doit être strictement inférieure à la date d\'aujourd\'hui');
-                return $this->render('utilisateur/new.html.twig', [
+                return $this->render('utilisateur/edit.html.twig', [
                     'utilisateur' => $utilisateur,
                     'form' => $form,
                ]);
