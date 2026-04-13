@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body.auth-page {
+            background: linear-gradient(135deg, #1d5bf9 0%, #0c93ff 45%, #3ad9ff 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .auth-container {
+            min-height: calc(100vh - 0px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(18px);
+            border-radius: 24px;
+            padding: 34px 32px;
+        }
+        .auth-card h2 {
+            margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .auth-card p {
+            color: rgba(255, 255, 255, 0.82);
+            margin-bottom: 1.8rem;
+        }
+        .auth-card .form-control {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff;
+            box-shadow: none;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 1rem;
+        }
+        .auth-card .form-control:focus {
+            border-color: rgba(255, 255, 255, 0.78);
+            box-shadow: 0 0 0 0.2rem rgba(173, 214, 255, 0.25);
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+        .auth-card label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: rgba(255, 255, 255, 0.88);
+            font-weight: 500;
+        }
+        .auth-card .btn {
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .auth-card .btn-success {
+            background: #00c774;
+            border-color: #00c774;
+        }
+        .auth-card .btn-success:hover {
+            background: #1cff9d;
+            border-color: #1cff9d;
+        }
+        .auth-card .text-center {
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .auth-card .text-center a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="auth-container auth-page">
+    <div class="auth-card">
+        <h2>Inscription</h2>
+        <p>Créez votre compte pour réserver des activités et suivre vos missions.</p>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        {{ form_start(form) }}
+
+<div class="row">
+    <div class="col-md-6">
+        {{ form_row(form.nom) }}
+    </div>
+    <div class="col-md-6">
+        {{ form_row(form.prenom) }}
+    </div>
+</div>
+
+{{ form_row(form.email) }}
+{{ form_row(form.mot_de_passe) }}
+{{ form_row(form.telephone) }}
+{{ form_row(form.role) }}
+{{ form_row(form.date_naissance) }}
+
+<button class="btn btn-success w-100 mt-3">
+    S'inscrire
+</button>
+
+{{ form_end(form) }}
+
+<div class="text-center mt-3">
+    <a href="{{ path('app_signIn') }}">Déjà un compte ?</a>
+</div>
+    </div>
+</div>
+
+{% endblock %}

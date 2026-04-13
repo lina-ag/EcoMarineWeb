@@ -2,12 +2,9 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\UtilisateurRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
@@ -15,22 +12,74 @@ class Utilisateur
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', name: 'id_utilisateur')]
     private ?int $id_utilisateur = null;
 
-    public function getId_utilisateur(): ?int
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(min: 2, max: 100)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\Length(min: 2, max: 100)]
+    private ?string $prenom = null;
+
+    #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
+    #[Assert\Regex(
+        pattern: "/@gmail\.com$/",
+        message: "L'email doit être une adresse Gmail (@gmail.com)"
+    )]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit avoir au moins {{ limit }} caractères")]
+    private ?string $mot_de_passe = null;
+
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "Le téléphone est obligatoire")]
+    #[Assert\Regex(
+        pattern: "/^(2|5|9)[0-9]{7}$/",
+        message: "Numéro tunisien valide requis (8 chiffres : commence par 2,5 ou 9)"
+    )]
+    private ?string $telephone = null;
+
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le rôle est obligatoire")]
+    private ?string $role = null;
+
+   #[ORM\Column(type: "date")]
+   #[Assert\NotBlank(message: "La date de naissance est obligatoire")]
+   #[Assert\LessThan(
+    value: "today",
+    message: "La date de naissance doit être strictement inférieure à la date d'aujourd'hui"
+   )]
+    private ?\DateTimeInterface $date_naissance = null;
+
+    #[ORM\Column(type: "blob", nullable: true)]
+    private $face_encoding = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $face_image = null;
+
+    #[ORM\Column(type: "datetime")]
+    private ?\DateTimeInterface $created_at = null;
+
+    // ==================== GETTERS & SETTERS ====================
+
+    public function getIdUtilisateur(): ?int
     {
         return $this->id_utilisateur;
     }
 
-    public function setId_utilisateur(int $id_utilisateur): self
+    public function setIdUtilisateur(int $id_utilisateur): self
     {
         $this->id_utilisateur = $id_utilisateur;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom = null;
 
     public function getNom(): ?string
     {
@@ -43,9 +92,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $prenom = null;
-
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -56,9 +102,6 @@ class Utilisateur
         $this->prenom = $prenom;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $email = null;
 
     public function getEmail(): ?string
     {
@@ -71,22 +114,16 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $mot_de_passe = null;
-
-    public function getMot_de_passe(): ?string
+    public function getMotDePasse(): ?string
     {
         return $this->mot_de_passe;
     }
 
-    public function setMot_de_passe(?string $mot_de_passe): self
+    public function setMotDePasse(?string $mot_de_passe): self
     {
         $this->mot_de_passe = $mot_de_passe;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $telephone = null;
 
     public function getTelephone(): ?string
     {
@@ -99,9 +136,6 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $role = null;
-
     public function getRole(): ?string
     {
         return $this->role;
@@ -113,112 +147,28 @@ class Utilisateur
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date_naissance = null;
-
-    public function getDate_naissance(): ?\DateTimeInterface
+    public function getDateNaissance(): ?\DateTimeInterface
     {
         return $this->date_naissance;
     }
 
-    public function setDate_naissance(?\DateTimeInterface $date_naissance): self
+    public function setDateNaissance(?\DateTimeInterface $date_naissance): self
     {
         $this->date_naissance = $date_naissance;
         return $this;
     }
 
-    #[ORM\Column(type: 'blob', nullable: true)]
-    private mixed $face_encoding = null;
-
-    public function getFace_encoding(): ?string
+    public function getFaceEncoding()
     {
         if (is_resource($this->face_encoding)) {
             return stream_get_contents($this->face_encoding) ?: null;
         }
-
         return $this->face_encoding;
     }
 
-    public function setFace_encoding(mixed $face_encoding): self
-    {
-        if (is_resource($face_encoding)) {
-            $face_encoding = stream_get_contents($face_encoding) ?: null;
-        }
-
-        $this->face_encoding = $face_encoding;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $face_image = null;
-
-    public function getFace_image(): ?string
-    {
-        return $this->face_image;
-    }
-
-    public function setFace_image(?string $face_image): self
-    {
-        $this->face_image = $face_image;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $created_at = null;
-
-    public function getCreated_at(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreated_at(?\DateTimeInterface $created_at): self
-    {
-        $this->created_at = $created_at;
-        return $this;
-    }
-
-    public function getIdUtilisateur(): ?int
-    {
-        return $this->id_utilisateur;
-    }
-
-    public function getMotDePasse(): ?string
-    {
-        return $this->mot_de_passe;
-    }
-
-    public function setMotDePasse(?string $mot_de_passe): static
-    {
-        $this->mot_de_passe = $mot_de_passe;
-
-        return $this;
-    }
-
-    public function getDateNaissance(): ?\DateTime
-    {
-        return $this->date_naissance;
-    }
-
-    public function setDateNaissance(?\DateTime $date_naissance): static
-    {
-        $this->date_naissance = $date_naissance;
-
-        return $this;
-    }
-
-    public function getFaceEncoding(): ?string
-    {
-        if (is_resource($this->face_encoding)) {
-            return stream_get_contents($this->face_encoding) ?: null;
-        }
-
-        return $this->face_encoding;
-    }
-
-    public function setFaceEncoding(mixed $face_encoding): static
+    public function setFaceEncoding($face_encoding): self
     {
         $this->face_encoding = $face_encoding;
-
         return $this;
     }
 
@@ -227,23 +177,20 @@ class Utilisateur
         return $this->face_image;
     }
 
-    public function setFaceImage(?string $face_image): static
+    public function setFaceImage(?string $face_image): self
     {
         $this->face_image = $face_image;
-
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTime $created_at): static
+    public function setCreatedAt(?\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
-
         return $this;
     }
-
 }
