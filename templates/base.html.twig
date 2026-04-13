@@ -32,9 +32,9 @@
     <title>{% block title %}EcoMarine{% endblock %}</title>
 </head>
 
-<body>
+<body{% if current_route in ['app_signIn', 'app_signUp'] %} class="auth-page"{% endif %}>
 
-{% if current_route != 'app_home' %}
+{% if current_route not in ['app_home', 'app_signIn', 'app_signUp'] %}
 
     <div class="background"></div>
     <div class="orb orb-1"></div>
@@ -52,7 +52,7 @@
 
 {% block body %}{% endblock %}
 
-{% if current_route != 'app_home' %}
+{% if current_route not in ['app_home', 'app_signIn', 'app_signUp'] %}
 
         </main>
     </div>

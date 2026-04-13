@@ -35,17 +35,37 @@
         .utilisateurs-compact .data-table td:last-child {
             white-space: nowrap;
         }
+        
+        .alert {
+            max-width: 980px;
+            margin: 0 auto 1rem auto;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
+    {# Affichage des messages flash #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
     <section class="glass-card utilisateurs-compact">
         <div class="card-header">
             <div>
                 <h2 class="card-title">Utilisateurs</h2>
-                <p class="card-subtitle">Gerer les comptes et informations des utilisateurs.</p>
+                <p class="card-subtitle">Gérer les comptes et informations des utilisateurs.</p>
             </div>
-            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Create new</a>
+            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
         </div>
 
         <div class="table-wrapper">
@@ -54,13 +74,12 @@
                     <tr>
                         <th>Id</th>
                         <th>Nom</th>
-                        <th>Prenom</th>
+                        <th>Prénom</th>
                         <th>Email</th>
-                        <th>Telephone</th>
-                        <th>Role</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
                         <th>Date naissance</th>
-                        <th>Face image</th>
-                        <th>Created</th>
+                        <th>Créé le</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -72,18 +91,31 @@
                         <td>{{ utilisateur.prenom }}</td>
                         <td>{{ utilisateur.email }}</td>
                         <td>{{ utilisateur.telephone }}</td>
-                        <td>{{ utilisateur.role }}</td>
-                        <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}</td>
-                        <td>{{ utilisateur.faceImage }}</td>
-                        <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i') : '' }}</td>
                         <td>
-                            <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-primary">edit</a>
+                            {% if utilisateur.role == 'admin' %}
+                                <span class="badge bg-danger">Administrateur</span>
+                            {% elseif utilisateur.role == 'chercheur' %}
+                                <span class="badge bg-primary">Chercheur</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Utilisateur</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('d/m/Y') : '-' }}</td>
+                        <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <form action="{{ path('app_utilisateur_delete', {'id_utilisateur': utilisateur.idUtilisateur}) }}" method="post" style="display:inline-block" onsubmit="return confirm('Confirmer la suppression de {{ utilisateur.nom }} {{ utilisateur.prenom }} ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.idUtilisateur) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="10">no records found</td>
+                        <td colspan="9" class="text-center">Aucun utilisateur trouvé</td>
                     </tr>
                 {% endfor %}
                 </tbody>

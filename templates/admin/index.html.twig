@@ -12,10 +12,10 @@
         <div class="stat-card-inner">
             <div class="stat-info">
                 <h3>Réservations</h3>
-                <div class="stat-value">248</div>
-                <span class="stat-change positive">
+                <div class="stat-value">{{ kpi.reservations }}</div>
+                <span class="stat-change {{ metrics.reservations_growth starts with '-' ? 'negative' : 'positive' }}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +12.5% ce mois
+                    {{ metrics.reservations_growth }} ce mois
                 </span>
             </div>
             <div class="stat-icon cyan">
@@ -30,10 +30,10 @@
         <div class="stat-card-inner">
             <div class="stat-info">
                 <h3>Visiteurs</h3>
-                <div class="stat-value">1 024</div>
-                <span class="stat-change positive">
+                <div class="stat-value">{{ kpi.visitors }}</div>
+                <span class="stat-change {{ metrics.new_visitors_growth starts with '-' ? 'negative' : 'positive' }}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +8.2% ce mois
+                    {{ metrics.new_visitors_growth }} ce mois
                 </span>
             </div>
             <div class="stat-icon magenta">
@@ -48,16 +48,16 @@
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">
-                <h3>Activités</h3>
-                <div class="stat-value">36</div>
+                <h3>Déchets collectés</h3>
+                <div class="stat-value">{{ kpi.waste_quantity|number_format(1, ',', ' ') }} kg</div>
                 <span class="stat-change positive">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +3 nouvelles
+                    {{ metrics.waste_records }} relevés
                 </span>
             </div>
             <div class="stat-icon purple">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2">
-                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 0v10l4 4"/>
+                    <path d="M3 6h18"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 10v6"/><path d="M14 10v6"/><path d="M9 6V4h6v2"/>
                 </svg>
             </div>
         </div>
@@ -66,16 +66,16 @@
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">
-                <h3>Espèces suivies</h3>
-                <div class="stat-value">15</div>
+                <h3>Détections Drone</h3>
+                <div class="stat-value">{{ kpi.drone_detections }}</div>
                 <span class="stat-change positive">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    Kuriat protégée
+                    {{ metrics.drone_missions }} missions
                 </span>
             </div>
             <div class="stat-icon success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    <circle cx="12" cy="12" r="3"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 8l2 2"/><path d="M16 8l-2 2"/><path d="M8 16l2-2"/><path d="M16 16l-2-2"/>
                 </svg>
             </div>
         </div>
@@ -83,7 +83,91 @@
 
 </section>
 
-{# Tableau des dernières réservations #}
+{# Graphiques #}
+<section class="content-grid">
+    <div class="glass-card chart-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Réservations sur 6 mois</h2>
+                <p class="card-subtitle">Tendance mensuelle (table réservation)</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">Max</span>
+                    <span class="y-value">50%</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.reservations_by_month %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar bar-emerald" style="height: {{ point.height }}%;" title="{{ point.value }}"></div>
+                            <span class="chart-label">{{ point.label }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card chart-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Déchets par zone</h2>
+                <p class="card-subtitle">Somme des quantités (table dechet)</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">kg</span>
+                    <span class="y-value">Top</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.waste_by_zone %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar bar-coral" style="height: {{ point.height }}%;" title="{{ point.value }} kg"></div>
+                            <span class="chart-label">{{ point.label }}</span>
+                        </div>
+                    {% else %}
+                        <div class="chart-bar-group">
+                            <span class="chart-label">Aucune donnée</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Blocs métiers #}
+<section class="business-grid">
+    {% for block in domain_blocks %}
+        <div class="glass-card business-card business-card-{{ block.accent }}">
+            <div class="business-header">
+                <div class="business-title-wrap">
+                    <div>
+                        <h3>{{ block.title }}</h3>
+                        <p class="business-subtitle">Indicateurs en temps réel</p>
+                    </div>
+                </div>
+                <span class="business-badge {{ block.accent }}">Live</span>
+            </div>
+            <div class="business-metrics">
+                {% for item in block.items %}
+                    <div class="business-row business-row-{{ block.accent }}">
+                        <span class="business-label">{{ item.label }}</span>
+                        <span class="business-value">{{ item.value }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</section>
+
+{# Tableau des dernières réservations + activité #}
 <section class="content-grid">
     <div class="glass-card table-card">
         <div class="card-header">
@@ -103,56 +187,33 @@
                         <th>Visiteur</th>
                         <th>Activité</th>
                         <th>Date</th>
-                        <th>Statut</th>
-                        <th>Montant</th>
+                        <th>Personnes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="table-user">
-                                <div class="table-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">YB</div>
-                                <div class="table-user-info">
-                                    <span class="table-user-name">Yasmine Ben Ali</span>
-                                    <span class="table-user-email">yasmine@email.com</span>
+                    {% for reservation in latest_reservations %}
+                        {% set nameParts = reservation.nom ? reservation.nom|split(' ') : [] %}
+                        {% set firstInitial = nameParts|length > 0 and nameParts[0] is not empty ? nameParts[0]|slice(0, 1)|upper : 'R' %}
+                        {% set secondInitial = nameParts|length > 1 and nameParts[1] is not empty ? nameParts[1]|slice(0, 1)|upper : '' %}
+                        <tr>
+                            <td>
+                                <div class="table-user">
+                                    <div class="table-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">{{ firstInitial ~ secondInitial }}</div>
+                                    <div class="table-user-info">
+                                        <span class="table-user-name">{{ reservation.nom }}</span>
+                                        <span class="table-user-email">{{ reservation.email }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>Plongée à Kuriat</td>
-                        <td>10 Avr 2026</td>
-                        <td><span class="status-badge completed">Confirmée</span></td>
-                        <td><span class="table-amount">120 TND</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="table-user">
-                                <div class="table-avatar" style="background: linear-gradient(135deg, var(--gold), var(--amber));">KM</div>
-                                <div class="table-user-info">
-                                    <span class="table-user-name">Karim Mansour</span>
-                                    <span class="table-user-email">karim@email.com</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>Excursion en mer</td>
-                        <td>11 Avr 2026</td>
-                        <td><span class="status-badge processing">En attente</span></td>
-                        <td><span class="table-amount">85 TND</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="table-user">
-                                <div class="table-avatar" style="background: linear-gradient(135deg, var(--coral), var(--gold));">SL</div>
-                                <div class="table-user-info">
-                                    <span class="table-user-name">Sofia Lacombe</span>
-                                    <span class="table-user-email">sofia@email.com</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>Randonnée côtière</td>
-                        <td>12 Avr 2026</td>
-                        <td><span class="status-badge pending">Pending</span></td>
-                        <td><span class="table-amount">50 TND</span></td>
-                    </tr>
+                            </td>
+                            <td>{{ reservation.activiteEcologique ? reservation.activiteEcologique.nom_activite : 'Non définie' }}</td>
+                            <td>{{ reservation.date_reservation ? reservation.date_reservation|date('d M Y') : '-' }}</td>
+                            <td>{{ reservation.nombre_personnes }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Aucune réservation trouvée.</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -167,34 +228,24 @@
             </div>
         </div>
         <div class="activity-list">
-            <div class="activity-item">
-                <div class="activity-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">YB</div>
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Yasmine B.</strong> a réservé une plongée</p>
-                    <span class="activity-time">Il y a 5 minutes</span>
+            {% for reservation in latest_reservations %}
+                {% set nameParts = reservation.nom ? reservation.nom|split(' ') : [] %}
+                {% set firstInitial = nameParts|length > 0 and nameParts[0] is not empty ? nameParts[0]|slice(0, 1)|upper : 'R' %}
+                {% set secondInitial = nameParts|length > 1 and nameParts[1] is not empty ? nameParts[1]|slice(0, 1)|upper : '' %}
+                <div class="activity-item">
+                    <div class="activity-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">{{ firstInitial ~ secondInitial }}</div>
+                    <div class="activity-content">
+                        <p class="activity-text"><strong>{{ reservation.nom }}</strong> a réservé {{ reservation.activiteEcologique ? reservation.activiteEcologique.nom_activite : 'une activité' }}</p>
+                        <span class="activity-time">Le {{ reservation.date_reservation ? reservation.date_reservation|date('d/m/Y') : '-' }}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-avatar" style="background: linear-gradient(135deg, var(--gold), var(--amber));">KM</div>
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Karim M.</strong> a annulé une réservation</p>
-                    <span class="activity-time">Il y a 30 minutes</span>
+            {% else %}
+                <div class="activity-item">
+                    <div class="activity-content">
+                        <p class="activity-text">Aucune activité récente disponible.</p>
+                    </div>
                 </div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-avatar" style="background: linear-gradient(135deg, var(--success), var(--emerald));">AD</div>
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Admin</strong> a ajouté une nouvelle activité</p>
-                    <span class="activity-time">Il y a 1 heure</span>
-                </div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-avatar" style="background: linear-gradient(135deg, var(--coral), var(--gold));">SL</div>
-                <div class="activity-content">
-                    <p class="activity-text"><strong>Sofia L.</strong> s'est inscrite</p>
-                    <span class="activity-time">Il y a 2 heures</span>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
