@@ -3,29 +3,61 @@
 {% block title %}Survzone{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Surveillance #{{ survzone.idSurv }}</h2>
-                <p class="card-subtitle">Details de l'observation enregistree.</p>
-            </div>
+<section class="glass-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Surveillance #{{ survzone.idSurv }}</h2>
+            <p class="card-subtitle">Details de l'observation enregistree.</p>
         </div>
+    </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <tbody>
-                    <tr><th>Id</th><td>{{ survzone.idSurv }}</td></tr>
-                    <tr><th>Date</th><td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td></tr>
-                    <tr><th>Observation</th><td>{{ survzone.observation }}</td></tr>
-                    <tr><th>Id zone</th><td>{{ survzone.idZone }}</td></tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <tbody>
+                <tr>
+                    <th>Id</th>
+                    <td>{{ survzone.idSurv }}</td>
+                </tr>
 
-        <div class="btn-group">
-            <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">back to list</a>
-            <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">edit</a>
-            {{ include('survzone/_delete_form.html.twig') }}
-        </div>
-    </section>
+                <tr>
+                    <th>Date</th>
+                    <td>
+                        {{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Observation</th>
+                    <td>{{ survzone.observation }}</td>
+                </tr>
+
+                <tr>
+                    <th>Zone</th>
+                    <td>
+                        {{ survzone.zone ? survzone.zone.nomZone : 'Zone introuvable' }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Id Zone</th>
+                    <td>
+                        {{ survzone.zone ? survzone.zone.idZone : '---' }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="btn-group">
+        <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">
+            back to list
+        </a>
+
+        <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">
+            edit
+        </a>
+
+        {{ include('survzone/_delete_form.html.twig') }}
+    </div>
+</section>
 {% endblock %}

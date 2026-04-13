@@ -14,8 +14,7 @@
         {{ include('utilisateur/_form.html.twig', {'button_label': 'Update'}) }}
 
         <div class="btn-group">
-            <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
-            {{ include('utilisateur/_delete_form.html.twig') }}
+            <a>{{ include('utilisateur/_delete_form.html.twig') }}</a>
         </div>
     </section>
 {% endblock %}
