@@ -703,16 +703,121 @@
                                     <button class="btn btn-primary" type="submit">Ajouter la surveillance</button>
                                 </div>
 
-                                {{ form_rest(survzoneForm) }}
-                                {{ form_end(survzoneForm) }}
-                            </section>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div>{# fin #fullpage #}
+        <!-- SLIDE — Faune Marine -->
+        <div class="section animated-row" data-section="slide210" data-anchor="slide210">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle observation</span>
+                            <h2>Signaler une faune marine</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            {{ include('faune_marine/_form.html.twig', {
+                                'form': fauneMarineForm,
+                                'button_label': 'Ajouter la faune',
+                                'form_action': path('app_faune_marine_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE — Observation -->
+        <div class="section animated-row" data-section="slide211" data-anchor="slide211">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Nouvelle observation</span>
+                            <h2>Documenter une observation</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            {{ include('observation/_form.html.twig', {
+                                'form': observationForm,
+                                'button_label': 'Enregistrer l\'observation',
+                                'form_action': path('app_observation_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE — Prédiction d'Échouage -->
+        <div class="section animated-row" data-section="slide212" data-anchor="slide212">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Prédiction</span>
+                            <h2>Ajouter une prédiction d\'échouage</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            {{ include('prediction_echouage/_form.html.twig', {
+                                'form': predictionForm,
+                                'button_label': 'Ajouter la prédiction',
+                                'form_action': path('app_prediction_echouage_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE — Mission Drone -->
+        <div class="section animated-row" data-section="slide213" data-anchor="slide213">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Surveillance aérienne</span>
+                            <h2>Planifier une mission drone</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            {{ include('mission_drone/_form.html.twig', {
+                                'form': missionDroneForm,
+                                'button_label': 'Créer la mission',
+                                'form_action': path('app_mission_drone_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE — Détection Drone -->
+        <div class="section animated-row" data-section="slide214" data-anchor="slide214">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Résultats IA</span>
+                            <h2>Ajouter une détection drone</h2>
+                        </div>
+                        <div class="glass-card animate" data-animate="fadeInUp">
+                            {{ include('detection_drone/_form.html.twig', {
+                                'form': detectionDroneForm,
+                                'button_label': 'Enregistrer la détection',
+                                'form_action': path('app_detection_drone_new'),
+                                'show_back_button': false
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Réseaux sociaux -->
     <div id="social-icons">
