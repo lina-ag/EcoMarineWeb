@@ -30,16 +30,44 @@
             line-height: 1.6;
         }
 
+        .reservations-section {
+            margin-top: 0.75rem;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 1.35rem;
+            max-width: 760px;
+            margin: 0 auto;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .form-card h3 {
+            margin-bottom: 0.4rem;
+            color: #ffffff;
+            font-size: 1.3rem;
+        }
+
+        .form-subtitle {
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.78);
+            line-height: 1.55;
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .form-group-settings {
             display: flex;
             flex-direction: column;
-            gap: 0.65rem;
+            gap: 0.45rem;
         }
 
         .form-group-settings.full-width {
@@ -55,11 +83,11 @@
 
         .form-input {
             width: 100%;
-            min-height: 52px;
-            padding: 1rem 1.1rem;
+            min-height: 46px;
+            padding: 0.75rem 0.95rem;
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 18px;
+            border-radius: 14px;
             color: #ffffff;
             transition: all 0.25s ease;
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -74,7 +102,7 @@
         }
 
         textarea.form-input {
-            min-height: 170px;
+            min-height: 125px;
             resize: vertical;
         }
 
@@ -86,17 +114,17 @@
         .btn-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            gap: 0.75rem;
+            margin-top: 1.2rem;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
             border: none;
             color: #ffffff;
-            padding: 1rem 1.6rem;
-            border-radius: 16px;
-            min-width: 180px;
+            padding: 0.8rem 1.35rem;
+            border-radius: 14px;
+            min-width: 150px;
             font-weight: 700;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 18px 30px rgba(22, 194, 226, 0.22);
@@ -162,6 +190,41 @@
             .glass-card {
                 padding: 28px;
             }
+
+            .form-card {
+                max-width: 680px;
+            }
+        }
+
+        [data-anchor="slide08"] .section-inner,
+        [data-anchor="slide09"] .section-inner,
+        [data-anchor="slide10"] .section-inner {
+            padding-top: 120px;
+        }
+
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+
+            .form-card h3 {
+                font-size: 1.15rem;
+            }
+
+            .form-subtitle {
+                font-size: 0.92rem;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+
+            [data-anchor="slide08"] .section-inner,
+            [data-anchor="slide09"] .section-inner,
+            [data-anchor="slide10"] .section-inner {
+                padding-top: 90px;
+            }
         }
     </style>
 {% endblock %}
@@ -203,7 +266,10 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
-                                <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
+                                <li data-menuanchor="slide08"><a href="#slide08">Réservation</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Zones protégées</a></li>
+                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
+
                             </ul>
                         </div>
                     </nav>
@@ -608,6 +674,68 @@
                 </div>
             </div>
         </div>
+        <!-- SLIDE 09 — Zone protégée -->
+        <div class="section animated-row" data-anchor="slide09">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Gérer les zones</span>
+                            <h2>Ajouter une zone protégée</h2>
+                        </div>
+                        <div class="reservations-section">
+                            <div class="row">
+                                <!-- Formulaire Zonep -->
+                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card">
+                                        <h3>Créer une zone protégée</h3>
+                                        <p class="form-subtitle">Renseignez les informations de la nouvelle zone</p>
+                                        {{ include('zonep/_form.html.twig', {
+                                            'form': form_zonep,
+                                            'button_label': 'Créer la zone',
+                                            'form_action': path('app_zonep_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10 — Survzone -->
+        <div class="section animated-row" data-anchor="slide10">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Suivi terrain</span>
+                            <h2>Ajouter une surveillance de zone</h2>
+                        </div>
+                        <div class="reservations-section">
+                            <div class="row">
+                                <!-- Formulaire Survzone -->
+                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card">
+                                        <h3>Créer une fiche de surveillance</h3>
+                                        <p class="form-subtitle">Enregistrez la date, la zone et vos observations</p>
+                                        {{ include('survzone/_form.html.twig', {
+                                            'form': form_survzone,
+                                            'button_label': 'Créer la surveillance',
+                                            'form_action': path('app_survzone_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>{# fin #fullpage #}
 
