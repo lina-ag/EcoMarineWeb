@@ -33,7 +33,8 @@ final class ZonepController extends AbstractController
             $entityManager->persist($zonep);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'La zone a été ajoutée avec succès !');
+            return $this->redirect($this->generateUrl('app_home') . '#slide208');
         }
 
         return $this->render('zonep/new.html.twig', [

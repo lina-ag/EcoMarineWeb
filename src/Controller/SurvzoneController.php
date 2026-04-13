@@ -33,7 +33,8 @@ final class SurvzoneController extends AbstractController
             $entityManager->persist($survzone);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'La surveillance a été ajoutée avec succès !');
+            return $this->redirect($this->generateUrl('app_home') . '#slide209');
         }
 
         return $this->render('survzone/new.html.twig', [
