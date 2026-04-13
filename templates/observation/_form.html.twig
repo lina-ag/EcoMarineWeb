@@ -1,33 +1,51 @@
 {{ form_start(form) }}
     <div class="form-grid">
-        <div class="form-group-settings">
-            {{ form_label(form.date_observation, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_observation, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.date_observation) }}
+        <div class="form-group-settings {% if form.animal.vars.errors|length > 0 %}has-error{% endif %}">
+            {{ form_label(form.animal, null, {'label_attr': {'class': 'form-label'}}) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.animal, {'attr': {'class': 'form-input form-select', 'required': 'required'}}) }}
+            {% if form.animal.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.animal) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.date_observation.vars.errors|length > 0 %}has-error{% endif %}">
+            {{ form_label(form.date_observation, null, {'label_attr': {'class': 'form-label'}}) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.date_observation, {'attr': {'class': 'form-input form-date', 'required': 'required'}}) }}
+            {% if form.date_observation.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.date_observation) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group-settings {% if form.temperature.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.temperature, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.temperature, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.temperature) }}
+            {% if form.temperature.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.temperature) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.meteo.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.meteo, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.meteo, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.meteo) }}
-        </div>
-
-        <div class="form-group-settings">
-            {{ form_label(form.id_animal, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.id_animal, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.id_animal) }}
+            {{ form_widget(form.meteo, {'attr': {'class': 'form-input form-select'}}) }}
+            {% if form.meteo.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.meteo) }}
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_observation_index') }}" class="btn btn-secondary">back to list</a>
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_observation_index') }}" class="btn btn-secondary">Retour à la liste</a>
     </div>
 
     {{ form_rest(form) }}
