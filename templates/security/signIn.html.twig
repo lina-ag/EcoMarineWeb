@@ -5,8 +5,8 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        body.auth-page {
-            background: linear-gradient(135deg, #1d5bf9 0%, #0c93ff 45%, #3ad9ff 100%);
+        .auth-page {
+            background: none;
             min-height: 100vh;
             color: #fff;
         }
@@ -80,10 +80,23 @@
             color: #ffffff;
             text-decoration: underline;
         }
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
+
+<video autoplay muted loop class="video-bg">
+    <source src="/assets/images/video-bg.mp4" type="video/mp4">
+</video>
 
 <div class="auth-container auth-page">
     <div class="auth-card">
