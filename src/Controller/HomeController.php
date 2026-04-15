@@ -2,31 +2,30 @@
 
 namespace App\Controller;
 
-use App\Form\ReservationType;
-use App\Form\ZonepType;
-use App\Form\SurvzoneType;
+use App\Entity\ActiviteEcologique;
+use App\Entity\DetectionDrone;
+use App\Entity\FauneMarine;
+use App\Entity\MissionDrone;
+use App\Entity\Observation;
+use App\Entity\PredictionEchouage;
+use App\Entity\Survzone;
+use App\Entity\Utilisateur;
+use App\Entity\Zonep;
+use App\Form\ActiviteEcologiqueType;
+use App\Form\DetectionDroneType;
 use App\Form\FauneMarineType;
+use App\Form\MissionDroneType;
 use App\Form\ObservationType;
 use App\Form\PredictionEchouageType;
-use App\Form\MissionDroneType;
-use App\Form\DetectionDroneType;
-use App\Form\ActiviteEcologiqueType;
+use App\Form\ReservationType;
+use App\Form\SurvzoneType;
+use App\Form\UtilisateurType;
+use App\Form\ZonepType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Form\UtilisateurType;
-use App\Entity\Utilisateur;
-use App\Entity\FauneMarine;
-use App\Entity\Observation;
-use App\Entity\PredictionEchouage;
-use App\Entity\MissionDrone;
-use App\Entity\DetectionDrone;
-use App\Entity\Reservation;
-use App\Entity\Zonep;
-use App\Entity\Survzone;
-use App\Entity\ActiviteEcologique;
 
 final class HomeController extends AbstractController
 {
@@ -35,8 +34,8 @@ final class HomeController extends AbstractController
     {
         $form = $this->createForm(UtilisateurType::class, new Utilisateur());
         $formReservation = $this->createForm(ReservationType::class);
-        $zonepForm = $this->createForm(ZonepType::class);
-        $survzoneForm = $this->createForm(SurvzoneType::class);
+        $zonepForm = $this->createForm(ZonepType::class, new Zonep());
+        $survzoneForm = $this->createForm(SurvzoneType::class, new Survzone());
         $activiteForm = $this->createForm(ActiviteEcologiqueType::class, new ActiviteEcologique());
         $fauneMarineForm = $this->createForm(FauneMarineType::class, new FauneMarine());
         $observationForm = $this->createForm(ObservationType::class, new Observation());
@@ -47,7 +46,14 @@ final class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
             'form' => $form->createView(),
+
+            // Variables used by the current home slides/partials.
             'form_reservation' => $formReservation->createView(),
+            'form_activite' => $activiteForm->createView(),
+            'form_zonep' => $zonepForm->createView(),
+            'form_survzone' => $survzoneForm->createView(),
+
+            // Compatibility aliases used by other blocks in the same template.
             'zonepForm' => $zonepForm->createView(),
             'survzoneForm' => $survzoneForm->createView(),
             'activiteForm' => $activiteForm->createView(),
@@ -56,39 +62,6 @@ final class HomeController extends AbstractController
             'predictionForm' => $predictionForm->createView(),
             'missionDroneForm' => $missionDroneForm->createView(),
             'detectionDroneForm' => $detectionDroneForm->createView(),
-        ]);
-    }
-}
-            'form_reservation' => $formReservation->createView(),
-            'zonepForm' => $zonepForm->createView(),
-            'survzoneForm' => $survzoneForm->createView(),
-            'fauneMarineForm' => $fauneMarineForm->createView(),
-            'observationForm' => $observationForm->createView(),
-            'predictionForm' => $predictionForm->createView(),
-            'missionDroneForm' => $missionDroneForm->createView(),
-            'detectionDroneForm' => $detectionDroneForm->createView(),
-=======
-        $reservation = new Reservation();
-        $form_reservation = $this->createForm(ReservationType::class, $reservation);
-        
-        $activiteEcologique = new ActiviteEcologique();
-        $form_activite = $this->createForm(ActiviteEcologiqueType::class, $activiteEcologique);
-        
-        $zonep = new Zonep();
-        $form_zonep = $this->createForm(ZonepType::class, $zonep);
-        
-        $survzone = new Survzone();
-        $form_survzone = $this->createForm(SurvzoneType::class, $survzone);
-        
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-            'form_reservation' => $form_reservation,
-            'form_activite' => $form_activite,
-            'form_zonep' => $form_zonep,
-            'form_survzone' => $form_survzone,
-            'zonepForm' => $form_zonep,
-            'survzoneForm' => $form_survzone,
->>>>>>> 5209fc2d120843fb405f05322fa4127f76a5b7ae
         ]);
     }
 }

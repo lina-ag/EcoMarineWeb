@@ -23,6 +23,16 @@
                         <td>{{ reservation.nom }}</td>
                     </tr>
                     <tr>
+                        <th>Activité</th>
+                        <td>
+                            {% if reservation.activiteEcologique %}
+                                {{ reservation.activiteEcologique.nomActivite }}
+                            {% else %}
+                                <span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background: #fee2e2; color: #b91c1c; font-weight: 600;">Activité annulée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Date réservation</th>
                         <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
                     </tr>
