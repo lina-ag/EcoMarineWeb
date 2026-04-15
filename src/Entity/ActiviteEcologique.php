@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 use App\Repository\ActiviteEcologiqueRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActiviteEcologiqueRepository::class)]
 #[ORM\Table(name: 'activite_ecologique')]
@@ -30,6 +31,17 @@ class ActiviteEcologique
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire ')]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins 3 caracteres',
+        maxMessage: 'Le nom ne peut pas depasser 100 caracteres'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ0-9\s\-]+$/u',
+        message: 'Le nom ne doit pas contenir de caracteres speciaux'
+    )]
     private ?string $nom_activite = null;
 
     public function getNom_activite(): ?string
@@ -44,6 +56,11 @@ class ActiviteEcologique
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotNull(message: 'La date est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 'today',
+        message: 'La date doit etre aujourd\'hui ou dans le futur'
+    )]
     private ?\DateTimeInterface $date_activite = null;
 
     public function getDate_activite(): ?\DateTimeInterface
@@ -58,6 +75,13 @@ class ActiviteEcologique
     }
 
     #[ORM\Column(type: 'integer', nullable: false)]
+    #[Assert\NotNull(message: 'La capacite est obligatoire')]
+    #[Assert\Positive(message: 'La capacite doit etre un nombre positif')]
+    #[Assert\Range(
+        min: 1,
+        max: 500,
+        notInRangeMessage: 'La capacite doit etre entre 1 et 500'
+    )]
     private ?int $capacite = null;
 
     public function getCapacite(): ?int
@@ -72,6 +96,10 @@ class ActiviteEcologique
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'La description ne peut pas depasser 1000 caracteres'
+    )]
     private ?string $description = null;
 
     public function getDescription(): ?string

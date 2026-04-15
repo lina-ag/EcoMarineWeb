@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\SurvzoneRepository;
 use App\Entity\Zonep;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SurvzoneRepository::class)]
 #[ORM\Table(name: 'survzone')]
@@ -28,6 +29,9 @@ class Survzone
     }
 
     #[ORM\Column(name: 'dateSurv', type: 'date', nullable: false)]
+    #[Assert\NotBlank(message: 'La date est obligatoire')]
+    #[Assert\LessThanOrEqual(value: 'today', message: 'La date ne peut pas être dans le futur')]
+    #[Assert\GreaterThanOrEqual(value: '-10 years', message: 'La date ne peut pas être antérieure à 10 ans')]
     private ?\DateTimeInterface $dateSurv = null;
 
     public function getDateSurv(): ?\DateTimeInterface
@@ -42,6 +46,8 @@ class Survzone
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: 'L\'observation est obligatoire')]
+    #[Assert\Length(max: 1000, maxMessage: 'L\'observation ne peut pas dépasser {{ limit }} caractères')]
     private ?string $observation = null;
 
     public function getObservation(): ?string
@@ -57,6 +63,7 @@ class Survzone
 
     #[ORM\ManyToOne(targetEntity: Zonep::class)]
     #[ORM\JoinColumn(name: "idZone", referencedColumnName: "idZone", nullable: false)]
+    #[Assert\NotBlank(message: 'La zone est obligatoire')]
     private ?Zonep $zone = null;
 
     public function getZone(): ?Zonep

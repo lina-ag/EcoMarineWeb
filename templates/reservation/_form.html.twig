@@ -1,4 +1,10 @@
-{{ form_start(form, {'attr': {'class': 'reservation-form'}, 'action': form_action|default(path('app_reservation_new'))}) }}
+{% set reservation_form_options = {'attr': {'class': 'reservation-form'}} %}
+{% if form_action is defined and form_action %}
+    {% set reservation_form_options = reservation_form_options|merge({'action': form_action}) %}
+{% endif %}
+
+{{ form_start(form, reservation_form_options) }}
+    {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -7,9 +13,26 @@
         </div>
 
         <div class="form-group-settings">
-            {{ form_label(form.date_reservation, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_reservation, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.date_reservation) }}
+            {{ form_label(form.date_reservation_choice, null, {'label_attr': {'class': 'form-label'}}) }}
+            <select
+                id="{{ form.date_reservation_choice.vars.id }}"
+                name="{{ form.date_reservation_choice.vars.full_name }}"
+                class="form-input"
+                required
+            >
+                <option value="">-- Choisissez une date --</option>
+                {% if form.date_reservation_choice.vars.value %}
+                    <option value="{{ form.date_reservation_choice.vars.value }}" selected>{{ form.date_reservation_choice.vars.value }}</option>
+                {% endif %}
+            </select>
+            {% do form.date_reservation_choice.setRendered() %}
+            <div style="display:none;">
+                {{ form_widget(form.date_reservation) }}
+            </div>
+            <small id="activity-date-hint" style="display:block; margin-top:6px; color:#b91c1c; font-weight:600;">
+                Choisissez d'abord une activité pour voir la date autorisée.
+            </small>
+            {{ form_errors(form.date_reservation_choice) }}
         </div>
 
         <div class="form-group-settings">
@@ -37,3 +60,128 @@
 
     {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<script>
+(() => {
+    const activitySelect = document.getElementById('{{ form.activiteEcologique.vars.id }}');
+    const dateSelect = document.getElementById('{{ form.date_reservation_choice.vars.id }}');
+    const dateHiddenInput = document.getElementById('{{ form.date_reservation.vars.id }}');
+    const hint = document.getElementById('activity-date-hint');
+    const urlTemplate = '{{ path('app_reservation_activity_date', {'id_activite': '__ID__'})|e('js') }}';
+
+    if (!activitySelect || !dateSelect || !dateHiddenInput || !hint) {
+        return;
+    }
+
+    // Keep one visible option per activity name (recurrence occurrences share the same name).
+    const dedupeActivityOptions = () => {
+        const seen = new Set();
+        const currentValue = activitySelect.value;
+
+        Array.from(activitySelect.options).forEach((option) => {
+            if (!option.value) {
+                return;
+            }
+
+            const key = option.textContent ? option.textContent.trim().toLowerCase() : '';
+            if (!key) {
+                return;
+            }
+
+            if (seen.has(key) && option.value !== currentValue) {
+                option.remove();
+                return;
+            }
+
+            seen.add(key);
+        });
+    };
+
+    const resetDateChoices = () => {
+        dateSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- Choisissez une date --';
+        dateSelect.appendChild(placeholder);
+        dateSelect.value = '';
+        dateHiddenInput.value = '';
+        hint.textContent = 'Choisissez d\'abord une activité pour voir la date autorisée.';
+    };
+
+    const formatDateFr = (isoDate) => {
+        if (!isoDate || !isoDate.includes('-')) {
+            return isoDate;
+        }
+
+        const [year, month, day] = isoDate.split('-');
+        return day + '/' + month + '/' + year;
+    };
+
+    const applyAllowedDates = (allowedDates) => {
+        const previousValue = dateSelect.value;
+
+        dateSelect.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- Choisissez une date --';
+        dateSelect.appendChild(placeholder);
+
+        for (const allowedDate of allowedDates) {
+            const option = document.createElement('option');
+            option.value = allowedDate;
+            option.textContent = formatDateFr(allowedDate);
+            dateSelect.appendChild(option);
+        }
+
+        if (previousValue && allowedDates.includes(previousValue)) {
+            dateSelect.value = previousValue;
+        } else {
+            dateSelect.value = '';
+        }
+
+        dateHiddenInput.value = dateSelect.value;
+
+        hint.textContent = 'Dates autorisées: ' + allowedDates.map(formatDateFr).join(' / ');
+    };
+
+    dateSelect.addEventListener('change', () => {
+        dateHiddenInput.value = dateSelect.value || '';
+    });
+
+    const updateAllowedDate = async () => {
+        if (!urlTemplate || !activitySelect.value) {
+            resetDateChoices();
+            return;
+        }
+
+        try {
+            const response = await fetch(urlTemplate.replace('__ID__', encodeURIComponent(activitySelect.value)), {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                resetDateChoices();
+                return;
+            }
+
+            const data = await response.json();
+            if (!Array.isArray(data.dates) || data.dates.length === 0) {
+                resetDateChoices();
+                return;
+            }
+
+            applyAllowedDates(data.dates);
+        } catch (e) {
+            resetDateChoices();
+            return;
+        }
+    };
+
+    activitySelect.addEventListener('change', updateAllowedDate);
+    dedupeActivityOptions();
+    updateAllowedDate();
+})();
+</script>

@@ -16,6 +16,30 @@ class ActiviteEcologiqueRepository extends ServiceEntityRepository
         parent::__construct($registry, ActiviteEcologique::class);
     }
 
+    /**
+     * @return string[] Dates au format Y-m-d pour toutes les occurrences d'une activité (même nom).
+     */
+    public function findDatesForReservationByName(string $activityName): array
+    {
+        $rows = $this->createQueryBuilder('a')
+            ->select('a.date_activite')
+            ->andWhere('a.nom_activite = :name')
+            ->setParameter('name', $activityName)
+            ->orderBy('a.date_activite', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $dates = [];
+        foreach ($rows as $row) {
+            $date = $row['date_activite'] ?? null;
+            if ($date instanceof \DateTimeInterface) {
+                $dates[] = $date->format('Y-m-d');
+            }
+        }
+
+        return array_values(array_unique($dates));
+    }
+
     //    /**
     //     * @return ActiviteEcologique[] Returns an array of ActiviteEcologique objects
     //     */
