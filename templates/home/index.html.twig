@@ -4,6 +4,15 @@
 
 {% block body %}
 
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endfor %}
+
 {% for message in app.flashes('error') %}
     <div class="alert alert-danger alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
         {{ message }}
@@ -443,7 +452,7 @@
                                         {{ include('reservation/_form.html.twig', {
                                             'form': form_reservation, 
                                             'button_label': 'Réserver',
-                                            'form_action': path('app_reservation_new'),
+                                            'form_action': path('app_reservation_new', {'source': 'front'}),
                                             'show_back_button': false
                                         }) }}
                                     </div>
@@ -474,7 +483,7 @@
                                         {{ include('activite_ecologique/_form.html.twig', {
                                             'form': form_activite,
                                             'button_label': 'Créer l\'activité',
-                                            'form_action': path('app_activite_ecologique_new'),
+                                            'form_action': path('app_activite_ecologique_new', {'source': 'front'}),
                                             'show_back_button': false
                                         }) }}
                                     </div>
