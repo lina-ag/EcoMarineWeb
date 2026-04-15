@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\ZonepRepository;
 
@@ -29,6 +30,17 @@ class Zonep
     }
 
     #[ORM\Column(name: 'nomZone', type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le nom de la zone est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'Le nom ne doit pas depasser {{ limit }} caracteres.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}\s\-\'\.]+$/u',
+        message: 'Le nom contient des caracteres non autorises.'
+    )]
     private ?string $nomZone = null;
 
     public function getNomZone(): ?string
@@ -43,6 +55,17 @@ class Zonep
     }
 
     #[ORM\Column(name: 'categorieZone', type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'La categorie est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 80,
+        minMessage: 'La categorie doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'La categorie ne doit pas depasser {{ limit }} caracteres.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}\s\-\'\.]+$/u',
+        message: 'La categorie contient des caracteres non autorises.'
+    )]
     private ?string $categorieZone = null;
 
     public function getCategorieZone(): ?string
@@ -57,6 +80,7 @@ class Zonep
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
     private ?string $status = null;
 
     public function getStatus(): ?string
