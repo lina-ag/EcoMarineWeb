@@ -168,19 +168,20 @@
 </section>
 
 {# Tableau des dernières réservations + activité #}
-<section class="content-grid">
-    <div class="glass-card table-card">
+<section class="content-grid reservation-showcase">
+    <div class="glass-card table-card reservation-table-card">
         <div class="card-header">
-            <div>
+            <div class="reservation-heading-wrap">
+                <span class="reservation-kicker">Admin Reservation</span>
                 <h2 class="card-title">Dernières Réservations</h2>
                 <p class="card-subtitle">Activités récemment réservées</p>
             </div>
             <div class="card-actions">
-                <button class="card-btn">Voir tout</button>
-                <button class="card-btn">Exporter</button>
+                <a href="{{ path('app_reservation_index') }}" class="card-btn reservation-btn">Voir tout</a>
+                <button type="button" class="card-btn reservation-btn">Exporter</button>
             </div>
         </div>
-        <div class="table-wrapper">
+        <div class="table-wrapper reservation-table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -195,7 +196,7 @@
                         {% set nameParts = reservation.nom ? reservation.nom|split(' ') : [] %}
                         {% set firstInitial = nameParts|length > 0 and nameParts[0] is not empty ? nameParts[0]|slice(0, 1)|upper : 'R' %}
                         {% set secondInitial = nameParts|length > 1 and nameParts[1] is not empty ? nameParts[1]|slice(0, 1)|upper : '' %}
-                        <tr>
+                        <tr class="reservation-row" style="--row-index: {{ loop.index0 }};">
                             <td>
                                 <div class="table-user">
                                     <div class="table-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">{{ firstInitial ~ secondInitial }}</div>
@@ -220,7 +221,7 @@
     </div>
 
     {# Activité récente #}
-    <div class="glass-card activity-card">
+    <div class="glass-card activity-card reservation-activity-card">
         <div class="card-header">
             <div>
                 <h2 class="card-title">Activité Récente</h2>

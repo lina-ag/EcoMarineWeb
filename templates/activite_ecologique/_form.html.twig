@@ -1,4 +1,6 @@
-{{ form_start(form, {'attr': {'class': 'activity-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+{% set isRecurringChecked = form.is_recurring.vars.checked ? true : false %}
+
+{{ form_start(form, {'attr': {'class': 'activity-form reservation-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
     {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
@@ -26,18 +28,24 @@
         </div>
 
         <div class="form-group-settings full-width">
-            <label class="checkbox-label" style="font-weight: 600;">
-                {{ form_widget(form.is_recurring) }}
+            <label class="checkbox-label activity-recurring-toggle">
+                {{ form_widget(form.is_recurring, {
+                    'attr': {
+                        'onchange': "(function(el){var box=document.getElementById('" ~ form.is_recurring.vars.id ~ "_recurrence_box');if(!box){return;}var on=!!el.checked;box.style.display=on?'block':'none';box.setAttribute('aria-hidden',on?'false':'true');var checks=box.querySelectorAll('input[type=checkbox]');checks.forEach(function(i){i.disabled=!on;});var end=document.getElementById('" ~ form.recurrence_end_date.vars.id ~ "');if(end){end.disabled=!on;}})(this)",
+                        'oninput': "this.onchange && this.onchange()",
+                        'onclick': "this.onchange && this.onchange()"
+                    }
+                }) }}
                 <span>{{ form.is_recurring.vars.label }}</span>
             </label>
             {{ form_errors(form.is_recurring) }}
         </div>
 
-        <div id="{{ form.is_recurring.vars.id }}_recurrence_box" class="form-group-settings full-width" style="padding:16px; border:1px solid var(--glass-border); border-radius:12px;">
+        <div id="{{ form.is_recurring.vars.id }}_recurrence_box" class="form-group-settings full-width activity-recurrence-shell{% if isRecurringChecked %} is-open{% endif %}" aria-hidden="{{ isRecurringChecked ? 'false' : 'true' }}" style="{% if not isRecurringChecked %}display:none;{% endif %}">
             <label class="form-label" style="margin-bottom:10px;">{{ form.recurrence_days.vars.label }}</label>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+            <div class="activity-recurrence-days">
                 {% for dayField in form.recurrence_days %}
-                    <label style="display:inline-flex; gap:6px; align-items:center; padding:6px 10px; border:1px solid var(--glass-border); border-radius:10px;">
+                    <label class="activity-recurrence-chip">
                         {{ form_widget(dayField) }}
                         <span>{{ dayField.vars.label }}</span>
                     </label>
@@ -45,20 +53,20 @@
             </div>
             {{ form_errors(form.recurrence_days) }}
 
-            <div class="form-group-settings" style="margin-bottom:0;">
+            <div class="form-group-settings activity-recurrence-end-date">
                 {{ form_label(form.recurrence_end_date, null, {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.recurrence_end_date, {'attr': {'class': 'form-input', 'type': 'date'}}) }}
                 {{ form_errors(form.recurrence_end_date) }}
             </div>
 
-            <small id="{{ form.is_recurring.vars.id }}_recurrence_preview" style="display:block; margin-top:8px; color: var(--text-secondary);">Aucun jour sélectionné</small>
+            <small id="{{ form.is_recurring.vars.id }}_recurrence_preview" class="activity-recurrence-preview">Aucun jour sélectionné</small>
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <button class="btn btn-primary reservation-admin-cta">{{ button_label|default('Enregistrer') }}</button>
         {% if show_back_button is not defined or show_back_button %}
-            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary reservation-admin-action-btn">Retour à la liste</a>
         {% endif %}
     </div>
 
@@ -67,16 +75,11 @@
 
 <script>
 (() => {
-    const formElement = document.getElementById('{{ form.vars.id }}');
-    if (!formElement) {
-        return;
-    }
-
-    const recurringToggle = formElement.querySelector('#{{ form.is_recurring.vars.id }}');
-    const recurrenceBox = formElement.querySelector('#{{ form.is_recurring.vars.id }}_recurrence_box');
-    const preview = formElement.querySelector('#{{ form.is_recurring.vars.id }}_recurrence_preview');
-    const startDateInput = formElement.querySelector('#{{ form.date_activite.vars.id }}');
-    const endDateInput = formElement.querySelector('#{{ form.recurrence_end_date.vars.id }}');
+    const recurringToggle = document.getElementById('{{ form.is_recurring.vars.id }}');
+    const recurrenceBox = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_box');
+    const preview = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_preview');
+    const startDateInput = document.getElementById('{{ form.date_activite.vars.id }}');
+    const endDateInput = document.getElementById('{{ form.recurrence_end_date.vars.id }}');
     const dayInputs = recurrenceBox ? recurrenceBox.querySelectorAll('input[type="checkbox"]') : [];
 
     if (!recurringToggle || !recurrenceBox || !preview) {
@@ -121,8 +124,10 @@
     };
 
     const syncVisibility = () => {
-        const enabled = recurringToggle.checked;
-        recurrenceBox.style.display = enabled ? 'block' : 'none';
+        const enabled = Boolean(recurringToggle.checked);
+        recurrenceBox.style.display = enabled ? '' : 'none';
+        recurrenceBox.classList.toggle('is-open', enabled);
+        recurrenceBox.setAttribute('aria-hidden', enabled ? 'false' : 'true');
 
         dayInputs.forEach((input) => {
             input.disabled = !enabled;
@@ -135,6 +140,8 @@
 
     dayInputs.forEach((input) => input.addEventListener('change', updatePreview));
     recurringToggle.addEventListener('change', syncVisibility);
+    recurringToggle.addEventListener('input', syncVisibility);
+    recurringToggle.addEventListener('click', () => requestAnimationFrame(syncVisibility));
     setupDatePicker(startDateInput);
     setupDatePicker(endDateInput);
 
