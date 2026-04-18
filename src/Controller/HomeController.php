@@ -21,6 +21,7 @@ use App\Form\ReservationType;
 use App\Form\SurvzoneType;
 use App\Form\UtilisateurType;
 use App\Form\ZonepType;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +35,10 @@ final class HomeController extends AbstractController
     {
         $form = $this->createForm(UtilisateurType::class, new Utilisateur());
         $formReservation = $this->createForm(ReservationType::class);
+
+        $zonepForm = $this->createForm(ZonepType::class);
+        $survzoneForm = $this->createForm(SurvzoneType::class);
+
         $zonepForm = $this->createForm(ZonepType::class, new Zonep());
         $survzoneForm = $this->createForm(SurvzoneType::class, new Survzone());
         $activiteForm = $this->createForm(ActiviteEcologiqueType::class, new ActiviteEcologique());
@@ -43,12 +48,17 @@ final class HomeController extends AbstractController
         $missionDroneForm = $this->createForm(MissionDroneType::class, new MissionDrone());
         $detectionDroneForm = $this->createForm(DetectionDroneType::class, new DetectionDrone());
 
+
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
             'form' => $form->createView(),
 
             // Variables used by the current home slides/partials.
             'form_reservation' => $formReservation->createView(),
+
+            'zonepForm' => $zonepForm->createView(),
+            'survzoneForm' => $survzoneForm->createView(),
+
             'form_activite' => $activiteForm->createView(),
             'form_zonep' => $zonepForm->createView(),
             'form_survzone' => $survzoneForm->createView(),
@@ -62,6 +72,7 @@ final class HomeController extends AbstractController
             'predictionForm' => $predictionForm->createView(),
             'missionDroneForm' => $missionDroneForm->createView(),
             'detectionDroneForm' => $detectionDroneForm->createView(),
+
         ]);
     }
 }

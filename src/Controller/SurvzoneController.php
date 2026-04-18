@@ -33,6 +33,7 @@ final class SurvzoneController extends AbstractController
             $entityManager->persist($survzone);
             $entityManager->flush();
 
+            $this->addFlash('success', 'La surveillance a été ajoutée avec succès !');
             return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -59,6 +60,7 @@ final class SurvzoneController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', 'La surveillance a été modifiée avec succès !');
             return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,6 +76,7 @@ final class SurvzoneController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$survzone->getIdSurv(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($survzone);
             $entityManager->flush();
+            $this->addFlash('success', 'La surveillance a été supprimée avec succès !');
         }
 
         return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);

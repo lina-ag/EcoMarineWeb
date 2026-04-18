@@ -1,4 +1,4 @@
-{{ form_start(form, {'attr': {'class': 'reservation-form'}, 'action': form_action|default(path('app_survzone_new'))}) }}
+{{ form_start(form, {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}}) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
