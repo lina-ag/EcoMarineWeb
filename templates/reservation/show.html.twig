@@ -3,15 +3,16 @@
 {% block title %}Détail réservation{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
+    <section class="glass-card reservation-admin-shell reservation-admin-shell-show">
         <div class="card-header">
-            <div>
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">Reservation Panel</span>
                 <h2 class="card-title">Réservation de {{ reservation.nom }}</h2>
                 <p class="card-subtitle">Consultation des informations de réservation.</p>
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
                 <tbody>
                     <tr>
@@ -21,6 +22,16 @@
                     <tr>
                         <th>Nom</th>
                         <td>{{ reservation.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Activité</th>
+                        <td>
+                            {% if reservation.activiteEcologique %}
+                                {{ reservation.activiteEcologique.nomActivite }}
+                            {% else %}
+                                <span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background: #fee2e2; color: #b91c1c; font-weight: 600;">Activité annulée</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <th>Date réservation</th>

@@ -1,51 +1,83 @@
 {{ form_start(form) }}
     <div class="form-grid">
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.date_prediction.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.date_prediction, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_prediction, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.date_prediction) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.date_prediction, {'attr': {'class': 'form-input form-date', 'required': 'required'}}) }}
+            {% if form.date_prediction.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.date_prediction) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.zone.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.zone, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.zone, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.zone) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.zone, {'attr': {'class': 'form-input form-select', 'required': 'required'}}) }}
+            {% if form.zone.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.zone) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.niveau_risque.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.niveau_risque, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.niveau_risque, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.niveau_risque) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.niveau_risque, {'attr': {'class': 'form-input', 'required': 'required'}}) }}
+            {% if form.niveau_risque.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.niveau_risque) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.espece_concernee.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.espece_concernee, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.espece_concernee, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.espece_concernee) }}
+            {% if form.espece_concernee.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.espece_concernee) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.temperature_eau.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.temperature_eau, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.temperature_eau, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.temperature_eau) }}
+            {% if form.temperature_eau.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.temperature_eau) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.conditions_meteo.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.conditions_meteo, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.conditions_meteo, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.conditions_meteo) }}
+            {{ form_widget(form.conditions_meteo, {'attr': {'class': 'form-input form-select'}}) }}
+            {% if form.conditions_meteo.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.conditions_meteo) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings full-width {% if form.recommandations.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.recommandations, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.recommandations, {'attr': {'class': 'form-input', 'rows': 5}}) }}
-            {{ form_errors(form.recommandations) }}
+            <small class="form-help-text">Maximum 3000 caractères</small>
+            {% if form.recommandations.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.recommandations) }}
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_prediction_echouage_index') }}" class="btn btn-secondary">back to list</a>
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_prediction_echouage_index') }}" class="btn btn-secondary">Retour à la liste</a>
     </div>
 
     {{ form_rest(form) }}

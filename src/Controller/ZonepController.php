@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Zonep;
@@ -14,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/zonep')]
 final class ZonepController extends AbstractController
 {
-    #[Route(name: 'app_zonep_index', methods: ['GET'])]
+    #[Route('', name: 'app_zonep_index', methods: ['GET'])]
     public function index(ZonepRepository $zonepRepository): Response
     {
         return $this->render('zonep/index.html.twig', [
@@ -32,9 +31,7 @@ final class ZonepController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($zonep);
             $entityManager->flush();
-
-            $this->addFlash('success', 'La zone a été ajoutée avec succès !');
-            return $this->redirect($this->generateUrl('app_home') . '#slide208');
+            return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('zonep/new.html.twig', [
@@ -43,23 +40,34 @@ final class ZonepController extends AbstractController
         ]);
     }
 
-    #[Route('/{idZone}', name: 'app_zonep_show', methods: ['GET'])]
-    public function show(Zonep $zonep): Response
+    #[Route('/{idZone}', name: 'app_zonep_show', methods: ['GET'], requirements: ['idZone' => '\d+'])]
+    public function show(ZonepRepository $zonepRepository, int $idZone): Response
     {
+        $zonep = $zonepRepository->find($idZone);
+
+        if (!$zonep) {
+            throw $this->createNotFoundException('Zone introuvable.');
+        }
+
         return $this->render('zonep/show.html.twig', [
             'zonep' => $zonep,
         ]);
     }
 
-    #[Route('/{idZone}/edit', name: 'app_zonep_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Zonep $zonep, EntityManagerInterface $entityManager): Response
+    #[Route('/{idZone}/edit', name: 'app_zonep_edit', methods: ['GET', 'POST'], requirements: ['idZone' => '\d+'])]
+    public function edit(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
     {
+        $zonep = $zonepRepository->find($idZone);
+
+        if (!$zonep) {
+            throw $this->createNotFoundException('Zone introuvable.');
+        }
+
         $form = $this->createForm(ZonepType::class, $zonep);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -69,10 +77,12 @@ final class ZonepController extends AbstractController
         ]);
     }
 
-    #[Route('/{idZone}', name: 'app_zonep_delete', methods: ['POST'])]
-    public function delete(Request $request, Zonep $zonep, EntityManagerInterface $entityManager): Response
+    #[Route('/{idZone}/delete', name: 'app_zonep_delete', methods: ['POST'], requirements: ['idZone' => '\d+'])]
+    public function delete(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$zonep->getIdZone(), $request->getPayload()->getString('_token'))) {
+        $zonep = $zonepRepository->find($idZone);
+
+        if ($zonep && $this->isCsrfTokenValid('delete'.$zonep->getIdZone(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($zonep);
             $entityManager->flush();
         }

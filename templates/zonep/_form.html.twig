@@ -1,4 +1,4 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}}) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -14,14 +14,13 @@
 
         <div class="form-group-settings full-width">
             {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.status, {'attr': {'class': 'form-input', 'placeholder': 'Actif, En surveillance, etc.'}}) }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.status) }}
         </div>
     </div>
 
     <div class="btn-group">
         <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">back to list</a>
     </div>
 
     {{ form_rest(form) }}
