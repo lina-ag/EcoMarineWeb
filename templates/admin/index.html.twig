@@ -81,6 +81,42 @@
         </div>
     </div>
 
+    <div class="glass-card glass-card-3d stat-card">
+        <div class="stat-card-inner">
+            <div class="stat-info">
+                <h3>Zones Protégées</h3>
+                <div class="stat-value">{{ kpi.protected_zones }}</div>
+                <span class="stat-change positive">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    Zones enregistrées
+                </span>
+            </div>
+            <div class="stat-icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card glass-card-3d stat-card">
+        <div class="stat-card-inner">
+            <div class="stat-info">
+                <h3>Surveillances</h3>
+                <div class="stat-value">{{ kpi.surveillances }}</div>
+                <span class="stat-change positive">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    Total surveillances
+                </span>
+            </div>
+            <div class="stat-icon magenta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--magenta)" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
 </section>
 
 {# Graphiques #}

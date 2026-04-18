@@ -15,6 +15,7 @@ use App\Repository\ReservationRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\VolontaireRepository;
 use App\Repository\ZonePlageRepository;
+use App\Repository\SurvzoneRepository;
 use App\Repository\ZonepRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,7 @@ final class AdminController extends AbstractController
         VolontaireRepository $volontaireRepository,
         ZonePlageRepository $zonePlageRepository,
         ZonepRepository $zonepRepository,
+        SurvzoneRepository $survzoneRepository,
     ): Response
     {
         $now = new \DateTimeImmutable('now');
@@ -96,6 +98,7 @@ final class AdminController extends AbstractController
         $totalVolunteers = $volontaireRepository->count([]);
         $totalBeachZones = $zonePlageRepository->count([]);
         $totalProtectedZones = $zonepRepository->count([]);
+        $totalSurveillances = $survzoneRepository->count([]);
 
         $totalWasteQuantity = $this->sumWasteQuantity($dechetRepository);
         $wasteByZone = $this->buildWasteByZoneChart($dechetRepository);
@@ -137,7 +140,8 @@ final class AdminController extends AbstractController
                 'items' => [
                     ['label' => 'Missions', 'value' => $totalDroneMissions],
                     ['label' => 'Detections', 'value' => $totalDroneDetections],
-                    ['label' => 'Zones surveillees', 'value' => $totalBeachZones + $totalProtectedZones],
+                    ['label' => 'Zones protegees', 'value' => $totalProtectedZones],
+                    ['label' => 'Surveillances', 'value' => $totalSurveillances],
                 ],
             ],
             [
@@ -157,6 +161,8 @@ final class AdminController extends AbstractController
                 'visitors' => $totalVisitors,
                 'waste_quantity' => $totalWasteQuantity,
                 'drone_detections' => $totalDroneDetections,
+                'protected_zones' => $totalProtectedZones,
+                'surveillances' => $totalSurveillances,
             ],
             'metrics' => [
                 'reservations_current_month' => $reservationsCurrentMonth,
@@ -166,6 +172,8 @@ final class AdminController extends AbstractController
                 'new_activities_current_month' => $newActivitiesCurrentMonth,
                 'waste_records' => $totalWasteRecords,
                 'drone_missions' => $totalDroneMissions,
+                'protected_zones' => $totalProtectedZones,
+                'surveillances' => $totalSurveillances,
             ],
             'latest_reservations' => $latestReservations,
             'charts' => [
