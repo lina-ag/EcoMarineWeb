@@ -3,23 +3,25 @@
 {% block title %}Réservations{% endblock %}
 
 {% block body %}
-    <section class="glass-card table-card">
+    <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list">
         <div class="card-header">
-            <div>
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">Reservation Panel</span>
                 <h2 class="card-title">Liste des réservations</h2>
                 <p class="card-subtitle">Suivi des réservations enregistrées.</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_reservation_new') }}" class="btn btn-primary">Créer une réservation</a>
+                <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">Créer une réservation</a>
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Id réservation</th>
                         <th>Nom</th>
+                        <th>Activité</th>
                         <th>Date réservation</th>
                         <th>Email</th>
                         <th>Nombre personnes</th>
@@ -28,20 +30,29 @@
                 </thead>
                 <tbody>
                 {% for reservation in reservations %}
-                    <tr>
+                    <tr class="reservation-admin-row" style="--reservation-row-index: {{ loop.index0 }};">
                         <td>{{ reservation.idReservation }}</td>
                         <td>{{ reservation.nom }}</td>
+                        <td>
+                            {% if reservation.activiteEcologique %}
+                                {{ reservation.activiteEcologique.nomActivite }}
+                            {% else %}
+                                <span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background: #fee2e2; color: #b91c1c; font-weight: 600;">Activité annulée</span>
+                            {% endif %}
+                        </td>
                         <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
                         <td>{{ reservation.email }}</td>
                         <td>{{ reservation.nombrePersonnes }}</td>
                         <td>
-                            <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-secondary">Voir</a>
-                            <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary">Modifier</a>
+                            <div class="reservation-admin-actions">
+                                <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-secondary reservation-admin-action-btn">Voir</a>
+                                <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary reservation-admin-action-btn">Modifier</a>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6">Aucun enregistrement trouvé</td>
+                        <td colspan="7">Aucun enregistrement trouvé</td>
                     </tr>
                 {% endfor %}
                 </tbody>

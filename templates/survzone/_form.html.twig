@@ -1,4 +1,4 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}}) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -21,7 +21,6 @@
 
     <div class="btn-group">
         <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">back to list</a>
     </div>
 
     {{ form_rest(form) }}

@@ -13,4 +13,7 @@
 
         {{ include('utilisateur/_form.html.twig') }}
     </section>
+    {% for message in app.flashes('error') %}
+    <div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
 {% endblock %}

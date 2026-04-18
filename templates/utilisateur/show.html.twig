@@ -22,16 +22,13 @@
                     <tr><th>Telephone</th><td>{{ utilisateur.telephone }}</td></tr>
                     <tr><th>Role</th><td>{{ utilisateur.role }}</td></tr>
                     <tr><th>Date naissance</th><td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}</td></tr>
-                    <tr><th>Face encoding</th><td>{{ utilisateur.faceEncoding }}</td></tr>
-                    <tr><th>Face image</th><td>{{ utilisateur.faceImage }}</td></tr>
-                    <tr><th>Created at</th><td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i:s') : '' }}</td></tr>
                 </tbody>
             </table>
         </div>
 
         <div class="btn-group">
             <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
-            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-primary">edit</a>
+            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-primary">Modifier</a>
             {{ include('utilisateur/_delete_form.html.twig') }}
         </div>
     </section>

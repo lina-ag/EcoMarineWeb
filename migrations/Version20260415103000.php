@@ -1,0 +1,67 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20260415103000 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'Make reservation->activite foreign key nullable with ON DELETE SET NULL to preserve reservations when activity is deleted.';
+    }
+
+    public function up(Schema $schema): void
+    {
+        $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
+        $this->abortIf(!str_contains($platformClass, 'mysql') && !str_contains($platformClass, 'maria'), 'Migration can only be executed safely on mysql/mariadb.');
+
+        $databaseName = (string) $this->connection->fetchOne('SELECT DATABASE()');
+        $fkName = $this->connection->fetchOne(
+            "SELECT CONSTRAINT_NAME
+             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ?
+               AND TABLE_NAME = 'reservation'
+               AND COLUMN_NAME = 'id_activite'
+               AND REFERENCED_TABLE_NAME = 'activite_ecologique'
+             LIMIT 1",
+            [$databaseName]
+        );
+
+        if (is_string($fkName) && $fkName !== '') {
+            $this->addSql(sprintf('ALTER TABLE reservation DROP FOREIGN KEY `%s`', $fkName));
+        }
+
+        $this->addSql('ALTER TABLE reservation CHANGE id_activite id_activite INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE reservation ADD CONSTRAINT fk_activite FOREIGN KEY (id_activite) REFERENCES activite_ecologique (id_activite) ON DELETE SET NULL ON UPDATE CASCADE');
+    }
+
+    public function down(Schema $schema): void
+    {
+        $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
+        $this->abortIf(!str_contains($platformClass, 'mysql') && !str_contains($platformClass, 'maria'), 'Migration can only be executed safely on mysql/mariadb.');
+
+        $databaseName = (string) $this->connection->fetchOne('SELECT DATABASE()');
+        $fkName = $this->connection->fetchOne(
+            "SELECT CONSTRAINT_NAME
+             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ?
+               AND TABLE_NAME = 'reservation'
+               AND COLUMN_NAME = 'id_activite'
+               AND REFERENCED_TABLE_NAME = 'activite_ecologique'
+             LIMIT 1",
+            [$databaseName]
+        );
+
+        if (is_string($fkName) && $fkName !== '') {
+            $this->addSql(sprintf('ALTER TABLE reservation DROP FOREIGN KEY `%s`', $fkName));
+        }
+
+        $this->addSql('DELETE FROM reservation WHERE id_activite IS NULL');
+        $this->addSql('ALTER TABLE reservation CHANGE id_activite id_activite INT NOT NULL');
+        $this->addSql('ALTER TABLE reservation ADD CONSTRAINT fk_activite FOREIGN KEY (id_activite) REFERENCES activite_ecologique (id_activite) ON UPDATE CASCADE ON DELETE CASCADE');
+    }
+}

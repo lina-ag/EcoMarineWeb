@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Form\ReservationType;
+use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,6 +16,23 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
 {
+    #[Route('/activity-date/{id_activite}', name: 'app_reservation_activity_date', methods: ['GET'])]
+    public function activityDate(int $id_activite, ActiviteEcologiqueRepository $activiteEcologiqueRepository): JsonResponse
+    {
+        $activite = $activiteEcologiqueRepository->find($id_activite);
+
+        if (!$activite || !$activite->getDate_activite()) {
+            return $this->json(['dates' => []], Response::HTTP_NOT_FOUND);
+        }
+
+        $dates = $activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
+        if (count($dates) === 0) {
+            $dates = [$activite->getDate_activite()->format('Y-m-d')];
+        }
+
+        return $this->json(['dates' => $dates]);
+    }
+
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository): Response
     {
@@ -33,8 +52,18 @@ final class ReservationController extends AbstractController
             $entityManager->persist($reservation);
             $entityManager->flush();
 
+
             $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
             return $this->redirect($this->generateUrl('app_home') . '#slide08');
+
+            $this->addFlash('success', 'Reservation confirmee avec succes.');
+
+            if ($request->query->get('source') === 'front') {
+                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+
         }
 
         return $this->render('reservation/new.html.twig', [

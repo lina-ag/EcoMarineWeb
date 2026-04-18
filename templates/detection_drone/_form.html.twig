@@ -1,64 +1,207 @@
 {{ form_start(form) }}
     <div class="form-grid">
-        <div class="form-group-settings">
-            {{ form_label(form.id_mission, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.id_mission, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.id_mission) }}
-        </div>
-
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.espece.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.espece, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.espece, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.espece) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.espece, {'attr': {'class': 'form-input', 'required': 'required'}}) }}
+            {% if form.espece.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.espece) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.nombre_individus.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.nombre_individus, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.nombre_individus, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.nombre_individus) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.nombre_individus, {'attr': {'class': 'form-input', 'required': 'required'}}) }}
+            {% if form.nombre_individus.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.nombre_individus) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.latitude.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.latitude, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.latitude, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.latitude) }}
+            {% if form.latitude.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.latitude) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.longitude.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.longitude, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.longitude, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.longitude) }}
+            {% if form.longitude.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.longitude) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
-            {{ form_label(form.confiance_ia, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.confiance_ia, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.confiance_ia) }}
-        </div>
-
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings {% if form.comportement.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.comportement, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.comportement, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.comportement) }}
+            {{ form_widget(form.comportement, {'attr': {'class': 'form-input form-select'}}) }}
+            {% if form.comportement.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.comportement) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings {% if form.confiance_ia.vars.errors|length > 0 %}has-error{% endif %}">
+            {{ form_label(form.confiance_ia, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.confiance_ia, {'attr': {'class': 'form-input form-select'}}) }}
+            {% if form.confiance_ia.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.confiance_ia) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group-settings full-width {% if form.image_path.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.image_path, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.image_path, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.image_path) }}
+            
+            <div class="file-drop-area" id="imageDropArea">
+                <div class="file-drop-icon">📸</div>
+                <div class="file-drop-text">Glissez-déposez une image ici</div>
+                <div class="file-drop-info">ou cliquez pour sélectionner (Max 10 MB)</div>
+            </div>
+            
+            {{ form_widget(form.image_path, {'attr': {'class': 'form-input file-input'}}) }}
+            
+            <div id="filePreview" class="file-preview" style="display: none;">
+                <img id="previewImg" class="file-preview-img" src="" alt="Aperçu">
+                <div class="file-preview-info">
+                    <div class="file-preview-name" id="fileName"></div>
+                    <div class="file-preview-size" id="fileSize"></div>
+                </div>
+                <button type="button" class="file-preview-remove" id="removeFile">✕ Supprimer</button>
+            </div>
+            
+            {% if form.image_path.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.image_path) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings full-width {% if form.timestamp.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.timestamp, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.timestamp, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.timestamp) }}
+            <small class="form-help-text">Généré automatiquement</small>
+            {% if form.timestamp.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.timestamp) }}
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_detection_drone_index') }}" class="btn btn-secondary">back to list</a>
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_detection_drone_index') }}" class="btn btn-secondary">Retour à la liste</a>
     </div>
 
     {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('imageDropArea');
+    const fileInput = document.querySelector('input[type="file"][data-dragdrop="true"]');
+    const filePreview = document.getElementById('filePreview');
+    const previewImg = document.getElementById('previewImg');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeBtn = document.getElementById('removeFile');
+
+    if (!dropArea || !fileInput) return;
+
+    // Empêcher le comportement par défaut du drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Ajouter la classe dragover
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.classList.add('dragover');
+        }, false);
+    });
+
+    // Supprimer la classe dragover
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.classList.remove('dragover');
+        }, false);
+    });
+
+    // Gérer le drop
+    dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        handleFiles(files);
+    }, false);
+
+    // Gérer le clic sur la zone
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Gérer la sélection de fichier
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    // Gérer la suppression
+    removeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        dropArea.style.display = 'flex';
+    });
+
+    function handleFiles(files) {
+        if (files.length === 0) return;
+
+        const file = files[0];
+
+        // Vérifier le type MIME
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Types autorisés: JPEG, PNG, GIF, WebP');
+            fileInput.value = '';
+            return;
+        }
+
+        // Vérifier la taille (10 MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Le fichier dépasse 10 MB');
+            fileInput.value = '';
+            return;
+        }
+
+        // Afficher l'aperçu
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            fileName.textContent = file.name;
+            fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            filePreview.style.display = 'flex';
+            dropArea.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>

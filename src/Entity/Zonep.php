@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\ZonepRepository;
 
 #[ORM\Entity(repositoryClass: ZonepRepository::class)]
@@ -28,7 +28,18 @@ class Zonep
         return $this;
     }
 
-    #[ORM\Column(name: 'nomZone', type: 'string', nullable: false)]
+    #[ORM\Column(name: 'nomZone', type: 'string', length: 100, nullable: false)]
+    #[Assert\NotBlank(message: 'Le nom de la zone est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom ne doit pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}\s\-\'\.]+$/u',
+        message: 'Le nom contient des caractères non autorisés.'
+    )]
     private ?string $nomZone = null;
 
     public function getNomZone(): ?string
@@ -38,11 +49,22 @@ class Zonep
 
     public function setNomZone(string $nomZone): self
     {
-        $this->nomZone = $nomZone;
+        $this->nomZone = trim($nomZone);
         return $this;
     }
 
-    #[ORM\Column(name: 'categorieZone', type: 'string', nullable: false)]
+    #[ORM\Column(name: 'categorieZone', type: 'string', length: 80, nullable: false)]
+    #[Assert\NotBlank(message: 'La catégorie est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 80,
+        minMessage: 'La catégorie doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'La catégorie ne doit pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}\s\-\'\.]+$/u',
+        message: 'La catégorie contient des caractères non autorisés.'
+    )]
     private ?string $categorieZone = null;
 
     public function getCategorieZone(): ?string
@@ -52,11 +74,16 @@ class Zonep
 
     public function setCategorieZone(string $categorieZone): self
     {
-        $this->categorieZone = $categorieZone;
+        $this->categorieZone = trim($categorieZone);
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 20, nullable: false)]
+    #[Assert\NotBlank(message: 'Le statut est obligatoire.')]
+    #[Assert\Choice(
+        choices: ['Actif', 'En surveillance', 'En maintenance', 'Inactif'],
+        message: 'Le statut choisi est invalide.'
+    )]
     private ?string $status = null;
 
     public function getStatus(): ?string
@@ -69,5 +96,4 @@ class Zonep
         $this->status = $status;
         return $this;
     }
-
 }

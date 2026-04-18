@@ -36,6 +36,7 @@ class ActionNettoyage
     )]
     private ?string $lieu = null;
 
+
     // #[ORM\Column(name: 'limite_benevoles', type: 'integer', nullable: true)]
     // #[Assert\Positive(message: "La limite de bénévoles doit être un nombre positif.")]
     // #[Assert\Range(
@@ -43,6 +44,16 @@ class ActionNettoyage
     //     max: 1000,
     //     notInRangeMessage: "La limite doit être entre {{ min }} et {{ max }}."
     // )]
+
+    #[ORM\Column(name: 'limite_benevoles', type: 'integer')]
+    #[Assert\NotBlank(message: "La limite de bénévoles est obligatoire.")]
+    #[Assert\Positive(message: "La limite de bénévoles doit être un nombre positif.")]
+    #[Assert\Range(
+        min: 1,
+        max: 1000,
+        notInRangeMessage: "La limite doit être entre {{ min }} et {{ max }}."
+    )]
+
     private ?int $limiteBenevoles = null;
 
     #[ORM\OneToMany(mappedBy: 'id_action', targetEntity: Volontaire::class, orphanRemoval: false)]
@@ -96,16 +107,17 @@ class ActionNettoyage
         return $this;
     }
 
-    // public function getLimiteBenevoles(): ?int
-    // {
-    //     return $this->limiteBenevoles;
-    // }
 
-    // public function setLimiteBenevoles(int $limiteBenevoles): self
-    // {
-    //     $this->limiteBenevoles = $limiteBenevoles;
-    //     return $this;
-    // }
+    public function getLimiteBenevoles(): ?int
+    {
+        return $this->limiteBenevoles;
+    }
+
+    public function setLimiteBenevoles(int $limiteBenevoles): self
+    {
+        $this->limiteBenevoles = $limiteBenevoles;
+        return $this;
+    }
 
     /**
      * @return Collection<int, Volontaire>
