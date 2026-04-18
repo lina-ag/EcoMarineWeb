@@ -12,31 +12,35 @@
             <a href="{{ path('app_survzone_new') }}" class="btn btn-primary">Create new</a>
         </div>
 
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Rechercher par nom de zone..." class="search-input">
+        </div>
+
         <div class="table-wrapper">
-            <table class="data-table">
+            <table class="data-table" id="survzoneTable">
                 <thead>
                     <tr>
                         <th>Id</th>
                         <th>Date</th>
                         <th>Observation</th>
-                        <th>Id zone</th>
+                        <th>Zone</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for survzone in survzones %}
-                    <tr>
+                    <tr class="search-row">
                         <td>{{ survzone.idSurv }}</td>
                         <td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td>
                         <td>{{ survzone.observation }}</td>
-                        <td>{{ survzone.zone.nomZone  }}</td>
+                        <td>{{ survzone.zone.nomZone }}</td>
                         <td>
                             <a href="{{ path('app_survzone_show', {'idSurv': survzone.idSurv}) }}" class="btn btn-secondary">show</a>
                             <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">edit</a>
                         </td>
                     </tr>
                 {% else %}
-                    <tr>
+                    <tr class="no-results">
                         <td colspan="5">no records found</td>
                     </tr>
                 {% endfor %}
@@ -44,4 +48,51 @@
             </table>
         </div>
     </section>
+
+    <style>
+        .search-box {
+            margin: 24px 0 16px 0;
+            display: flex;
+            justify-content: flex-start;
+        }
+        .search-input {
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border, #e0e0e0);
+            background: var(--glass-bg, #fff);
+            color: var(--text-primary, #222);
+            font-size: 15px;
+            min-width: 260px;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--emerald-light, #38bdf8);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+        }
+    </style>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.search-row');
+            
+            rows.forEach(function(row) {
+                const nomZone = row.cells[3].textContent.toLowerCase();
+                if (nomZone.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            const visibleRows = document.querySelectorAll('.search-row:not([style*="display: none"])');
+            const noResults = document.querySelector('.no-results');
+            if (noResults) {
+                noResults.style.display = visibleRows.length === 0 ? '' : 'none';
+            }
+        });
+    </script>
 {% endblock %}
