@@ -3,41 +3,289 @@
 {% block title %}Réservations{% endblock %}
 
 {% block body %}
-    <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list">
+    <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list" style="position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(226, 239, 255, 0.6), rgba(209, 230, 255, 0.5)); backdrop-filter: blur(8px);">
         <div class="card-header">
             <div class="reservation-admin-header">
                 <span class="reservation-admin-kicker">Reservation Panel</span>
                 <h2 class="card-title">Liste des réservations</h2>
                 <p class="card-subtitle">Suivi des réservations enregistrées.</p>
+                <div style="margin-top: 0.35rem; font-weight: 700; color: #1e3a8a;">Compteur live: <span id="reservation-animated-counter" data-target="24">0</span></div>
             </div>
             <div class="card-actions">
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">Créer une réservation</a>
             </div>
         </div>
+        <svg class="header-wave" viewBox="0 0 1200 140" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,50 C180,110 320,0 520,48 C760,108 880,22 1200,74 L1200,140 L0,140 Z"></path>
+        </svg>
 
-<<<<<<< HEAD
-        <form id="reservation-search-form" method="get" action="{{ path('app_reservation_index') }}" style="margin-bottom: 1rem;">
-            <div class="search-box" style="max-width: 460px;">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                    id="reservation-search-input"
-                    type="text"
-                    name="q"
-                    class="search-input"
-                    value="{{ search_term|default('') }}"
-                    placeholder="Rechercher par nom, email, activité, ID..."
-                    autocomplete="off"
-                >
+        <style>
+            .header-wave {
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 66px;
+                opacity: 0.26;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .header-wave path {
+                fill: #1d4ed8;
+                animation: waveShift 7s ease-in-out infinite alternate;
+                transform-origin: center;
+            }
+
+            .reservation-toast {
+                position: fixed;
+                top: 1.25rem;
+                right: 1.25rem;
+                z-index: 999;
+                background: linear-gradient(135deg, #16a34a, #166534);
+                color: #ffffff;
+                padding: 0.7rem 1rem;
+                border-radius: 10px;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+                font-size: 0.9rem;
+                font-weight: 700;
+                opacity: 0;
+                transform: translateY(-8px);
+                pointer-events: none;
+                transition: opacity 0.25s ease, transform 0.25s ease;
+            }
+
+            .reservation-toast.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .search-icon-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.08rem;
+                min-height: 1.42rem;
+                padding: 0.12rem 0.2rem;
+                border-radius: 999px;
+                border: 1px solid rgba(148, 163, 184, 0.6);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.99), rgba(241, 245, 250, 0.96));
+                color: #0b1f3a;
+                box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+                transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+                font-size: 0.56rem;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+                white-space: nowrap;
+            }
+
+            .search-icon-btn svg {
+                width: 0.58rem;
+                height: 0.58rem;
+                transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            .search-icon-btn:hover,
+            .search-icon-btn:focus-visible {
+                background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(229, 239, 250, 0.99));
+                transform: translateY(-2px) scale(1.05);
+                box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+                border-color: rgba(59, 130, 246, 0.4);
+            }
+
+            .search-icon-btn:hover svg,
+            .search-icon-btn:focus-visible svg {
+                transform: scale(1.15);
+            }
+
+            .quick-filter-btn {
+                padding: 0.55rem 1.1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                background: linear-gradient(135deg, rgba(241, 245, 250, 0.85), rgba(226, 232, 240, 0.85));
+                color: #1e293b;
+                font-size: 0.82rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+                white-space: nowrap;
+                box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            }
+
+            .quick-filter-btn:hover {
+                background: linear-gradient(135deg, rgba(219, 228, 240, 0.95), rgba(203, 213, 225, 0.95));
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+                border-color: rgba(148, 163, 184, 0.5);
+            }
+
+            .quick-filter-btn.active {
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.92), rgba(37, 99, 235, 0.92));
+                color: #ffffff;
+                border-color: rgba(37, 99, 235, 0.7);
+                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+                font-weight: 700;
+            }
+
+            .quick-filter-btn.active:hover {
+                background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+                transform: translateY(-2px);
+                box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.22rem 0.62rem;
+                border-radius: 999px;
+                font-size: 0.74rem;
+                font-weight: 700;
+                letter-spacing: 0.01em;
+            }
+
+            .status-badge-confirmed {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .status-badge-pending {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .status-badge-completed {
+                background: #dbeafe;
+                color: #1d4ed8;
+            }
+
+            .status-badge-cancelled {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .list-loading {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                font-size: 0.82rem;
+                color: #1e3a8a;
+                font-weight: 600;
+            }
+
+            .list-loading::before {
+                content: '';
+                width: 0.9rem;
+                height: 0.9rem;
+                border: 2px solid rgba(59, 130, 246, 0.22);
+                border-top-color: #2563eb;
+                border-radius: 50%;
+                animation: spin 0.85s linear infinite;
+            }
+
+            .ux-empty-message {
+                margin: 0.45rem 0 1rem;
+                padding: 0.75rem 0.95rem;
+                border-radius: 10px;
+                border: 1px solid rgba(239, 68, 68, 0.22);
+                background: rgba(254, 242, 242, 0.92);
+                color: #991b1b;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes waveShift {
+                0% {
+                    transform: translateX(0) scaleY(1);
+                }
+                100% {
+                    transform: translateX(-20px) scaleY(1.08);
+                }
+            }
+
+        </style>
+
+        <form id="reservation-search-form" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; padding: 1rem; background: linear-gradient(135deg, rgba(251, 253, 254, 0.5), rgba(241, 245, 250, 0.3)); border-radius: 12px; border: 1px solid rgba(203, 213, 225, 0.4); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);" onsubmit="return false;">
+            <!-- Ligne 1: Chercher par + Recherche -->
+            <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+                <select id="reservation-search-field" class="search-input" style="max-width: 150px;">
+                    <option value="all">Chercher par: Tous</option>
+                    <option value="id">ID</option>
+                    <option value="nom">Nom</option>
+                    <option value="activite">Activite</option>
+                    <option value="date">Date</option>
+                    <option value="email">Email</option>
+                    <option value="nombre">Nombre</option>
+                </select>
+                <div style="display: flex; align-items: center; gap: 0.08rem; flex: 1; min-width: 260px;">
+                    <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input
+                            id="reservation-search-input"
+                            type="text"
+                            name="q"
+                            class="search-input"
+                            value="{{ search_term|default('') }}"
+                            placeholder="Rechercher (commence par)..."
+                            autocomplete="off"
+                        >
+                    </div>
+                    <button id="reservation-search-btn" type="button" class="btn btn-secondary search-icon-btn" aria-label="Rechercher" title="Rechercher">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>Rech.</span>
+                    </button>
+                </div>
+                <small id="reservation-result-count" style="opacity: 0.8; white-space: nowrap;">{{ reservations|length }} résultat(s)</small>
+                <span id="reservation-loading" class="list-loading" style="display: none;" aria-live="polite">Chargement...</span>
+            </div>
+
+            <!-- Ligne 2: Filtres rapides -->
+            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
+                <label style="font-size: 0.9rem; font-weight: 600; margin-right: 0.5rem;">Filtres rapides:</label>
+                <button type="button" class="quick-filter-btn" data-filter="personnes" data-value="all" title="Toutes les tailles de groupe">Tous groupes</button>
+                <button type="button" class="quick-filter-btn" data-filter="personnes" data-value="1-5" title="Filtrer de 1 à 5 personnes">1-5 pers</button>
+                <button type="button" class="quick-filter-btn" data-filter="personnes" data-value="6-10" title="Filtrer de 6 à 10 personnes">6-10 pers</button>
+                <button type="button" class="quick-filter-btn" data-filter="personnes" data-value="11-50" title="Filtrer de 11 à 50 personnes">11-50 pers</button>
+                <button type="button" class="quick-filter-btn" data-filter="personnes" data-value="50+" title="Filtrer plus de 50 personnes">50+ pers</button>
+                <select id="reservation-filter-status" class="search-input" style="max-width: 170px;" title="Filtrer par statut">
+                    <option value="all">Statut: Tous</option>
+                    <option value="confirmed">Confirmée ✅</option>
+                    <option value="pending">En attente ⏳</option>
+                    <option value="cancelled">Annulée ❌</option>
+                </select>
+                <input id="reservation-date-from" type="date" class="search-input" style="max-width: 170px;" title="Date début" />
+                <input id="reservation-date-to" type="date" class="search-input" style="max-width: 170px;" title="Date fin" />
+                <button id="reservation-export-csv" type="button" class="btn btn-secondary search-icon-btn" title="Exporter la liste filtrée en CSV">
+                    <span>Export CSV</span>
+                </button>
+                <select id="reservation-sort-by" class="search-input" style="max-width: 150px; margin-left: auto;">
+                    <option value="date_desc"> Date recentes</option>
+                    <option value="date_asc"> Date anciennes</option>
+                    <option value="id_desc"> ID decroissant</option>
+                    <option value="id_asc"> ID croissant</option>
+                    <option value="nom_asc"> Nom A-Z</option>
+                    <option value="nom_desc"> Nom Z-A</option>
+                    <option value="nombre_desc"> Personnes max</option>
+                    <option value="nombre_asc"> Personnes min</option>
+                </select>
             </div>
         </form>
 
-        <div class="table-wrapper">
-=======
+        <div id="reservation-empty-message" class="ux-empty-message" style="display: none;">Aucun résultat ne correspond à vos filtres.</div>
+
         <div class="table-wrapper reservation-admin-table-wrap">
->>>>>>> test
             <table class="data-table">
                 <thead>
                     <tr>
@@ -47,12 +295,33 @@
                         <th>Date réservation</th>
                         <th>Email</th>
                         <th>Nombre personnes</th>
+                        <th>Statut</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for reservation in reservations %}
-                    <tr class="reservation-admin-row" style="--reservation-row-index: {{ loop.index0 }};">
+                    {% set reservationStatus = reservation.activiteEcologique ? (reservation.dateReservation and reservation.dateReservation|date('Y-m-d') > "now"|date('Y-m-d') ? 'pending' : 'confirmed') : 'cancelled' %}
+                    <tr
+                        class="reservation-admin-row"
+                        style="--reservation-row-index: {{ loop.index0 }};"
+                        data-search-id="{{ reservation.idReservation|e('html_attr') }}"
+                        data-search-nom="{{ reservation.nom|default('')|e('html_attr') }}"
+                        data-search-activite="{{ (reservation.activiteEcologique ? reservation.activiteEcologique.nomActivite : '')|e('html_attr') }}"
+                        data-search-date="{{ (reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '')|e('html_attr') }}"
+                        data-search-email="{{ reservation.email|default('')|e('html_attr') }}"
+                        data-search-nombre="{{ reservation.nombrePersonnes|e('html_attr') }}"
+                        data-search-status="{{ reservationStatus }}"
+                        data-search-personnes="{{ reservation.nombrePersonnes|e('html_attr') }}"
+                        data-search-values="{{ [
+                            reservation.idReservation,
+                            reservation.nom,
+                            reservation.activiteEcologique ? reservation.activiteEcologique.nomActivite : '',
+                            reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '',
+                            reservation.email,
+                            reservation.nombrePersonnes
+                        ]|join('|')|lower|e('html_attr') }}"
+                    >
                         <td>{{ reservation.idReservation }}</td>
                         <td>{{ reservation.nom }}</td>
                         <td>
@@ -66,20 +335,35 @@
                         <td>{{ reservation.email }}</td>
                         <td>{{ reservation.nombrePersonnes }}</td>
                         <td>
+                            {% if reservationStatus == 'confirmed' %}
+                                <span class="status-badge status-badge-confirmed">Confirmée ✅</span>
+                            {% elseif reservationStatus == 'pending' %}
+                                <span class="status-badge status-badge-pending">En attente ⏳</span>
+                            {% else %}
+                                <span class="status-badge status-badge-cancelled">Annulée ❌</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div class="reservation-admin-actions">
-                                <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-secondary reservation-admin-action-btn">Voir</a>
-                                <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary reservation-admin-action-btn">Modifier</a>
+                                <a href="{{ path('app_reservation_show', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-secondary reservation-admin-action-btn" title="Voir la réservation">Voir</a>
+                                <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary reservation-admin-action-btn" title="Modifier la réservation">Modifier</a>
+                                <a href="{{ path('app_reservation_pdf', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary reservation-admin-action-btn" title="Exporter cette réservation en PDF">PDF</a>
                             </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="7">Aucun enregistrement trouvé</td>
+                        <td colspan="8">Aucun enregistrement trouvé</td>
                     </tr>
                 {% endfor %}
+                    <tr id="reservation-no-match-row" style="display: none;">
+                        <td colspan="8">Aucun résultat pour cette recherche</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
+        <div id="reservation-toast" class="reservation-toast" role="status" aria-live="polite"></div>
     </section>
 {% endblock %}
 
@@ -89,18 +373,340 @@
         (function () {
             const form = document.getElementById('reservation-search-form');
             const input = document.getElementById('reservation-search-input');
+            const fieldSelect = document.getElementById('reservation-search-field');
+            const statusFilterSelect = document.getElementById('reservation-filter-status');
+            const dateFromInput = document.getElementById('reservation-date-from');
+            const dateToInput = document.getElementById('reservation-date-to');
+            const sortSelect = document.getElementById('reservation-sort-by');
+            const searchButton = document.getElementById('reservation-search-btn');
+            const exportCsvButton = document.getElementById('reservation-export-csv');
+            const resultCount = document.getElementById('reservation-result-count');
+            const loadingIndicator = document.getElementById('reservation-loading');
+            const emptyMessage = document.getElementById('reservation-empty-message');
+            const tableBody = document.querySelector('.data-table tbody');
+            const rows = Array.from(document.querySelectorAll('.reservation-admin-row'));
+            const noMatchRow = document.getElementById('reservation-no-match-row');
+            const quickFilterButtons = Array.from(document.querySelectorAll('.quick-filter-btn'));
+            const reservationToast = document.getElementById('reservation-toast');
+            const animatedCounter = document.getElementById('reservation-animated-counter');
 
-            if (!form || !input) {
+            if (!form || !input || !fieldSelect || !statusFilterSelect || !dateFromInput || !dateToInput || !sortSelect || !searchButton || !exportCsvButton || !resultCount || !tableBody) {
                 return;
             }
 
-            let timer = null;
-            input.addEventListener('input', function () {
-                window.clearTimeout(timer);
-                timer = window.setTimeout(function () {
-                    form.requestSubmit();
-                }, 300);
+            let currentPersonnesFilter = 'all';
+            let loadingTimer = null;
+            let filteredRows = [];
+
+            const normalize = function (value) {
+                return (value || '')
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .trim();
+            };
+
+            const updateResultCount = function (count) {
+                resultCount.textContent = count + ' resultat(s)';
+            };
+
+            const setLoading = function (isLoading) {
+                if (!loadingIndicator) {
+                    return;
+                }
+
+                loadingIndicator.style.display = isLoading ? 'inline-flex' : 'none';
+            };
+
+            const toNumber = function (value) {
+                const parsed = Number.parseInt(value || '0', 10);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+
+            const toDateValue = function (value) {
+                const timestamp = Date.parse(value || '');
+                return Number.isNaN(timestamp) ? 0 : timestamp;
+            };
+
+            const dateInRange = function (rowDate, fromDate, toDate) {
+                if (!rowDate) {
+                    return false;
+                }
+
+                if (fromDate && rowDate < fromDate) {
+                    return false;
+                }
+
+                if (toDate && rowDate > toDate) {
+                    return false;
+                }
+
+                return true;
+            };
+
+            const personnesMatches = function (rowPersonnes, filterValue) {
+                if (filterValue === 'all') return true;
+                const num = toNumber(rowPersonnes);
+                if (filterValue === '1-5') return num >= 1 && num <= 5;
+                if (filterValue === '6-10') return num >= 6 && num <= 10;
+                if (filterValue === '11-50') return num >= 11 && num <= 50;
+                if (filterValue === '50+') return num > 50;
+                return true;
+            };
+
+            const compareValues = function (a, b, mode) {
+                if (mode === 'id_asc') {
+                    return toNumber(a.dataset.searchId) - toNumber(b.dataset.searchId);
+                }
+                if (mode === 'id_desc') {
+                    return toNumber(b.dataset.searchId) - toNumber(a.dataset.searchId);
+                }
+                if (mode === 'nom_asc') {
+                    return normalize(a.dataset.searchNom).localeCompare(normalize(b.dataset.searchNom));
+                }
+                if (mode === 'nom_desc') {
+                    return normalize(b.dataset.searchNom).localeCompare(normalize(a.dataset.searchNom));
+                }
+                if (mode === 'date_asc') {
+                    return toDateValue(a.dataset.searchDate) - toDateValue(b.dataset.searchDate);
+                }
+                if (mode === 'nombre_asc') {
+                    return toNumber(a.dataset.searchNombre) - toNumber(b.dataset.searchNombre);
+                }
+                if (mode === 'nombre_desc') {
+                    return toNumber(b.dataset.searchNombre) - toNumber(a.dataset.searchNombre);
+                }
+
+                return toDateValue(b.dataset.searchDate) - toDateValue(a.dataset.searchDate);
+            };
+
+            const runFilter = function () {
+                const query = normalize(input.value);
+                const tokens = query.length === 0 ? [] : query.split(/\s+/).filter(Boolean);
+                const selectedField = fieldSelect.value;
+                const selectedStatus = statusFilterSelect.value;
+                const fromDate = dateFromInput.value;
+                const toDate = dateToInput.value;
+                const selectedSort = sortSelect.value;
+                let visibleCount = 0;
+
+                const fieldKeyMap = {
+                    id: 'searchId',
+                    nom: 'searchNom',
+                    activite: 'searchActivite',
+                    date: 'searchDate',
+                    email: 'searchEmail',
+                    nombre: 'searchNombre'
+                };
+
+                const visibleRows = [];
+
+                rows.forEach(function (row) {
+                    let searchableParts = [];
+
+                    if (selectedField === 'all') {
+                        const dataValue = normalize(row.getAttribute('data-search-values'));
+                        searchableParts = dataValue.split('|').map(function (part) { return part.trim(); }).filter(Boolean);
+                    } else {
+                        const datasetKey = fieldKeyMap[selectedField];
+                        const singleValue = normalize(datasetKey ? row.dataset[datasetKey] : '');
+                        searchableParts = singleValue ? [singleValue] : [];
+                    }
+
+                    const matchesQuery = tokens.every(function (token) {
+                        return searchableParts.some(function (part) {
+                            return part.startsWith(token);
+                        });
+                    });
+
+                    const statusMatches = selectedStatus === 'all' || row.dataset.searchStatus === selectedStatus;
+                    const personnesValue = toNumber(row.dataset.searchPersonnes);
+                    const personnesFilterMatches = personnesMatches(personnesValue, currentPersonnesFilter);
+                    const dateMatches = dateInRange(row.dataset.searchDate, fromDate, toDate);
+                    const isVisible = (tokens.length === 0 || matchesQuery) && statusMatches && personnesFilterMatches && dateMatches;
+
+                    row.style.display = isVisible ? '' : 'none';
+
+                    if (isVisible) {
+                        visibleRows.push(row);
+                        visibleCount += 1;
+                    }
+                });
+
+                visibleRows.sort(function (a, b) {
+                    return compareValues(a, b, selectedSort);
+                });
+
+                filteredRows = visibleRows.slice();
+
+                visibleRows.forEach(function (row) {
+                    tableBody.appendChild(row);
+                });
+
+                if (noMatchRow) {
+                    tableBody.appendChild(noMatchRow);
+                    noMatchRow.style.display = visibleCount === 0 ? '' : 'none';
+                }
+
+                if (emptyMessage) {
+                    emptyMessage.style.display = visibleCount === 0 ? '' : 'none';
+                }
+
+                updateResultCount(visibleCount);
+            };
+
+            const applyFilter = function () {
+                setLoading(true);
+
+                if (loadingTimer) {
+                    window.clearTimeout(loadingTimer);
+                }
+
+                loadingTimer = window.setTimeout(function () {
+                    runFilter();
+                    setLoading(false);
+                }, 140);
+            };
+
+            quickFilterButtons.forEach(function (btn) {
+                btn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const filterType = btn.dataset.filter;
+                    const filterValue = btn.dataset.value;
+
+                    if (filterType === 'personnes') {
+                        currentPersonnesFilter = filterValue;
+                    }
+
+                    quickFilterButtons.forEach(function (otherButton) {
+                        if (otherButton.dataset.filter === filterType) {
+                            otherButton.classList.toggle('active', otherButton.dataset.value === filterValue);
+                        }
+                    });
+
+                    applyFilter();
+                });
             });
+
+            quickFilterButtons.forEach(function (btn) {
+                if (btn.dataset.filter === 'personnes' && btn.dataset.value === 'all') {
+                    btn.classList.add('active');
+                }
+            });
+
+            const showToast = function (message) {
+                if (!reservationToast) {
+                    return;
+                }
+
+                reservationToast.textContent = message;
+                reservationToast.classList.add('show');
+
+                window.setTimeout(function () {
+                    reservationToast.classList.remove('show');
+                }, 1900);
+            };
+
+            const animateCounter = function () {
+                if (!animatedCounter) {
+                    return;
+                }
+
+                const target = Number.parseInt(animatedCounter.dataset.target || '24', 10);
+                const totalFrames = 42;
+                let currentFrame = 0;
+
+                const update = function () {
+                    currentFrame += 1;
+                    const progress = Math.min(currentFrame / totalFrames, 1);
+                    const value = Math.round(progress * target);
+                    animatedCounter.textContent = String(value);
+
+                    if (progress < 1) {
+                        window.requestAnimationFrame(update);
+                    }
+                };
+
+                window.requestAnimationFrame(update);
+            };
+
+            input.addEventListener('input', function () {
+                applyFilter();
+            });
+
+            fieldSelect.addEventListener('change', function () {
+                applyFilter();
+            });
+
+            statusFilterSelect.addEventListener('change', function () {
+                applyFilter();
+            });
+
+            dateFromInput.addEventListener('change', function () {
+                applyFilter();
+            });
+
+            dateToInput.addEventListener('change', function () {
+                applyFilter();
+            });
+
+            sortSelect.addEventListener('change', function () {
+                applyFilter();
+            });
+
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyFilter();
+                }
+            });
+
+            searchButton.addEventListener('click', function () {
+                applyFilter();
+            });
+
+            exportCsvButton.addEventListener('click', function () {
+                if (!filteredRows.length) {
+                    return;
+                }
+
+                const headers = ['ID', 'Nom', 'Activite', 'Date reservation', 'Email', 'Nombre personnes', 'Statut'];
+                const lines = [headers.join(';')];
+
+                filteredRows.forEach(function (row) {
+                    const statusMap = {
+                        confirmed: 'Confirmee',
+                        pending: 'En attente',
+                        cancelled: 'Annulee'
+                    };
+
+                    const values = [
+                        row.dataset.searchId || '',
+                        row.dataset.searchNom || '',
+                        row.dataset.searchActivite || '',
+                        row.dataset.searchDate || '',
+                        row.dataset.searchEmail || '',
+                        row.dataset.searchNombre || '',
+                        statusMap[row.dataset.searchStatus] || ''
+                    ].map(function (value) {
+                        return '"' + String(value).replace(/"/g, '""') + '"';
+                    });
+
+                    lines.push(values.join(';'));
+                });
+
+                const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'reservations_filtrees.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+
+            animateCounter();
+            applyFilter();
         })();
     </script>
 {% endblock %}

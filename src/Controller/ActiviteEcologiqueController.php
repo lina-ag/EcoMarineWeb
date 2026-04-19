@@ -24,21 +24,39 @@ final class ActiviteEcologiqueController extends AbstractController
             ->orderBy('a.date_activite', 'DESC');
 
         if ($searchTerm !== '') {
-            $queryBuilder
-                ->andWhere('LOWER(a.nom_activite) LIKE :term OR LOWER(a.description) LIKE :term')
-                ->setParameter('term', '%' . mb_strtolower($searchTerm) . '%');
+            $tokens = preg_split('/\s+/', mb_strtolower($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-            if (ctype_digit($searchTerm)) {
+            foreach ($tokens as $index => $token) {
+                $parameterName = 'term_' . $index;
+                $orGroup = $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('LOWER(a.nom_activite)', ':' . $parameterName),
+                    $queryBuilder->expr()->like('LOWER(COALESCE(a.description, \'\'))', ':' . $parameterName)
+                );
+
+                if (ctype_digit($token)) {
+                    $idParameterName = 'id_' . $index;
+                    $capacityParameterName = 'capacity_' . $index;
+
+                    $orGroup->add($queryBuilder->expr()->eq('a.id_activite', ':' . $idParameterName));
+                    $orGroup->add($queryBuilder->expr()->eq('a.capacite', ':' . $capacityParameterName));
+
+                    $queryBuilder
+                        ->setParameter($idParameterName, (int) $token)
+                        ->setParameter($capacityParameterName, (int) $token);
+                }
+
                 $queryBuilder
-                    ->orWhere('a.id_activite = :id OR a.capacite = :capacity')
-                    ->setParameter('id', (int) $searchTerm)
-                    ->setParameter('capacity', (int) $searchTerm);
+                    ->andWhere($orGroup)
+                    ->setParameter($parameterName, '%' . $token . '%');
             }
         }
 
+        $activites = $queryBuilder->getQuery()->getResult();
+
         return $this->render('activite_ecologique/index.html.twig', [
-            'activite_ecologiques' => $queryBuilder->getQuery()->getResult(),
+            'activite_ecologiques' => $activites,
             'search_term' => $searchTerm,
+            'result_count' => count($activites),
         ]);
     }
 

@@ -6,6 +6,8 @@ use App\Entity\Reservation;
 use App\Form\ReservationType;
 use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,21 +47,40 @@ final class ReservationController extends AbstractController
             ->orderBy('r.date_reservation', 'DESC');
 
         if ($searchTerm !== '') {
-            $queryBuilder
-                ->andWhere('LOWER(r.nom) LIKE :term OR LOWER(r.email) LIKE :term OR LOWER(a.nom_activite) LIKE :term')
-                ->setParameter('term', '%' . mb_strtolower($searchTerm) . '%');
+            $tokens = preg_split('/\s+/', mb_strtolower($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-            if (ctype_digit($searchTerm)) {
+            foreach ($tokens as $index => $token) {
+                $parameterName = 'term_' . $index;
+                $orGroup = $queryBuilder->expr()->orX(
+                    $queryBuilder->expr()->like('LOWER(r.nom)', ':' . $parameterName),
+                    $queryBuilder->expr()->like('LOWER(r.email)', ':' . $parameterName),
+                    $queryBuilder->expr()->like('LOWER(COALESCE(a.nom_activite, \'\'))', ':' . $parameterName)
+                );
+
+                if (ctype_digit($token)) {
+                    $idParameterName = 'id_' . $index;
+                    $peopleParameterName = 'people_' . $index;
+
+                    $orGroup->add($queryBuilder->expr()->eq('r.id_reservation', ':' . $idParameterName));
+                    $orGroup->add($queryBuilder->expr()->eq('r.nombre_personnes', ':' . $peopleParameterName));
+
+                    $queryBuilder
+                        ->setParameter($idParameterName, (int) $token)
+                        ->setParameter($peopleParameterName, (int) $token);
+                }
+
                 $queryBuilder
-                    ->orWhere('r.id_reservation = :id OR r.nombre_personnes = :people')
-                    ->setParameter('id', (int) $searchTerm)
-                    ->setParameter('people', (int) $searchTerm);
+                    ->andWhere($orGroup)
+                    ->setParameter($parameterName, '%' . $token . '%');
             }
         }
 
+        $reservations = $queryBuilder->getQuery()->getResult();
+
         return $this->render('reservation/index.html.twig', [
-            'reservations' => $queryBuilder->getQuery()->getResult(),
+            'reservations' => $reservations,
             'search_term' => $searchTerm,
+            'result_count' => count($reservations),
         ]);
     }
 
@@ -95,6 +116,34 @@ final class ReservationController extends AbstractController
         return $this->render('reservation/show.html.twig', [
             'reservation' => $reservation,
         ]);
+    }
+
+    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
+    public function exportPdf(Reservation $reservation): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $html = $this->renderView('reservation/pdf.html.twig', [
+            'reservation' => $reservation,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
     }
 
     #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
