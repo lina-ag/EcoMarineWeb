@@ -9,16 +9,33 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/zonep')]
 final class ZonepController extends AbstractController
 {
     #[Route('', name: 'app_zonep_index', methods: ['GET'])]
-    public function index(ZonepRepository $zonepRepository): Response
-    {
-        return $this->render('zonep/index.html.twig', [
-            'zoneps' => $zonepRepository->findAll(),
-        ]);
+    public function index(
+    Request $request,
+    ZonepRepository $zonepRepository,
+    PaginatorInterface $paginator
+): Response {
+    $sortBy = $request->query->get('tri', 'idZone');
+    $order  = $request->query->get('sens', 'ASC');
+
+    $query = $zonepRepository->findAllSorted($sortBy, $order);
+
+    $zoneps = $paginator->paginate(
+        $query->getQuery(),
+        $request->query->getInt('page', 1),
+        10
+    );
+
+    return $this->render('zonep/index.html.twig', [
+        'zoneps' => $zoneps,
+        'sortBy' => $sortBy,
+        'order'  => $order,
+    ]);
     }
 
     #[Route('/new', name: 'app_zonep_new', methods: ['GET', 'POST'])]

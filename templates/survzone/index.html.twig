@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Survzone index{% endblock %}
-
 {% block body %}
     <section class="glass-card">
         <div class="card-header">
@@ -20,9 +18,21 @@
             <table class="data-table" id="survzoneTable">
                 <thead>
                     <tr>
-                        <th>Id</th>
-                        <th>Date</th>
-                        <th>Observation</th>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'idSurv', 'sens': sortBy == 'idSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Id {{ sortBy == 'idSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'dateSurv', 'sens': sortBy == 'dateSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Date {{ sortBy == 'dateSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'observation', 'sens': sortBy == 'observation' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Observation {{ sortBy == 'observation' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
                         <th>Zone</th>
                         <th>Actions</th>
                     </tr>
@@ -47,47 +57,29 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="pagination">
+            {{ knp_pagination_render(survzones) }}
+        </div>
     </section>
 
     <style>
-        .search-box {
-            margin: 24px 0 16px 0;
-            display: flex;
-            justify-content: flex-start;
-        }
-        .search-input {
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border, #e0e0e0);
-            background: var(--glass-bg, #fff);
-            color: var(--text-primary, #222);
-            font-size: 15px;
-            min-width: 260px;
-            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .search-input:focus {
-            border-color: var(--emerald-light, #38bdf8);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
-        }
+        .search-box { margin: 24px 0 16px 0; display: flex; justify-content: flex-start; }
+        .search-input { padding: 12px 18px; border-radius: 12px; border: 1px solid var(--glass-border, #e0e0e0); background: var(--glass-bg, #fff); color: var(--text-primary, #222); font-size: 15px; min-width: 260px; box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .search-input:focus { border-color: var(--emerald-light, #38bdf8); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15); }
+        thead a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+        thead a:hover { color: var(--emerald-light, #38bdf8); }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; }
     </style>
 
     <script>
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('.search-row');
-            
             rows.forEach(function(row) {
                 const nomZone = row.cells[3].textContent.toLowerCase();
-                if (nomZone.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = nomZone.includes(searchTerm) ? '' : 'none';
             });
-            
-            // Show/hide no results message
             const visibleRows = document.querySelectorAll('.search-row:not([style*="display: none"])');
             const noResults = document.querySelector('.no-results');
             if (noResults) {
