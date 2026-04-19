@@ -26,6 +26,15 @@ class ActionNettoyageType extends AbstractType
                     'maxlength' => 255,
                 ],
             ])
+
+            // ->add('limiteBenevoles', IntegerType::class, [
+            //     'label' => 'Limite de bénévoles',
+            //     'attr' => [
+            //         'placeholder' => 'Entrer la limite',
+            //         'min' => 1,
+            //     ],
+            // ])
+
             ->add('limiteBenevoles', IntegerType::class, [
                 'label' => 'Limite de bénévoles',
                 'attr' => [
@@ -33,6 +42,7 @@ class ActionNettoyageType extends AbstractType
                     'min' => 1,
                 ],
             ])
+
         ;
     }
 
