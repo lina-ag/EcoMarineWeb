@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/survzone')]
 final class SurvzoneController extends AbstractController
@@ -110,4 +112,32 @@ final class SurvzoneController extends AbstractController
 
         return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/export/pdf', name: 'app_survzone_export_pdf', methods: ['GET'])]
+public function exportPdf(SurvzoneRepository $survzoneRepository): Response
+{
+    $survzones = $survzoneRepository->findAll();
+
+    $html = $this->renderView('survzone/pdf.html.twig', [
+        'survzones' => $survzones,
+    ]);
+
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isHtml5ParserEnabled', true);
+
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'landscape');
+    $dompdf->render();
+
+    return new Response(
+        $dompdf->output(),
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="surveillances_' . date('Y-m-d') . '.pdf"',
+        ]
+    );
+  }
 }
