@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 13px; color: #222; }
+        h1 { text-align: center; color: #0e7490; margin-bottom: 20px; }
+        .date { text-align: right; font-size: 11px; color: #666; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background-color: #0e7490; color: white; }
+        th { padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #e0e0e0; }
+        tr:nth-child(even) { background-color: #f0f9ff; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge-actif { background: #d1fae5; color: #065f46; }
+        .badge-inactif { background: #fee2e2; color: #991b1b; }
+        .badge-surveillance { background: #fef3c7; color: #92400e; }
+        .badge-maintenance { background: #e0e7ff; color: #3730a3; }
+    </style>
+</head>
+<body>
+    <h1>Liste des Zones de Protection Marine</h1>
+    <div class="date">Généré le {{ "now"|date("d/m/Y à H:i") }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom de la zone</th>
+                <th>Catégorie</th>
+                <th>Statut</th>
+                <th>Nb surveillances</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for zonep in zoneps %}
+            <tr>
+                <td>{{ zonep.idZone }}</td>
+                <td>{{ zonep.nomZone }}</td>
+                <td>{{ zonep.categorieZone }}</td>
+                <td>
+                    {% if zonep.status == 'Actif' %}
+                        <span class="badge badge-actif">Actif</span>
+                    {% elseif zonep.status == 'Inactif' %}
+                        <span class="badge badge-inactif">Inactif</span>
+                    {% elseif zonep.status == 'En surveillance' %}
+                        <span class="badge badge-surveillance">En surveillance</span>
+                    {% else %}
+                        <span class="badge badge-maintenance">En maintenance</span>
+                    {% endif %}
+                </td>
+                <td>{{ zonep.survzones|length }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

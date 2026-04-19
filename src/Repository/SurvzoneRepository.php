@@ -6,9 +6,6 @@ use App\Entity\Survzone;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Survzone>
- */
 class SurvzoneRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,17 @@ class SurvzoneRepository extends ServiceEntityRepository
         parent::__construct($registry, Survzone::class);
     }
 
-    //    /**
-    //     * @return Survzone[] Returns an array of Survzone objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findAllSorted(string $sortBy = 'idSurv', string $order = 'ASC'): \Doctrine\ORM\QueryBuilder
+    {
+        $allowedSort = ['idSurv', 'dateSurv', 'observation'];
+        $allowedOrder = ['ASC', 'DESC'];
 
-    //    public function findOneBySomeField($value): ?Survzone
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $sortBy = in_array($sortBy, $allowedSort) ? $sortBy : 'idSurv';
+        $order = in_array(strtoupper($order), $allowedOrder) ? strtoupper($order) : 'ASC';
+
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.zone', 'z')
+            ->addSelect('z')
+            ->orderBy('s.' . $sortBy, $order);
+    }
 }
