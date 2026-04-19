@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\ActiviteEcologique;
 use App\Entity\Reservation;
 use App\Repository\ActiviteEcologiqueRepository;
+use App\Repository\ReservationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -19,8 +20,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ReservationType extends AbstractType
 {
-    public function __construct(private readonly ActiviteEcologiqueRepository $activiteEcologiqueRepository)
-    {
+    public function __construct(
+        private readonly ActiviteEcologiqueRepository $activiteEcologiqueRepository,
+        private readonly ReservationRepository $reservationRepository,
+    ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -50,13 +53,21 @@ class ReservationType extends AbstractType
                 'choice_label' => 'nom_activite',
                 'label' => 'Activité écologique',
                 'placeholder' => '-- Choisissez une activité --',
-                'choice_attr' => static function (?ActiviteEcologique $activite): array {
+                'choice_attr' => function (?ActiviteEcologique $activite): array {
                     if (!$activite || !$activite->getDate_activite()) {
                         return [];
                     }
 
+                    $capacityState = $this->getCapacityState($activite);
+
                     return [
                         'data-activity-date' => $activite->getDate_activite()->format('Y-m-d'),
+                        'data-capacity-state' => $capacityState['state'],
+                        'data-capacity-used' => (string) $capacityState['used'],
+                        'data-capacity-total' => (string) $capacityState['total'],
+                        'data-capacity-remaining' => (string) $capacityState['remaining'],
+                        'class' => 'capacity-option capacity-option-' . $capacityState['state'],
+                        'style' => 'color: ' . $capacityState['color'] . ';',
                     ];
                 },
             ])
@@ -107,6 +118,28 @@ class ReservationType extends AbstractType
                 return;
             }
 
+            $capacityState = $this->getCapacityState($activite, $reservation);
+            $reservedPeople = (int) ($reservation->getNombre_personnes() ?? 0);
+
+            if ($capacityState['state'] === 'full') {
+                $form->get('activiteEcologique')->addError(new FormError(sprintf(
+                    'Cette activité est complète. Capacité atteinte (%d/%d places).',
+                    $capacityState['used'],
+                    $capacityState['total']
+                )));
+
+                return;
+            }
+
+            if ($capacityState['used'] + $reservedPeople > $capacityState['total']) {
+                $form->get('activiteEcologique')->addError(new FormError(sprintf(
+                    'Il reste seulement %d place(s) sur cette activité.',
+                    $capacityState['remaining']
+                )));
+
+                return;
+            }
+
             $allowedDates = $this->activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
             if (count($allowedDates) === 0) {
                 $allowedDates = [$activite->getDate_activite()->format('Y-m-d')];
@@ -137,6 +170,36 @@ class ReservationType extends AbstractType
 
             $reservation->setDate_reservation($date);
         });
+    }
+
+    private function getCapacityState(ActiviteEcologique $activite, ?Reservation $currentReservation = null): array
+    {
+        $totalCapacity = max(0, (int) ($activite->getCapacite() ?? 0));
+        $excludedReservationId = $currentReservation?->getId_reservation();
+        $usedCapacity = $this->reservationRepository->countReservedPeopleForActivity($activite, $excludedReservationId);
+        $remainingCapacity = max(0, $totalCapacity - $usedCapacity);
+
+        if ($totalCapacity <= 0 || $remainingCapacity <= 0) {
+            return [
+                'state' => 'full',
+                'color' => '#dc2626',
+                'used' => $usedCapacity,
+                'total' => $totalCapacity,
+                'remaining' => 0,
+            ];
+        }
+
+        $usageRate = $totalCapacity > 0 ? ($usedCapacity / $totalCapacity) : 1;
+        $state = $usageRate >= 0.5 ? 'warning' : 'available';
+        $color = $state === 'warning' ? '#d97706' : '#16a34a';
+
+        return [
+            'state' => $state,
+            'color' => $color,
+            'used' => $usedCapacity,
+            'total' => $totalCapacity,
+            'remaining' => $remainingCapacity,
+        ];
     }
 
     private static function normalizeDateInput(string $selectedDate): ?string

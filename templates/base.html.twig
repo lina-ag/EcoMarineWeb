@@ -35,7 +35,7 @@
     <title>{% block title %}EcoMarine{% endblock %}</title>
 </head>
 
-<body{% if current_route in ['app_signIn', 'app_signUp'] %} class="auth-page"{% endif %}>
+<body class="{% if current_route == 'app_home' %}home-page{% elseif current_route in ['app_signIn', 'app_signUp'] %}auth-page{% endif %}">
 
 {% if current_route not in ['app_home', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
 

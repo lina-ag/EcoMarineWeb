@@ -4,17 +4,19 @@
 {% block navbar_title %}Activités écologiques{% endblock %}
 
 {% block admin_content %}
-    <section class="glass-card table-card">
+    <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list">
         <div class="card-header">
-            <div>
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">Activity Panel</span>
                 <h2 class="card-title">Liste des activités écologiques</h2>
                 <p class="card-subtitle">Suivi des activités enregistrées dans la plateforme.</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary">Créer une activité</a>
+                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary reservation-admin-cta">Créer une activité</a>
             </div>
         </div>
 
+<<<<<<< HEAD
         <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" style="margin-bottom: 1rem;">
             <div class="search-box" style="max-width: 460px;">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,6 +36,9 @@
         </form>
 
         <div class="table-wrapper">
+=======
+        <div class="table-wrapper reservation-admin-table-wrap">
+>>>>>>> test
             <table class="data-table">
                 <thead>
                     <tr>
@@ -47,15 +52,17 @@
                 </thead>
                 <tbody>
                 {% for activite_ecologique in activite_ecologiques %}
-                    <tr>
+                    <tr class="reservation-admin-row" style="--reservation-row-index: {{ loop.index0 }};">
                         <td>{{ activite_ecologique.idActivite }}</td>
                         <td>{{ activite_ecologique.nomActivite }}</td>
                         <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
                         <td>{{ activite_ecologique.capacite }}</td>
                         <td>{{ activite_ecologique.description }}</td>
                         <td>
-                            <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary">Voir</a>
-                            <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary">Modifier</a>
+                            <div class="reservation-admin-actions">
+                                <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn">Voir</a>
+                                <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary reservation-admin-action-btn">Modifier</a>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
