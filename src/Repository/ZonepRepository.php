@@ -13,7 +13,7 @@ class ZonepRepository extends ServiceEntityRepository
         parent::__construct($registry, Zonep::class);
     }
 
-    public function findAllSorted(string $sortBy = 'idZone', string $order = 'ASC'): \Doctrine\ORM\QueryBuilder
+    public function findFiltered(string $search = '', string $status = '', string $sortBy = 'idZone', string $order = 'ASC'): \Doctrine\ORM\QueryBuilder
     {
         $allowedSort = ['idZone', 'nomZone', 'categorieZone', 'status'];
         $allowedOrder = ['ASC', 'DESC'];
@@ -21,7 +21,20 @@ class ZonepRepository extends ServiceEntityRepository
         $sortBy = in_array($sortBy, $allowedSort) ? $sortBy : 'idZone';
         $order = in_array(strtoupper($order), $allowedOrder) ? strtoupper($order) : 'ASC';
 
-        return $this->createQueryBuilder('z')
+        $qb = $this->createQueryBuilder('z')
+            ->select('z')
             ->orderBy('z.' . $sortBy, $order);
+
+        if (!empty($search)) {
+            $qb->andWhere('z.nomZone LIKE :search OR z.categorieZone LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if (!empty($status)) {
+            $qb->andWhere('z.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb;
     }
 }
