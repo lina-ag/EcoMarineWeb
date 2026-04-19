@@ -15,6 +15,24 @@
             </div>
         </div>
 
+        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" style="margin-bottom: 1rem;">
+            <div class="search-box" style="max-width: 460px;">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                    id="activite-search-input"
+                    type="text"
+                    name="q"
+                    class="search-input"
+                    value="{{ search_term|default('') }}"
+                    placeholder="Rechercher par nom, description, ID ou capacité..."
+                    autocomplete="off"
+                >
+            </div>
+        </form>
+
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
@@ -49,4 +67,26 @@
             </table>
         </div>
     </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const form = document.getElementById('activite-search-form');
+            const input = document.getElementById('activite-search-input');
+
+            if (!form || !input) {
+                return;
+            }
+
+            let timer = null;
+            input.addEventListener('input', function () {
+                window.clearTimeout(timer);
+                timer = window.setTimeout(function () {
+                    form.requestSubmit();
+                }, 300);
+            });
+        })();
+    </script>
 {% endblock %}

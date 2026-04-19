@@ -34,10 +34,32 @@ final class ReservationController extends AbstractController
     }
 
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
-    public function index(ReservationRepository $reservationRepository): Response
+    public function index(Request $request, ReservationRepository $reservationRepository): Response
     {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+
+        $queryBuilder = $reservationRepository
+            ->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->orderBy('r.date_reservation', 'DESC');
+
+        if ($searchTerm !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(r.nom) LIKE :term OR LOWER(r.email) LIKE :term OR LOWER(a.nom_activite) LIKE :term')
+                ->setParameter('term', '%' . mb_strtolower($searchTerm) . '%');
+
+            if (ctype_digit($searchTerm)) {
+                $queryBuilder
+                    ->orWhere('r.id_reservation = :id OR r.nombre_personnes = :people')
+                    ->setParameter('id', (int) $searchTerm)
+                    ->setParameter('people', (int) $searchTerm);
+            }
+        }
+
         return $this->render('reservation/index.html.twig', [
-            'reservations' => $reservationRepository->findAll(),
+            'reservations' => $queryBuilder->getQuery()->getResult(),
+            'search_term' => $searchTerm,
         ]);
     }
 

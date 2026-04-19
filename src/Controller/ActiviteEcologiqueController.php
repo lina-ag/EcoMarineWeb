@@ -15,10 +15,30 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
-    public function index(ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
+    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
     {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+
+        $queryBuilder = $activiteEcologiqueRepository
+            ->createQueryBuilder('a')
+            ->orderBy('a.date_activite', 'DESC');
+
+        if ($searchTerm !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(a.nom_activite) LIKE :term OR LOWER(a.description) LIKE :term')
+                ->setParameter('term', '%' . mb_strtolower($searchTerm) . '%');
+
+            if (ctype_digit($searchTerm)) {
+                $queryBuilder
+                    ->orWhere('a.id_activite = :id OR a.capacite = :capacity')
+                    ->setParameter('id', (int) $searchTerm)
+                    ->setParameter('capacity', (int) $searchTerm);
+            }
+        }
+
         return $this->render('activite_ecologique/index.html.twig', [
-            'activite_ecologiques' => $activiteEcologiqueRepository->findAll(),
+            'activite_ecologiques' => $queryBuilder->getQuery()->getResult(),
+            'search_term' => $searchTerm,
         ]);
     }
 
