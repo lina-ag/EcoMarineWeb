@@ -1,6 +1,6 @@
 {% set isRecurringChecked = form.is_recurring.vars.checked ? true : false %}
 
-{{ form_start(form, {'attr': {'class': 'activity-form reservation-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+{{ form_start(form, {'attr': {'class': 'activity-form reservation-form', 'novalidate': 'novalidate'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
     {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
