@@ -22,9 +22,153 @@
     </div>
 {% endfor %}
 
+<style>
+    #nav-form-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: transparent;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        vertical-align: middle;
+        flex-shrink: 0;
+        border: none;
+        padding: 0.5rem 0.8rem;
+        border-radius: 4px;
+    }
+    #nav-form-btn:hover,
+    #nav-form-btn:focus-visible {
+        background: rgba(255, 255, 255, 0.1);
+        transform: none;
+        filter: none;
+        box-shadow: none;
+        outline: none;
+    }
+    #nav-form-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.08rem 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 500;
+        margin-left: 0.2rem;
+    }
+    
+    /* Styles pour une meilleure organisation de la navbar */
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        padding: 0.5rem 1rem;
+    }
+    
+    .navigation-row {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        justify-content: flex-end;
+    }
+    
+    #navigation {
+        display: flex;
+        align-items: center;
+        width: auto;
+    }
+    
+    .nav-box {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    
+    .navigation-menu {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        gap: 0.2rem;
+        flex-wrap: wrap;
+    }
+    
+    .navigation-menu li {
+        margin: 0;
+    }
+    
+    .navigation-menu li a {
+        display: inline-block;
+        padding: 0.5rem 0.8rem;
+        color: #ffffff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+    
+    .navigation-menu li a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .navbar-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    
+    @media (max-width: 992px) {
+        .navbar-toggle {
+            display: block;
+        }
+        
+        .nav-box {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            flex-direction: column;
+            padding: 1rem;
+            z-index: 1000;
+        }
+        
+        .nav-box.active {
+            display: flex;
+        }
+        
+        .navigation-menu {
+            flex-direction: column;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .navigation-menu li {
+            width: 100%;
+        }
+        
+        .navigation-menu li a {
+            display: block;
+            padding: 0.8rem;
+        }
+        
+        #nav-form-btn {
+            margin: 0.5rem 0;
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
 <div id="video">
 
-    <!-- Preloader -->
     <div class="preloader">
         <div class="preloader-bounce">
             <span></span>
@@ -33,7 +177,6 @@
         </div>
     </div>
 
-    <!-- Header / Navbar -->
     <header id="header">
         <div class="container-fluid">
             <div class="navbar">
@@ -50,14 +193,14 @@
                                 <li data-menuanchor="slide01" class="active"><a href="#slide01">Accueil</a></li>
                                 <li data-menuanchor="slide02"><a href="#slide02">À Propos</a></li>
                                 <li data-menuanchor="slide03"><a href="#slide03">Activités</a></li>
-                                <li data-menuanchor="slide04"><a href="#slide04">Notre Mission</a></li>
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
-                                <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
-                                <li data-menuanchor="slide09"><a href="#slide09">Activités Écologiques</a></li>
-                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
-                                <li data-menuanchor="slide11"><a href="#slide11">Zones Protégées</a></li>
+                                <li><button id="nav-form-btn" type="button" aria-label="Formulaire suivant">
+                                    <span>📋</span>
+                                    <span id="nav-form-label">Réservations</span>
+                                    <span id="nav-form-badge">1/10</span>
+                                </button></li>
                             </ul>
                         </div>
                     </nav>
@@ -66,7 +209,6 @@
         </div>
     </header>
 
-    <!-- Vidéo de fond -->
     <video autoplay muted loop id="myVideo">
         <source src="/assets/images/video-bg.mp4" type="video/mp4">
     </video>
@@ -90,7 +232,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- SLIDE 02 — À Propos -->
         <div class="section animated-row" data-section="slide02">
@@ -201,54 +342,6 @@
                                         <span class="service-icon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
                                         <h3>Réservations en ligne</h3>
                                         <p>Réservez facilement vos activités via notre plateforme sécurisée, 24h/24.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 04 — Notre Mission -->
-        <div class="section animated-row" data-section="slide04">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-7 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Notre Mission</span>
-                            <h2>Nos engagements</h2>
-                        </div>
-                        <div class="skills-row animate" data-animate="fadeInDown">
-                            <div class="row">
-                                <div class="col-md-8 offset-md-2">
-                                    <div class="skill-item">
-                                        <h6>Protection Marine</h6>
-                                        <div class="skill-bar">
-                                            <span>95%</span>
-                                            <div class="filled-bar-2"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item">
-                                        <h6>Satisfaction des visiteurs</h6>
-                                        <div class="skill-bar">
-                                            <span>90%</span>
-                                            <div class="filled-bar"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item">
-                                        <h6>Recherche scientifique</h6>
-                                        <div class="skill-bar">
-                                            <span>80%</span>
-                                            <div class="filled-bar-2"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item last-skill">
-                                        <h6>Tourisme durable</h6>
-                                        <div class="skill-bar">
-                                            <span>85%</span>
-                                            <div class="filled-bar"></div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -387,7 +480,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 11 — Contact -->
+        <!-- SLIDE 07 — Contact -->
         <div class="section animated-row" data-section="slide07" data-anchor="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -433,7 +526,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 07 — Réservations -->
+        <!-- SLIDE 08 — Réservations -->
         <div class="section animated-row" data-section="slide08" data-anchor="slide08">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -444,13 +537,12 @@
                         </div>
                         <div class="reservations-section">
                             <div class="row">
-                                <!-- Formulaire Réservation -->
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
                                     <div class="form-card">
                                         <h3>Faire une réservation</h3>
                                         <p class="form-subtitle">Réservez votre place pour une activité</p>
                                         {{ include('reservation/_form.html.twig', {
-                                            'form': form_reservation, 
+                                            'form': form_reservation,
                                             'button_label': 'Réserver',
                                             'form_action': path('app_reservation_new', {'source': 'front'}),
                                             'show_back_button': false
@@ -464,7 +556,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 08 — Activités Écologiques -->
+        <!-- SLIDE 09 — Activités Écologiques -->
         <div class="section animated-row" data-section="slide09" data-anchor="slide09">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -475,7 +567,6 @@
                         </div>
                         <div class="reservations-section">
                             <div class="row">
-                                <!-- Formulaire Activité Écologique -->
                                 <div class="col-md-7 offset-md-2 animate" data-animate="fadeInUp">
                                     <div class="form-card form-card-activity">
                                         <h3>Créer une activité écologique</h3>
@@ -495,7 +586,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 09 — Zones Protégées -->
+        <!-- SLIDE 11 — Zones Protégées -->
         <div class="section animated-row" data-section="slide11" data-anchor="slide11">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -506,7 +597,6 @@
                         </div>
                         <div class="reservations-section">
                             <div class="row">
-                                <!-- Formulaire Zonep -->
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
                                     <div class="form-card">
                                         <h3>Créer une zone protégée</h3>
@@ -537,7 +627,6 @@
                         </div>
                         <div class="reservations-section">
                             <div class="row">
-                                <!-- Formulaire Survzone -->
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
                                     <div class="form-card">
                                         <h3>Créer une fiche de surveillance</h3>
@@ -550,37 +639,14 @@
                                         }) }}
                                     </div>
                                 </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings">
-                                        {{ form_label(survzoneForm.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(survzoneForm.dateSurv, {'attr': {'class': 'form-input'}}) }}
-                                        {{ form_errors(survzoneForm.dateSurv) }}
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <div class="form-group-settings full-width">
-                                        {{ form_label(survzoneForm.observation, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(survzoneForm.observation, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Détails de la surveillance'}}) }}
-                                        {{ form_errors(survzoneForm.observation) }}
-                                    </div>
-                                </div>
-
-                                <div class="btn-group">
-                                    <button class="btn btn-primary" type="submit">Ajouter la surveillance</button>
-                                </div>
-
-                                {{ form_rest(survzoneForm) }}
-                                {{ form_end(survzoneForm) }}
-                            </section>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE — Activité Écologique -->
+        <!-- SLIDE 209b — Nouvelle Activité Écologique -->
         <div class="section animated-row" data-section="slide209b" data-anchor="slide209b">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -602,7 +668,7 @@
             </div>
         </div>
 
-        <!-- SLIDE — Faune Marine -->
+        <!-- SLIDE 210 — Faune Marine -->
         <div class="section animated-row" data-section="slide210" data-anchor="slide210">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -624,7 +690,7 @@
             </div>
         </div>
 
-        <!-- SLIDE — Observation -->
+        <!-- SLIDE 211 — Observation -->
         <div class="section animated-row" data-section="slide211" data-anchor="slide211">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -646,14 +712,14 @@
             </div>
         </div>
 
-        <!-- SLIDE — Prédiction d'Échouage -->
+        <!-- SLIDE 212 — Prédiction d'Échouage -->
         <div class="section animated-row" data-section="slide212" data-anchor="slide212">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
                         <div class="title-block animate" data-animate="fadeInUp">
                             <span>Prédiction</span>
-                            <h2>Ajouter une prédiction d\'échouage</h2>
+                            <h2>Ajouter une prédiction d'échouage</h2>
                         </div>
                         <div class="glass-card animate" data-animate="fadeInUp">
                             {{ include('prediction_echouage/_form.html.twig', {
@@ -668,7 +734,7 @@
             </div>
         </div>
 
-        <!-- SLIDE — Mission Drone -->
+        <!-- SLIDE 213 — Mission Drone -->
         <div class="section animated-row" data-section="slide213" data-anchor="slide213">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -690,7 +756,7 @@
             </div>
         </div>
 
-        <!-- SLIDE — Détection Drone -->
+        <!-- SLIDE 214 — Détection Drone -->
         <div class="section animated-row" data-section="slide214" data-anchor="slide214">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -712,7 +778,8 @@
             </div>
         </div>
 
-    <!-- Réseaux sociaux -->
+    </div>{# fin #fullpage #}
+
     <div id="social-icons">
         <div class="text-right">
             <ul class="social-icons">
@@ -725,5 +792,58 @@
     </div>
 
 </div>{# fin #video #}
+
+<script>
+// Menu toggle pour mobile
+document.querySelector('.navbar-toggle').addEventListener('click', function() {
+    document.querySelector('.nav-box').classList.toggle('active');
+});
+
+(function () {
+    var FORMS = [
+        { anchor: 'slide08',   label: 'Réservations' },
+        { anchor: 'slide09',   label: 'Activité Éco.' },
+        { anchor: 'slide11',   label: 'Zone Protégée' },
+        { anchor: 'slide10',   label: 'Surveillance' },
+        { anchor: 'slide209b', label: 'Nvl. Activité' },
+        { anchor: 'slide210',  label: 'Faune Marine' },
+        { anchor: 'slide211',  label: 'Observation' },
+        { anchor: 'slide212',  label: 'Prédiction' },
+        { anchor: 'slide213',  label: 'Mission Drone' },
+        { anchor: 'slide214',  label: 'Détection Drone' }
+    ];
+
+    var btn     = document.getElementById('nav-form-btn');
+    var labelEl = document.getElementById('nav-form-label');
+    var badgeEl = document.getElementById('nav-form-badge');
+    var total   = FORMS.length;
+    var nextIdx = 0;
+
+    if (!btn) return;
+
+    function getCurrentFormIndex() {
+        var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+        for (var i = 0; i < total; i++) {
+            if (FORMS[i].anchor === hash) return i;
+        }
+        return -1;
+    }
+
+    function updateBtn() {
+        var idx = getCurrentFormIndex();
+        nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
+        labelEl.textContent = FORMS[nextIdx].label;
+        badgeEl.textContent = (nextIdx + 1) + '/' + total;
+    }
+
+    btn.addEventListener('click', function () {
+        window.location.hash = '#' + FORMS[nextIdx].anchor;
+        setTimeout(updateBtn, 80);
+    });
+
+    window.addEventListener('hashchange', updateBtn);
+    updateBtn();
+})();
+</script>
 
 {% endblock %}
