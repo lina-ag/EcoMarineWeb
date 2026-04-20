@@ -59,36 +59,3 @@ final class HomeController extends AbstractController
         ]);
     }
 }
-            'form_reservation' => $formReservation->createView(),
-            'zonepForm' => $zonepForm->createView(),
-            'survzoneForm' => $survzoneForm->createView(),
-            'fauneMarineForm' => $fauneMarineForm->createView(),
-            'observationForm' => $observationForm->createView(),
-            'predictionForm' => $predictionForm->createView(),
-            'missionDroneForm' => $missionDroneForm->createView(),
-            'detectionDroneForm' => $detectionDroneForm->createView(),
-=======
-        $reservation = new Reservation();
-        $form_reservation = $this->createForm(ReservationType::class, $reservation);
-        
-        $activiteEcologique = new ActiviteEcologique();
-        $form_activite = $this->createForm(ActiviteEcologiqueType::class, $activiteEcologique);
-        
-        $zonep = new Zonep();
-        $form_zonep = $this->createForm(ZonepType::class, $zonep);
-        
-        $survzone = new Survzone();
-        $form_survzone = $this->createForm(SurvzoneType::class, $survzone);
-        
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-            'form_reservation' => $form_reservation,
-            'form_activite' => $form_activite,
-            'form_zonep' => $form_zonep,
-            'form_survzone' => $form_survzone,
-            'zonepForm' => $form_zonep,
-            'survzoneForm' => $form_survzone,
->>>>>>> 5209fc2d120843fb405f05322fa4127f76a5b7ae
-        ]);
-    }
-}

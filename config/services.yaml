@@ -22,3 +22,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Service météorologique
+    App\Service\WeatherService:
+        arguments:
+            $openWeatherApiKey: '%env(OPENWEATHER_API_KEY)%'
+
+    # Service de prédiction
+    App\Service\PredictionService: ~

@@ -1,0 +1,1273 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carte Interactive de Prédiction - EcoMarineWeb{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .prediction-panel {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 420px;
+        background: #0B265D;
+        color: #ffffff;
+        padding: 20px;
+        border-radius: 14px;
+        border: 2px solid #1a3a7d;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-height: 85vh;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .prediction-panel.collapsed {
+        width: 70px;
+        height: 70px;
+        padding: 12px;
+        overflow: hidden;
+    }
+
+    .prediction-panel.collapsed .panel-content {
+        display: none;
+    }
+
+    .prediction-panel.collapsed .panel-header {
+        display: block !important;
+    }
+
+    .panel-header {
+        display: none;
+        text-align: center;
+        margin-bottom: 15px;
+        color: #ffffff;
+    }
+
+    .panel-toggle {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1002;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .panel-toggle:hover {
+        background: #0b5ed7;
+        transform: scale(1.08);
+    }
+
+    .prediction-panel h4,
+    .prediction-panel h5,
+    .prediction-panel h6,
+    .prediction-panel label,
+    .prediction-panel .form-label,
+    .prediction-panel p,
+    .prediction-panel span {
+        color: #ffffff !important;
+    }
+
+    .prediction-panel .text-muted {
+        color: #b0c4de !important;
+    }
+
+    .prediction-panel small {
+        color: #b0c4de !important;
+    }
+
+    .prediction-panel input,
+    .prediction-panel select,
+    .prediction-panel .form-control,
+    .prediction-panel .form-select {
+        background: #1a3a7d;
+        color: #ffffff;
+        border-color: #2a5aad;
+        border: 1px solid #2a5aad;
+    }
+
+    .prediction-panel input::placeholder,
+    .prediction-panel select::placeholder {
+        color: #8fa3c8;
+    }
+
+    .prediction-panel input:focus,
+    .prediction-panel select:focus,
+    .prediction-panel .form-control:focus,
+    .prediction-panel .form-select:focus {
+        background: #1a3a7d;
+        color: #ffffff;
+        border-color: #4a7aed;
+        box-shadow: 0 0 0 0.2rem rgba(74, 122, 237, 0.25);
+    }
+
+    .bookmarks-section {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .bookmarks-list {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .bookmark-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        margin: 5px 0;
+        background: #1a3a7d;
+        border-radius: 6px;
+        border: 1px solid #2a5aad;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .bookmark-item:hover {
+        background: #2a5aad;
+        border-color: #4a7aed;
+    }
+
+    .bookmark-name {
+        font-weight: 500;
+        color: #ffffff;
+    }
+
+    .bookmark-coords {
+        font-size: 0.85em;
+        color: #b0c4de;
+    }
+
+    .bookmark-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-bookmark {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+    }
+
+    .btn-bookmark:hover {
+        background: #218838;
+    }
+
+    .btn-delete-bookmark {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+    }
+
+    .btn-delete-bookmark:hover {
+        background: #c82333;
+    }
+
+    .selection-mode {
+        margin-bottom: 15px;
+        padding: 15px;
+        background: #1a3a7d;
+        border-radius: 6px;
+        border-left: 4px solid #4a7aed;
+    }
+
+    .mode-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .mode-btn {
+        padding: 8px 16px;
+        border: 2px solid #4a7aed;
+        background: transparent;
+        color: #4a7aed;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .mode-btn.active {
+        background: #4a7aed;
+        color: white;
+        border-color: #4a7aed;
+    }
+
+    .mode-btn:hover {
+        background: #4a7aed;
+        border-color: #4a7aed;
+        color: white;
+    }
+
+    .weather-info {
+        background: #1a3a7d;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+        color: #ffffff;
+    }
+
+    .risk-level {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+    }
+
+    .risk-1 { background-color: #d4edda; color: #155724; }
+    .risk-2 { background-color: #fff3cd; color: #856404; }
+    .risk-3 { background-color: #ffeaa7; color: #d68910; }
+    .risk-4 { background-color: #f8d7da; color: #721c24; }
+    .risk-5 { background-color: #f5c6cb; color: #721c24; }
+
+    .btn-predict {
+        background: #4a7aed;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(74, 122, 237, 0.3), 0 2px 4px rgba(74, 122, 237, 0.2);
+        transform: translateY(0);
+    }
+
+    .btn-predict:hover {
+        background: #3a6add;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(74, 122, 237, 0.4), 0 4px 8px rgba(74, 122, 237, 0.3);
+    }
+
+    .btn-predict:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(74, 122, 237, 0.3);
+    }
+
+    .btn-save {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3), 0 2px 4px rgba(40, 167, 69, 0.2);
+        transform: translateY(0);
+    }
+
+    .btn-save:hover {
+        background: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4), 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-save:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Effets 3D pour tous les boutons */
+    .btn-bookmark, .btn-delete-bookmark {
+        transition: all 0.3s ease;
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-bookmark:hover, .btn-delete-bookmark:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .btn-bookmark:active, .btn-delete-bookmark:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Boutons Bootstrap avec effets 3D */
+    .btn {
+        transition: all 0.3s ease;
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Boutons de mode avec effets 3D */
+    .mode-btn {
+        padding: 8px 16px;
+        border: 2px solid #4a7aed;
+        background: transparent;
+        color: #4a7aed;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(74, 122, 237, 0.2);
+    }
+
+    .mode-btn.active {
+        background: #4a7aed;
+        color: white;
+        border-color: #4a7aed;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(74, 122, 237, 0.3);
+    }
+
+    .mode-btn:hover {
+        background: #4a7aed;
+        border-color: #4a7aed;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(74, 122, 237, 0.3);
+    }
+
+    .mode-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(74, 122, 237, 0.2);
+    }
+
+    .zone-marker {
+        background: #007bff;
+        border: 2px solid white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .selected-zone {
+        background: #ff6b35 !important;
+        border-color: #ff4500 !important;
+    }
+
+    .loading {
+        display: none;
+        text-align: center;
+        color: #b0c4de;
+        font-style: italic;
+    }
+
+    .factors-list {
+        background: #1a3a7d;
+        color: #ffffff;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+
+    .recommendations-list {
+        background: #1a3a7d;
+        color: #ffffff;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-map-marked-alt"></i>
+                Carte Interactive de Prédiction d'Échouage
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 position-relative">
+            <!-- Bouton de bascule -->
+            <button class="panel-toggle" id="panel-toggle" title="Réduire/Agrandir">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Carte Leaflet -->
+            <div id="map"></div>
+
+            <!-- Panneau de prédiction -->
+            <div class="prediction-panel" id="prediction-panel">
+                <div class="panel-content">
+                    <div class="panel-header">
+                        <h4><i class="fas fa-brain"></i> Agent IA</h4>
+                    </div>
+
+                    <h4 class="mb-3">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Agent de Prédiction
+                    </h4>
+
+                    <!-- Section Bookmarks -->
+                    <div class="bookmarks-section">
+                        <h5 class="mb-3">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Positions sauvegardées
+                        </h5>
+
+                        <div class="bookmarks-list" id="bookmarks-list">
+                            <!-- Les positions sauvegardées seront affichées ici -->
+                        </div>
+
+                        <button id="add-position-btn" class="btn-bookmark" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-plus"></i>
+                            Ajouter Position Actuelle
+                        </button>
+                    </div>
+
+                    <!-- Mode de sélection -->
+                    <div class="selection-mode">
+                        <h6><i class="fas fa-mouse-pointer"></i> Mode de Sélection</h6>
+                        <div class="mode-buttons">
+                            <button class="mode-btn active" id="mode-zone" data-mode="zone">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Zones
+                            </button>
+                            <button class="mode-btn" id="mode-free" data-mode="free">
+                                <i class="fas fa-crosshairs"></i>
+                                Libre
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            <strong>Zones:</strong> Cliquez sur les marqueurs prédéfinis<br>
+                            <strong>Libre:</strong> Cliquez n'importe où sur la carte
+                        </small>
+                    </div>
+
+                <div id="loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Analyse en cours...
+                </div>
+
+                <!-- Sélection de la zone -->
+                <div class="mb-3">
+                    <label for="zone-select" class="form-label">Zone sélectionnée:</label>
+                    <select id="zone-select" class="form-select">
+                        <option value="">Cliquez sur la carte pour sélectionner une zone</option>
+                        <option value="Nord">Nord</option>
+                        <option value="Nord-Est">Nord-Est</option>
+                        <option value="Est">Est</option>
+                        <option value="Sud-Est">Sud-Est</option>
+                        <option value="Sud">Sud</option>
+                        <option value="Sud-Ouest">Sud-Ouest</option>
+                        <option value="Ouest">Ouest</option>
+                        <option value="Nord-Ouest">Nord-Ouest</option>
+                    </select>
+                </div>
+
+                <!-- Date de prédiction -->
+                <div class="mb-3">
+                    <label for="prediction-date" class="form-label">Date de prédiction:</label>
+                    <input type="date" id="prediction-date" class="form-control"
+                           value="{{ "now"|date("Y-m-d") }}" min="{{ "now"|date("Y-m-d") }}">
+                </div>
+
+                <!-- Coordonnées actuelles -->
+                <div class="mb-3">
+                    <label class="form-label">Coordonnées:</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="text" id="latitude" class="form-control" placeholder="Latitude" readonly>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="longitude" class="form-control" placeholder="Longitude" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton de prédiction -->
+                <button id="predict-btn" class="btn-predict" disabled>
+                    <i class="fas fa-search"></i>
+                    Analyser le risque
+                </button>
+
+                <!-- Résultats de la prédiction -->
+                <div id="prediction-results" style="display: none;">
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Résultats de l'analyse</h5>
+                        <div>
+                            <button id="bookmark-result-btn" class="btn btn-outline-primary btn-sm" title="Ajouter aux favoris">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                            <button id="close-results-btn" class="btn btn-outline-secondary btn-sm" title="Fermer">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Niveau de risque -->
+                    <div class="risk-display mb-4">
+                        <div id="risk-level" class="risk-level">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Niveau de risque:</span>
+                                <span id="risk-value" class="fw-bold">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations météorologiques -->
+                    <div id="weather-info" class="weather-info mb-3" style="display: none;">
+                        <h6 class="d-flex align-items-center mb-2">
+                            <i class="fas fa-cloud-sun me-2"></i>
+                            Conditions météorologiques actuelles
+                        </h6>
+                        <div id="weather-details" class="p-2 bg-light rounded"></div>
+                    </div>
+
+                    <!-- Facteurs de risque -->
+                    <div id="factors-info" class="mb-3" style="display: none;">
+                        <h6 class="d-flex align-items-center mb-2">
+                            <i class="fas fa-list-ul me-2"></i>
+                            Facteurs analysés
+                        </h6>
+                        <ul id="factors-list" class="factors-list list-unstyled p-2 bg-light rounded"></ul>
+                    </div>
+
+                    <!-- Recommandations -->
+                    <div id="recommendations-info" class="mb-4" style="display: none;">
+                        <h6 class="d-flex align-items-center mb-2">
+                            <i class="fas fa-lightbulb me-2 text-warning"></i>
+                            Recommandations
+                        </h6>
+                        <ul id="recommendations-list" class="recommendations-list list-unstyled p-2 bg-warning bg-opacity-10 rounded border border-warning"></ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <button id="save-btn" class="btn-save mb-2">
+                            <i class="fas fa-save"></i>
+                            Sauvegarder la prédiction
+                        </button>
+                        <button id="new-prediction-btn" class="btn btn-outline-primary" style="width: 100%;">
+                            <i class="fas fa-plus"></i>
+                            Nouvelle analyse
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration de la carte
+    const map = L.map('map').setView([35.8, 10.6], 7); // Centré sur la Tunisie
+
+    // Ajout du fond de carte OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+    }).addTo(map);
+
+    // Variables globales
+    const zoneMarkers = {};
+    let selectedZone = null;
+    let selectedCoords = null;
+    let currentMode = 'zone'; // 'zone' ou 'free'
+    let savedPositions = [];
+    let userMarkers = [];
+    let predictionMarkers = []; // Marqueurs des positions sauvegardées
+
+    // Fonction pour basculer le panneau
+    function togglePanel() {
+        const panel = document.getElementById('prediction-panel');
+        const toggleBtn = document.getElementById('panel-toggle');
+        const icon = toggleBtn.querySelector('i');
+
+        panel.classList.toggle('collapsed');
+
+        if (panel.classList.contains('collapsed')) {
+            icon.className = 'fas fa-expand';
+            toggleBtn.title = 'Agrandir';
+        } else {
+            icon.className = 'fas fa-bars';
+            toggleBtn.title = 'Réduire';
+        }
+    }
+
+    // Gestionnaire du bouton toggle
+    document.getElementById('panel-toggle').addEventListener('click', togglePanel);
+
+    // Chargement des zones depuis l'API
+    fetch('/prediction/map/zones')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Object.entries(data.zones).forEach(([zoneName, zoneData]) => {
+                    const marker = L.marker([zoneData.lat, zoneData.lon], {
+                        icon: L.divIcon({
+                            className: 'zone-marker',
+                            html: '<div style="width: 20px; height: 20px; background: #007bff; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    });
+
+                    marker.zoneName = zoneName;
+                    marker.on('click', function() {
+                        if (currentMode === 'zone') {
+                            selectZone(zoneName, zoneData.lat, zoneData.lon);
+                        }
+                    });
+
+                    marker.addTo(map);
+                    zoneMarkers[zoneName] = marker;
+                });
+            }
+        });
+
+    // Gestionnaire de clic sur la carte (mode libre)
+    map.on('click', function(e) {
+        if (currentMode === 'free') {
+            const lat = e.latlng.lat.toFixed(6);
+            const lon = e.latlng.lng.toFixed(6);
+
+            // Mise à jour des coordonnées
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+            selectedCoords = { lat: parseFloat(lat), lon: parseFloat(lon) };
+
+            // Recherche de la zone la plus proche
+            findNearestZone(lat, lon);
+
+            // Activation du bouton de prédiction
+            document.getElementById('predict-btn').disabled = false;
+
+            // Ajouter un marqueur temporaire
+            addUserMarker(lat, lon);
+        }
+    });
+
+    // Fonction pour ajouter un marqueur utilisateur
+    function addUserMarker(lat, lon) {
+        // Supprimer les anciens marqueurs utilisateur
+        userMarkers.forEach(marker => map.removeLayer(marker));
+        userMarkers = [];
+
+        const marker = L.marker([lat, lon], {
+            icon: L.divIcon({
+                className: 'user-marker',
+                html: '<div style="width: 16px; height: 16px; background: #ff6b35; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            })
+        });
+
+        marker.addTo(map);
+        userMarkers.push(marker);
+    }
+
+    // Fonction pour sélectionner une zone
+    function selectZone(zoneName, lat, lon) {
+        // Réinitialisation des marqueurs de zone
+        Object.values(zoneMarkers).forEach(marker => {
+            marker.getElement().classList.remove('selected-zone');
+        });
+
+        // Sélection du nouveau marqueur
+        if (zoneMarkers[zoneName]) {
+            zoneMarkers[zoneName].getElement().classList.add('selected-zone');
+        }
+
+        selectedZone = zoneName;
+        selectedCoords = { lat: lat, lon: lon };
+
+        // Mise à jour du formulaire
+        document.getElementById('zone-select').value = zoneName;
+        document.getElementById('latitude').value = lat.toFixed(6);
+        document.getElementById('longitude').value = lon.toFixed(6);
+        document.getElementById('predict-btn').disabled = false;
+
+        // Supprimer les marqueurs utilisateur si on revient au mode zone
+        if (currentMode === 'zone') {
+            userMarkers.forEach(marker => map.removeLayer(marker));
+            userMarkers = [];
+        }
+    }
+
+    // Fonction pour trouver la zone la plus proche
+    function findNearestZone(lat, lon) {
+        let nearestZone = null;
+        let minDistance = Infinity;
+
+        fetch('/prediction/map/zones')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Object.entries(data.zones).forEach(([zoneName, zoneData]) => {
+                        const distance = Math.sqrt(
+                            Math.pow(lat - zoneData.lat, 2) + Math.pow(lon - zoneData.lon, 2)
+                        );
+
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestZone = zoneName;
+                        }
+                    });
+
+                    if (nearestZone) {
+                        selectedZone = nearestZone;
+                        document.getElementById('zone-select').value = nearestZone;
+                    }
+                }
+            });
+    }
+
+    // Gestion des modes de sélection
+    document.getElementById('mode-zone').addEventListener('click', function() {
+        setMode('zone');
+    });
+
+    document.getElementById('mode-free').addEventListener('click', function() {
+        setMode('free');
+    });
+
+    function setMode(mode) {
+        currentMode = mode;
+
+        // Mise à jour des boutons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById('mode-' + mode).classList.add('active');
+
+        // Gestion des marqueurs selon le mode
+        if (mode === 'zone') {
+            // Activer les marqueurs de zone
+            Object.values(zoneMarkers).forEach(marker => {
+                marker.getElement().style.pointerEvents = 'auto';
+                marker.getElement().style.opacity = '1';
+            });
+            // Supprimer les marqueurs utilisateur
+            userMarkers.forEach(marker => map.removeLayer(marker));
+            userMarkers = [];
+        } else {
+            // Désactiver les marqueurs de zone
+            Object.values(zoneMarkers).forEach(marker => {
+                marker.getElement().style.pointerEvents = 'none';
+                marker.getElement().style.opacity = '0.5';
+            });
+        }
+    }
+
+    // Gestion du sélecteur de zone
+    document.getElementById('zone-select').addEventListener('change', function() {
+        const zoneName = this.value;
+        if (zoneName && zoneMarkers[zoneName]) {
+            const marker = zoneMarkers[zoneName];
+            selectZone(zoneName, marker.getLatLng().lat, marker.getLatLng().lng);
+            map.setView(marker.getLatLng(), 10);
+        }
+    });
+
+    // Gestion du changement de date
+    document.getElementById('prediction-date').addEventListener('change', function() {
+        // La date est automatiquement prise en compte lors de l'analyse
+        console.log('Date changée:', this.value);
+    });
+
+    // Charger les positions sauvegardées depuis l'API
+    function loadSavedPositions() {
+        fetch('/prediction/map/api/list')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    savedPositions = data.predictions || [];
+                    displaySavedPositions();
+                    addPredictionMarkers();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des positions:', error);
+            });
+    }
+
+    // Afficher les positions sauvegardées
+    function displaySavedPositions() {
+        const positionsList = document.getElementById('bookmarks-list');
+        positionsList.innerHTML = '';
+
+        if (savedPositions.length === 0) {
+            positionsList.innerHTML = '<p class="text-muted text-center py-3">Aucune position sauvegardée</p>';
+            return;
+        }
+
+        savedPositions.forEach(prediction => {
+            const latStr = prediction.latitude !== undefined && prediction.latitude !== null ? parseFloat(prediction.latitude).toFixed(4) : 'N/A';
+            const lonStr = prediction.longitude !== undefined && prediction.longitude !== null ? parseFloat(prediction.longitude).toFixed(4) : 'N/A';
+            const latValue = prediction.latitude !== undefined && prediction.latitude !== null ? parseFloat(prediction.latitude) : null;
+            const lonValue = prediction.longitude !== undefined && prediction.longitude !== null ? parseFloat(prediction.longitude) : null;
+
+            const positionDiv = document.createElement('div');
+            positionDiv.className = 'bookmark-item';
+            positionDiv.innerHTML = `
+                <div>
+                    <div class="bookmark-name">Position ${latStr}, ${lonStr}</div>
+                    <div class="bookmark-coords">Zone: ${prediction.zone || 'N/A'} | Risque: ${prediction.niveau_risque || 'N/A'}</div>
+                </div>
+                <div class="bookmark-actions">
+                    <button class="btn-bookmark" ${latValue !== null && lonValue !== null ? `onclick="goToPosition(${latValue}, ${lonValue})"` : 'disabled'}>
+                        <i class="fas fa-location-arrow"></i>
+                    </button>
+                    <button class="btn-delete-bookmark" onclick="deletePosition(${prediction.id_prediction})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            positionsList.appendChild(positionDiv);
+        });
+    }
+
+    // Ajouter les marqueurs des positions sauvegardées sur la carte
+    function addPredictionMarkers() {
+        // Supprimer les anciens marqueurs
+        predictionMarkers.forEach(marker => map.removeLayer(marker));
+        predictionMarkers = [];
+
+        savedPositions.forEach(prediction => {
+            if (prediction.latitude && prediction.longitude) {
+                const marker = L.marker([prediction.latitude, prediction.longitude], {
+                    icon: L.divIcon({
+                        className: 'prediction-marker',
+                        html: '<div style="width: 12px; height: 12px; background: #28a745; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
+                    })
+                });
+
+                marker.bindPopup(`
+                    <strong>Position sauvegardée</strong><br>
+                    Latitude: ${prediction.latitude.toFixed(4)}<br>
+                    Longitude: ${prediction.longitude.toFixed(4)}<br>
+                    Zone: ${prediction.zone || 'N/A'}<br>
+                    Risque: ${prediction.niveau_risque || 'N/A'}
+                `);
+
+                marker.addTo(map);
+                predictionMarkers.push(marker);
+            }
+        });
+    }
+
+    // Fonction globale pour aller à une position
+    window.goToPosition = function(lat, lon) {
+        map.setView([lat, lon], 12);
+        // Optionnel: sélectionner la position
+        selectedCoords = { lat: lat, lon: lon };
+        document.getElementById('latitude').value = lat.toFixed(6);
+        document.getElementById('longitude').value = lon.toFixed(6);
+        document.getElementById('predict-btn').disabled = false;
+    };
+
+    // Fonction globale pour supprimer une position
+    window.deletePosition = function(id) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette position ?')) {
+            fetch(`/prediction/map/api/delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    loadSavedPositions(); // Recharger la liste
+                } else {
+                    alert('Erreur lors de la suppression: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion au serveur: ' + error.message);
+            });
+        }
+    };
+
+    // Ajouter une position actuelle
+    document.getElementById('add-position-btn').addEventListener('click', function() {
+        if (!selectedCoords) {
+            alert('Veuillez d\'abord sélectionner une position sur la carte.');
+            return;
+        }
+
+        if (!selectedZone) {
+            alert('Veuillez d\'abord sélectionner une zone.');
+            return;
+        }
+
+        // Effectuer d'abord une analyse pour obtenir les données
+        fetch('/prediction/map/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lat: selectedCoords.lat,
+                lon: selectedCoords.lon,
+                zone: selectedZone,
+                date: document.getElementById('prediction-date').value
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json().catch(err => {
+                throw new Error('Invalid JSON response from analyze endpoint');
+            });
+        })
+        .then(data => {
+            if (data.success) {
+                // Convertir le niveau de risque en entier
+                let riskLevelValue = data.prediction.riskLevel;
+                if (typeof riskLevelValue === 'string') {
+                    const riskMapping = {'Faible': 1, 'Moyen': 2, 'Élevé': 3, 'Très élevé': 4, 'Critique': 5};
+                    riskLevelValue = riskMapping[riskLevelValue] || 1;
+                } else {
+                    riskLevelValue = parseInt(riskLevelValue) || 1;
+                }
+
+                // Sauvegarder la prédiction
+                return fetch('/prediction/map/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        latitude: selectedCoords.lat,
+                        longitude: selectedCoords.lon,
+                        zone: selectedZone,
+                        niveau_risque: riskLevelValue,
+                        facteurs: data.prediction.factors,
+                        recommandations: data.prediction.recommendations,
+                        date_prediction: document.getElementById('prediction-date').value
+                    })
+                });
+            } else {
+                throw new Error(data.message || 'Erreur lors de l\'analyse');
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Response Status:', response.status);
+                console.error('Response Headers:', response.headers);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json().catch(err => {
+                console.error('JSON Parse Error:', err);
+                throw new Error('Invalid JSON response from server');
+            });
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Position sauvegardée avec succès !');
+                loadSavedPositions(); // Recharger la liste
+            } else {
+                alert('Erreur lors de la sauvegarde: ' + (data.message || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur complète:', error);
+            alert('Erreur lors de la sauvegarde: ' + error.message);
+        });
+    });
+
+    // Charger les positions au démarrage
+    loadSavedPositions();
+
+    // Gestionnaire du bouton de prédiction
+    document.getElementById('predict-btn').addEventListener('click', function() {
+        if (!selectedCoords) {
+            alert('Veuillez sélectionner une position sur la carte.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('latitude', selectedCoords.lat);
+        formData.append('longitude', selectedCoords.lon);
+        formData.append('zone', selectedZone || '');
+
+        // Afficher le loader
+        document.getElementById('prediction-results').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p class="mt-2">Analyse en cours...</p>
+            </div>
+        `;
+
+        fetch('/prediction/map/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lat: selectedCoords.lat,
+                lon: selectedCoords.lon,
+                zone: selectedZone || ''
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            return response.json().catch(err => {
+                throw new Error('Invalid JSON response from predict endpoint');
+            });
+        })
+        .then(data => {
+            if (data.success) {
+                displayPredictionResults(data.prediction);
+            } else {
+                document.getElementById('prediction-results').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erreur lors de la prédiction: ${data.error || 'Erreur inconnue'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            document.getElementById('prediction-results').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erreur: ${error.message}
+                </div>
+            `;
+        });
+    });
+
+    // Fonction pour afficher les résultats de prédiction
+    function displayPredictionResults(prediction) {
+        const resultsDiv = document.getElementById('prediction-results');
+
+        // Déterminer la classe CSS selon le niveau de risque
+        let riskClass = 'success';
+        let riskIcon = 'check-circle';
+        if (prediction.riskLevel === 'Élevé') {
+            riskClass = 'danger';
+            riskIcon = 'exclamation-triangle';
+        } else if (prediction.riskLevel === 'Moyen') {
+            riskClass = 'warning';
+            riskIcon = 'exclamation-circle';
+        }
+
+        resultsDiv.innerHTML = `
+            <div class="prediction-card">
+                <div class="prediction-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-${riskIcon} text-${riskClass}"></i>
+                        Prédiction d'échouage - ${prediction.riskLevel}
+                    </h5>
+                    <div class="prediction-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="savePrediction()">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="exportPrediction()">
+                            <i class="fas fa-download"></i> Exporter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="prediction-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="prediction-info">
+                                <div class="info-item">
+                                    <strong>Position:</strong>
+                                    <span>${prediction.latitude.toFixed(4)}, ${prediction.longitude.toFixed(4)}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Zone:</strong>
+                                    <span>${prediction.zone || 'Non spécifiée'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Date:</strong>
+                                    <span>${new Date(prediction.date).toLocaleDateString('fr-FR')}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="weather-info">
+                                <h6><i class="fas fa-cloud-sun"></i> Conditions météo</h6>
+                                <div class="weather-details">
+                                    <div class="weather-item">
+                                        <span class="weather-label">Température:</span>
+                                        <span class="weather-value">${prediction.weather.temperature}°C</span>
+                                    </div>
+                                    <div class="weather-item">
+                                        <span class="weather-label">Vent:</span>
+                                        <span class="weather-value">${prediction.weather.windSpeed} km/h</span>
+                                    </div>
+                                    <div class="weather-item">
+                                        <span class="weather-label">Humidité:</span>
+                                        <span class="weather-value">${prediction.weather.humidity}%</span>
+                                    </div>
+                                    <div class="weather-item">
+                                        <span class="weather-label">Conditions:</span>
+                                        <span class="weather-value">${prediction.weather.description}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6><i class="fas fa-chart-bar"></i> Analyse des facteurs</h6>
+                        <div class="factors-grid">
+                            <div class="factor-item">
+                                <div class="factor-label">Historique d'observations</div>
+                                <div class="factor-value">${prediction.factors.observations}</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-label">Saisonnalité</div>
+                                <div class="factor-value">${prediction.factors.seasonality}</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-label">Conditions météo</div>
+                                <div class="factor-value">${prediction.factors.weather}</div>
+                            </div>
+                            <div class="factor-item">
+                                <div class="factor-label">Activités humaines</div>
+                                <div class="factor-value">${prediction.factors.humanActivity}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="recommendations">
+                            <h6><i class="fas fa-lightbulb"></i> Recommandations</h6>
+                            <ul class="recommendations-list">
+                                ${prediction.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Fonctions globales pour les actions de prédiction
+    window.savePrediction = function() {
+        if (!selectedCoords) {
+            alert('Aucune prédiction à sauvegarder.');
+            return;
+        }
+
+        // Effectuer d'abord une analyse pour obtenir les données
+        fetch('/prediction/map/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lat: selectedCoords.lat,
+                lon: selectedCoords.lon,
+                zone: selectedZone || ''
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Sauvegarder la prédiction
+                return fetch('/prediction/map/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        latitude: selectedCoords.lat,
+                        longitude: selectedCoords.lon,
+                        zone: selectedZone || '',
+                        niveau_risque: data.prediction.riskLevel,
+                        facteurs: data.prediction.factors,
+                        recommandations: data.prediction.recommendations,
+                        date_prediction: document.getElementById('prediction-date').value
+                    })
+                });
+            } else {
+                throw new Error(data.message || 'Erreur lors de l\'analyse');
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Prédiction sauvegardée avec succès!');
+                loadSavedPositions(); // Recharger la liste
+            } else {
+                alert('Erreur lors de la sauvegarde: ' + (data.message || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la sauvegarde: ' + error.message);
+        });
+    };
+
+    window.exportPrediction = function() {
+        alert('Fonctionnalité d\'export à implémenter');
+    };
+
+    // Initialisation du mode par défaut
+    setMode('zone');
+});
+</script>
+{% endblock %}

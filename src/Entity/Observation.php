@@ -34,6 +34,7 @@ class Observation
     #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotBlank(message: "La date d'observation ne peut pas être vide.")]
     #[Assert\LessThanOrEqual('today', message: "La date doit être aujourd'hui ou dans le passé.")]
+    #[Assert\GreaterThanOrEqual('-10 years', message: "La date d'observation ne peut pas être antérieure à 10 ans.")]
     private ?\DateTimeInterface $date_observation = null;
 
     public function getDate_observation(): ?\DateTimeInterface
@@ -48,7 +49,7 @@ class Observation
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
-    #[Assert\Range(min: -50, max: 50, notInRangeMessage: "La température doit être entre -50°C et 50°C.")]
+    #[Assert\Range(min: -5, max: 40, notInRangeMessage: "La température doit être entre -5°C et 40°C pour un environnement marin réaliste.")]
     private ?float $temperature = null;
 
     public function getTemperature(): ?float
