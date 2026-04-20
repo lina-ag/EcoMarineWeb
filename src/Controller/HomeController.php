@@ -15,6 +15,14 @@ use App\Entity\Utilisateur;
 
 final class HomeController extends AbstractController
 {
+    // 🔥 NOUVELLE ROUTE POUR LA RACINE
+    #[Route('/', name: 'app_root')]
+    public function root(): Response
+    {
+        // Rediriger vers la page de connexion
+        return $this->redirectToRoute('app_signIn');
+    }
+    
     #[Route('/home', name: 'app_home', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {

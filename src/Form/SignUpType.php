@@ -3,19 +3,18 @@
 namespace App\Form;
 
 use App\Entity\Utilisateur;
-use Symfony\Component\Form\AbstractType;
 use App\Entity\Role;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UtilisateurType extends AbstractType
+class SignUpType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -67,22 +66,27 @@ class UtilisateurType extends AbstractType
             ])
             ->add('role', EntityType::class, [
                 'class' => Role::class,
-                'choice_label' => 'nomRole',  // Affiche 'admin', 'chercheur', 'utilisateur'
+                'choice_label' => 'nomRole',
                 'label' => 'Rôle',
                 'required' => true,
                 'placeholder' => 'Choisissez un rôle',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
+                'query_builder' => function(\Doctrine\ORM\EntityRepository $er) {
+                    return $er->createQueryBuilder('r')
+                        ->where('r.nomRole != :admin')
+                        ->setParameter('admin', 'admin');
+                }
             ])
             ->add('date_naissance', DateType::class, [
-    'label' => 'Date de naissance * (doit être dans le passé - pas aujourd\'hui)',
-    'required' => true,
-    'widget' => 'single_text',
-    'html5' => true,
-    'attr' => [
-        'class' => 'form-control',
-        'max' => (new \DateTime())->modify('-1 day')->format('Y-m-d') // Date maximum = hier
-    ]
-]);
+                'label' => 'Date de naissance * (doit être dans le passé - pas aujourd\'hui)',
+                'required' => true,
+                'widget' => 'single_text',
+                'html5' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'max' => (new \DateTime())->modify('-1 day')->format('Y-m-d')
+                ]
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
