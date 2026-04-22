@@ -16,6 +16,11 @@
             </div>
         </div>
 
+        <div class="glass-card" style="margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+            <h3>💡 Insight intelligent</h3>
+            <p>{{ insight }}</p>
+        </div>
+
         <div class="table-wrapper" style="margin-bottom: 20px;">
             <table class="data-table">
                 <thead>
@@ -24,6 +29,8 @@
                         <th>Quantité totale signalée</th>
                         <th>Type le plus fréquent</th>
                         <th>Zone la plus touchée</th>
+                        <th>Progression nettoyage</th>
+                        <th>Impact visuel</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,7 +39,45 @@
                         <td>{{ totalQuantite }}</td>
                         <td>{{ topType }}</td>
                         <td>{{ topZone }}</td>
+                        <td>{{ progressionNettoyage }}%</td>
+                        <td>
+                            {% if impact == 'Critique' %}
+                                <span class="btn btn-primary">Critique</span>
+                            {% elseif impact == 'Modéré' %}
+                                <span class="btn btn-secondary">Modéré</span>
+                            {% else %}
+                                <span class="btn btn-secondary">Faible</span>
+                            {% endif %}
+                        </td>
                     </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper" style="margin-bottom: 20px;">
+            <h3>🏖️ Top 3 zones les plus polluées</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Zone</th>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set rang = 1 %}
+                    {% for zone, nombre in zoneRanking %}
+                        <tr>
+                            <td>#{{ rang }}</td>
+                            <td>{{ zone }}</td>
+                            <td>{{ nombre }}</td>
+                        </tr>
+                        {% set rang = rang + 1 %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">Aucune donnée.</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -15,8 +15,33 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DechetController extends AbstractController
 {
     #[Route(name: 'app_dechet_index', methods: ['GET'])]
-    public function index(Request $request, DechetRepository $dechetRepository): Response
+    public function index(Request $request, DechetRepository $dechetRepository, EntityManagerInterface $entityManager): Response
     {
+        if ($request->query->get('demo') === '1' && count($dechetRepository->findAll()) === 0) {
+            $samples = [
+                ['plastique', 12, 'Kuriat Nord', 'Déchets plastiques près du rivage', '2026-04-12', 'signale'],
+                ['verre', 6, 'Kuriat Sud', 'Bouteilles cassées sur le sable', '2026-04-11', 'en_cours'],
+                ['metal', 18, 'Plage Monastir', 'Canettes et objets métalliques dispersés', '2026-04-10', 'traite'],
+                ['papier', 4, 'Kuriat Nord', 'Papiers et emballages légers', '2026-04-09', 'signale'],
+                ['organique', 9, 'Plage Skanes', 'Déchets organiques abandonnés', '2026-04-08', 'en_cours'],
+            ];
+
+            foreach ($samples as [$type, $quantite, $zone, $description, $date, $statut]) {
+                $dechet = new Dechet();
+                $dechet->setType($type);
+                $dechet->setQuantite((float) $quantite);
+                $dechet->setZone($zone);
+                $dechet->setDescription($description);
+                $dechet->setDateSignalement(new \DateTime($date));
+                $dechet->setStatut($statut);
+                $entityManager->persist($dechet);
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Des données de démonstration ont été ajoutées.');
+            return $this->redirectToRoute('app_dechet_index');
+        }
+
         $q = trim((string) $request->query->get('q', ''));
         $type = trim((string) $request->query->get('type', ''));
         $statut = trim((string) $request->query->get('statut', ''));
@@ -116,6 +141,8 @@ final class DechetController extends AbstractController
             }
         }
 
+        $progressionNettoyage = $totalSignalements > 0 ? round(($statusCounts['traite'] / $totalSignalements) * 100) : 0;
+
         return $this->render('dechet/index.html.twig', [
             'dechets' => $dechets,
             'filters' => [
@@ -131,6 +158,7 @@ final class DechetController extends AbstractController
                 'totalQuantite' => $totalQuantite,
                 'zonesTouchees' => count($zones),
                 'pollutionElevee' => $pollutionElevee,
+                'progressionNettoyage' => $progressionNettoyage,
             ],
             'statusCounts' => $statusCounts,
         ]);

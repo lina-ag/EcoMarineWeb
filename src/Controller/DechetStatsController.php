@@ -40,8 +40,31 @@ final class DechetStatsController extends AbstractController
         $topType = !empty($parType) ? array_key_first($parType) : 'Aucune donnée';
         $topZone = !empty($parZone) ? array_key_first($parZone) : 'Aucune donnée';
 
+        $zoneRanking = array_slice($parZone, 0, 3, true);
+
         $chartLabels = array_keys($parType);
         $chartValues = array_values($parType);
+
+        $progressionNettoyage = $totalDechets > 0 && isset($parStatut['traite'])
+            ? round(($parStatut['traite'] / $totalDechets) * 100)
+            : 0;
+
+        $impact = 'Faible';
+        if ($totalQuantite > 50) {
+            $impact = 'Critique';
+        } elseif ($totalQuantite > 20) {
+            $impact = 'Modéré';
+        }
+
+        $insight = 'Aucune donnée disponible.';
+        if ($totalDechets > 0) {
+            $insight = sprintf(
+                'La zone la plus touchée est %s et le type dominant est %s. Progression du nettoyage : %d%%.',
+                $topZone,
+                $topType,
+                $progressionNettoyage
+            );
+        }
 
         return $this->render('dechet/stats.html.twig', [
             'totalDechets' => $totalDechets,
@@ -51,8 +74,12 @@ final class DechetStatsController extends AbstractController
             'parStatut' => $parStatut,
             'topType' => $topType,
             'topZone' => $topZone,
+            'zoneRanking' => $zoneRanking,
             'chartLabels' => $chartLabels,
             'chartValues' => $chartValues,
+            'progressionNettoyage' => $progressionNettoyage,
+            'impact' => $impact,
+            'insight' => $insight,
         ]);
     }
 
