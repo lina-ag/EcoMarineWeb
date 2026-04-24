@@ -26,8 +26,10 @@ final class ZonepController extends AbstractController
 ): Response {
     $sortBy = $request->query->get('tri', 'idZone');
     $order  = $request->query->get('sens', 'ASC');
+    $search = $request->query->get('search', '');
+    $status = $request->query->get('status', '');
 
-    $query = $zonepRepository->findAllSorted($sortBy, $order);
+    $query = $zonepRepository->findFiltered($search, $status, $sortBy, $order);
 
     $zoneps = $paginator->paginate(
         $query->getQuery(),
@@ -36,9 +38,11 @@ final class ZonepController extends AbstractController
     );
 
     return $this->render('zonep/index.html.twig', [
-        'zoneps' => $zoneps,
-        'sortBy' => $sortBy,
-        'order'  => $order,
+        'zoneps'  => $zoneps,
+        'sortBy'  => $sortBy,
+        'order'   => $order,
+        'search'  => $search,
+        'status'  => $status,
     ]);
     }
 
