@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
@@ -35,8 +37,49 @@ final class ReservationController extends AbstractController
         return $this->json(['dates' => $dates]);
     }
 
+    #[Route('/activity-data/{id_activite}', name: 'app_reservation_activity_data', methods: ['GET'])]
+    public function activityData(int $id_activite, ActiviteEcologiqueRepository $activiteEcologiqueRepository, ReservationRepository $reservationRepository): JsonResponse
+    {
+        $activite = $activiteEcologiqueRepository->find($id_activite);
+
+        if (!$activite || !$activite->getDate_activite()) {
+            return $this->json(['dates' => [], 'capacity' => null], Response::HTTP_NOT_FOUND);
+        }
+
+        $dates = $activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
+        if (count($dates) === 0) {
+            $dates = [$activite->getDate_activite()->format('Y-m-d')];
+        }
+
+        $totalCapacity = max(0, (int) ($activite->getCapacite() ?? 0));
+        $usedCapacity = $reservationRepository->countReservedPeopleForActivity($activite);
+        $remainingCapacity = max(0, $totalCapacity - $usedCapacity);
+
+        if ($totalCapacity <= 0 || $remainingCapacity <= 0) {
+            $state = 'full';
+            $color = '#dc2626';
+        } elseif ($usedCapacity / $totalCapacity >= 0.5) {
+            $state = 'warning';
+            $color = '#d97706';
+        } else {
+            $state = 'available';
+            $color = '#16a34a';
+        }
+
+        return $this->json([
+            'dates' => $dates,
+            'capacity' => [
+                'state' => $state,
+                'color' => $color,
+                'used' => $usedCapacity,
+                'total' => $totalCapacity,
+                'remaining' => $remainingCapacity,
+            ],
+        ]);
+    }
+
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
-    public function index(Request $request, ReservationRepository $reservationRepository): Response
+    public function index(Request $request, ReservationRepository $reservationRepository, ChartBuilderInterface $chartBuilder): Response
     {
         $searchTerm = trim((string) $request->query->get('q', ''));
         $searchField = (string) $request->query->get('field', 'all');
@@ -44,21 +87,42 @@ final class ReservationController extends AbstractController
         $personnesFilter = (string) $request->query->get('personnes', 'all');
         $dateFrom = trim((string) $request->query->get('date_from', ''));
         $dateTo = trim((string) $request->query->get('date_to', ''));
-        $sort = (string) $request->query->get('sort', 'date_desc');
+        $sort = (string) $request->query->get('sort', 'id_desc');
 
-        $reservations = $reservationRepository
+        $allReservations = $reservationRepository
             ->createQueryBuilder('r')
             ->leftJoin('r.activiteEcologique', 'a')
             ->addSelect('a')
             ->getQuery()
             ->getResult();
 
-        $reservations = array_values(array_filter($reservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
+        $reservations = array_values(array_filter($allReservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
             return $this->matchesReservationSearch($reservation, $searchTerm, $searchField)
                 && $this->matchesReservationStatus($reservation, $statusFilter)
                 && $this->matchesReservationPersonnes($reservation, $personnesFilter)
                 && $this->matchesReservationDateRange($reservation, $dateFrom, $dateTo);
         }));
+
+        $hasActiveFilters = $searchTerm !== ''
+            || $searchField !== 'all'
+            || $statusFilter !== 'all'
+            || $personnesFilter !== 'all'
+            || $dateFrom !== ''
+            || $dateTo !== '';
+
+        if ($hasActiveFilters && count($reservations) === 0 && count($allReservations) > 0) {
+            $reservations = $allReservations;
+            $searchTerm = '';
+            $searchField = 'all';
+            $statusFilter = 'all';
+            $personnesFilter = 'all';
+            $dateFrom = '';
+            $dateTo = '';
+
+            $this->addFlash('error', 'Les filtres actifs masquaient vos réservations. La liste complète est affichée.');
+        }
+
+        $reservationActivityChart = $this->buildReservationActivityChart($reservations, $chartBuilder);
 
         usort($reservations, function (Reservation $left, Reservation $right) use ($sort): int {
             return $this->compareReservations($left, $right, $sort);
@@ -88,7 +152,67 @@ final class ReservationController extends AbstractController
             'total_pages' => $totalPages,
             'page_start' => $pageStart,
             'page_end' => $pageEnd,
+            'reservationActivityChart' => $reservationActivityChart,
         ]);
+    }
+
+    private function buildReservationActivityChart(array $reservations, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $activityCounts = [];
+
+        foreach ($reservations as $reservation) {
+            if (!$reservation instanceof Reservation) {
+                continue;
+            }
+
+            $activityName = trim((string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? 'Sans activité'));
+            if ($activityName === '') {
+                $activityName = 'Sans activité';
+            }
+
+            $activityCounts[$activityName] = ($activityCounts[$activityName] ?? 0) + 1;
+        }
+
+        arsort($activityCounts);
+        $activityCounts = array_slice($activityCounts, 0, 8, true);
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $chart->setData([
+            'labels' => array_keys($activityCounts),
+            'datasets' => [[
+                'label' => 'Réservations par activité',
+                'data' => array_values($activityCounts),
+                'backgroundColor' => [
+                    '#0f766e',
+                    '#2563eb',
+                    '#7c3aed',
+                    '#f59e0b',
+                    '#14b8a6',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#22c55e',
+                ],
+                'borderColor' => '#ffffff',
+                'borderWidth' => 2,
+                'hoverOffset' => 10,
+            ]],
+        ]);
+        $chart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => [
+                        'usePointStyle' => true,
+                        'padding' => 16,
+                    ],
+                ],
+            ],
+            'cutout' => '62%',
+        ]);
+
+        return $chart;
     }
 
     private function matchesReservationSearch(Reservation $reservation, string $searchTerm, string $searchField): bool
@@ -263,7 +387,16 @@ final class ReservationController extends AbstractController
                 return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
             }
 
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
 
         }
 
@@ -351,8 +484,18 @@ final class ReservationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été mise à jour avec succès.');
 
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reservation/edit.html.twig', [
@@ -367,8 +510,20 @@ final class ReservationController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($reservation);
             $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été supprimée avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide. Suppression annulée.');
         }
 
-        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_reservation_index', [
+            'q' => '',
+            'field' => 'all',
+            'status' => 'all',
+            'personnes' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+            'sort' => 'id_desc',
+            'page' => 1,
+        ], Response::HTTP_SEE_OTHER);
     }
 }

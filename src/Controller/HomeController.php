@@ -30,6 +30,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
+    // 🔥 NOUVELLE ROUTE POUR LA RACINE
+    #[Route('/', name: 'app_root')]
+    public function root(): Response
+    {
+        // Rediriger vers la page de connexion
+        return $this->redirectToRoute('app_signIn');
+    }
+    
     #[Route('/home', name: 'app_home', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -64,8 +72,7 @@ final class HomeController extends AbstractController
             'form_survzone' => $survzoneForm->createView(),
 
             // Compatibility aliases used by other blocks in the same template.
-            'zonepForm' => $zonepForm->createView(),
-            'survzoneForm' => $survzoneForm->createView(),
+           
             'activiteForm' => $activiteForm->createView(),
             'fauneMarineForm' => $fauneMarineForm->createView(),
             'observationForm' => $observationForm->createView(),
