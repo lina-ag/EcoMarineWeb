@@ -25,4 +25,74 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    'tom-select' => [
+        'version' => '2.6.0',
+    ],
+    '@orchidjs/sifter' => [
+        'version' => '1.1.0',
+    ],
+    '@orchidjs/unicode-variants' => [
+        'version' => '1.1.2',
+    ],
+    'tom-select/dist/css/tom-select.default.min.css' => [
+        'version' => '2.6.0',
+        'type' => 'css',
+    ],
+    'tom-select/dist/css/tom-select.default.css' => [
+        'version' => '2.6.0',
+        'type' => 'css',
+    ],
+    'tom-select/dist/css/tom-select.bootstrap4.css' => [
+        'version' => '2.6.0',
+        'type' => 'css',
+    ],
+    'tom-select/dist/css/tom-select.bootstrap5.css' => [
+        'version' => '2.6.0',
+        'type' => 'css',
+    ],
+    'chart.js' => [
+        'version' => '3.9.1',
+    ],
+    '@symfony/ux-live-component' => [
+        'path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js',
+    ],
+    'react' => [
+        'version' => '18.3.1',
+    ],
+    'react-dom/client' => [
+        'version' => '18.3.1',
+    ],
+    'react-dom' => [
+        'version' => '18.3.1',
+    ],
+    'scheduler' => [
+        'version' => '0.23.2',
+    ],
+    '@symfony/ux-react' => [
+        'path' => './vendor/symfony/ux-react/assets/dist/loader.js',
+    ],
+    'svelte/internal' => [
+        'version' => '3.59.2',
+    ],
+    '@symfony/ux-svelte' => [
+        'path' => './vendor/symfony/ux-svelte/assets/dist/loader.js',
+    ],
+    'intl-messageformat' => [
+        'version' => '10.7.18',
+    ],
+    'tslib' => [
+        'version' => '2.8.1',
+    ],
+    '@formatjs/fast-memoize' => [
+        'version' => '2.2.7',
+    ],
+    '@formatjs/icu-messageformat-parser' => [
+        'version' => '2.11.4',
+    ],
+    '@formatjs/icu-skeleton-parser' => [
+        'version' => '1.8.16',
+    ],
+    '@symfony/ux-translator' => [
+        'path' => './vendor/symfony/ux-translator/assets/dist/translator_controller.js',
+    ],
 ];

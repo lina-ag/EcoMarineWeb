@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendrier des activités</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 12px;
+            color: #0f172a;
+            margin: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            color: #0f766e;
+        }
+
+        .meta {
+            margin: 0 0 16px;
+            color: #475569;
+            font-size: 11px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #ecfeff;
+            color: #0f766e;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calendrier des activités</h1>
+    <p class="meta">Généré le {{ generatedAt|date('d/m/Y H:i') }}{% if searchTerm %} <span class="badge">Recherche: {{ searchTerm }}</span>{% endif %}{% if statusFilter != 'all' %} <span class="badge">Statut: {{ statusFilter }}</span>{% endif %}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Activité</th>
+                <th>Date</th>
+                <th>Capacité</th>
+                <th>Réservées</th>
+                <th>Restantes</th>
+                <th>Remplissage</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activite in activite_ecologiques %}
+                {% set reservedPeople = 0 %}
+                {% for reservation in activite.reservations %}
+                    {% set reservedPeople = reservedPeople + (reservation.nombrePersonnes|default(0)) %}
+                {% endfor %}
+                {% set capacity = activite.capacite|default(0) %}
+                {% set remaining = capacity > reservedPeople ? capacity - reservedPeople : 0 %}
+                {% set fillRate = capacity > 0 ? ((reservedPeople / capacity) * 100)|round(0, 'common') : 0 %}
+                <tr>
+                    <td>{{ activite.nomActivite }}</td>
+                    <td>{{ activite.dateActivite ? activite.dateActivite|date('Y-m-d') : '' }}</td>
+                    <td>{{ capacity }}</td>
+                    <td>{{ reservedPeople }}</td>
+                    <td>{{ remaining }}</td>
+                    <td>{{ fillRate }}%</td>
+                    <td>{{ activite.description|default('') }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Aucune activité enregistrée.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -94,6 +94,7 @@
 
 <script>
 (() => {
+    const translate = window.ecomarineTrans || ((message) => message);
     const activitySelect = document.getElementById('{{ form.activiteEcologique.vars.id }}');
     const dateSelect = document.getElementById('{{ form.date_reservation_choice.vars.id }}');
     const dateHiddenInput = document.getElementById('{{ form.date_reservation.vars.id }}');
@@ -105,8 +106,8 @@
     const capacityUsed = capacityStatus ? capacityStatus.querySelector('[data-capacity-used]') : null;
     const capacityRemaining = capacityStatus ? capacityStatus.querySelector('[data-capacity-remaining]') : null;
     const capacityTotal = capacityStatus ? capacityStatus.querySelector('[data-capacity-total]') : null;
-    const activityDateBaseUrl = {{ path('app_reservation_activity_date', {'id_activite': 0})|json_encode|raw }};
-    const urlTemplate = activityDateBaseUrl.replace(/0$/, '__ID__');
+    const activityDataBaseUrl = {{ path('app_reservation_activity_data', {'id_activite': 0})|json_encode|raw }};
+    const urlTemplate = activityDataBaseUrl.replace(/0$/, '__ID__');
 
     if (!activitySelect || !dateSelect || !dateHiddenInput || !hint || !capacityStatus || !capacityText || !capacityFill || !capacityPill || !capacityUsed || !capacityRemaining || !capacityTotal) {
         return;
@@ -140,11 +141,11 @@
         dateSelect.innerHTML = '';
         const placeholder = document.createElement('option');
         placeholder.value = '';
-        placeholder.textContent = '-- Choisissez une date --';
+        placeholder.textContent = translate('-- Choisissez une date --');
         dateSelect.appendChild(placeholder);
         dateSelect.value = '';
         dateHiddenInput.value = '';
-        hint.textContent = 'Choisissez d abord une activité pour voir la date autorisée.';
+        hint.textContent = translate('Choisissez d abord une activité pour voir la date autorisée.');
     };
 
     const resetCapacityState = () => {
@@ -191,6 +192,36 @@
         capacityText.textContent = used + '/' + total + ' utilisées • ' + remaining + ' restantes';
     };
 
+    const applyCapacityFromResponse = (capacity) => {
+        if (!capacity || typeof capacity !== 'object') {
+            applyCapacityState();
+            return;
+        }
+
+        const state = capacity.state || 'available';
+        const used = String(capacity.used ?? '0');
+        const total = String(capacity.total ?? '0');
+        const remaining = String(capacity.remaining ?? '0');
+        const totalValue = Math.max(0, Number(total));
+        const usedValue = Math.max(0, Number(used));
+        const percent = totalValue > 0 ? Math.min(100, Math.round((usedValue / totalValue) * 100)) : 0;
+
+        activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
+        activitySelect.classList.add('capacity-select-' + state);
+
+        capacityStatus.className = 'capacity-status capacity-status-' + state;
+        capacityStatus.classList.remove('is-updating');
+        void capacityStatus.offsetWidth;
+        capacityStatus.classList.add('is-updating');
+
+        capacityPill.textContent = state === 'full' ? 'Complet' : state === 'warning' ? 'Alerte' : 'Disponible';
+        capacityUsed.textContent = used;
+        capacityRemaining.textContent = remaining;
+        capacityTotal.textContent = total;
+        capacityFill.style.width = percent + '%';
+        capacityText.textContent = used + '/' + total + ' utilisées • ' + remaining + ' restantes';
+    };
+
     const formatDateFr = (isoDate) => {
         if (!isoDate || !isoDate.includes('-')) {
             return isoDate;
@@ -225,7 +256,7 @@
 
         dateHiddenInput.value = dateSelect.value;
 
-        hint.textContent = 'Dates autorisées: ' + allowedDates.map(formatDateFr).join(' / ');
+        hint.textContent = translate('Dates autorisées: ') + allowedDates.map(formatDateFr).join(' / ');
     };
 
     dateSelect.addEventListener('change', () => {
@@ -238,6 +269,8 @@
             resetCapacityState();
             return;
         }
+
+        hint.textContent = 'Chargement des informations de l activité...';
 
         try {
             const response = await fetch(urlTemplate.replace('__ID__', encodeURIComponent(activitySelect.value)), {
@@ -255,12 +288,12 @@
             const data = await response.json();
             if (!Array.isArray(data.dates) || data.dates.length === 0) {
                 resetDateChoices();
-                applyCapacityState();
+                applyCapacityFromResponse(data.capacity ?? null);
                 return;
             }
 
             applyAllowedDates(data.dates);
-            applyCapacityState();
+            applyCapacityFromResponse(data.capacity ?? null);
         } catch (e) {
             resetDateChoices();
             resetCapacityState();

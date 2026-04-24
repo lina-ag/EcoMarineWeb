@@ -1,0 +1,2 @@
+calendar_bundle:
+    resource: "@CalendarBundle/Resources/config/routing.yaml"

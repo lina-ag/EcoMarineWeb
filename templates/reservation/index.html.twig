@@ -15,6 +15,7 @@
                 <div style="margin-top: 0.35rem; font-weight: 700; color: #1e3a8a;">Compteur live: <span id="reservation-animated-counter" data-target="{{ result_count|default(0) }}">0</span></div>
             </div>
             <div class="card-actions">
+                <a href="{{ path('app_front_calendar') }}" class="btn btn-secondary reservation-admin-cta">Voir le calendrier</a>
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">Exporter PDF</a>
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">Créer une réservation</a>
             </div>
@@ -22,6 +23,19 @@
         <svg class="header-wave" viewBox="0 0 1200 140" preserveAspectRatio="none" aria-hidden="true">
             <path d="M0,50 C180,110 320,0 520,48 C760,108 880,22 1200,74 L1200,140 L0,140 Z"></path>
         </svg>
+
+        <div class="reservation-chart-panel" style="margin: 1rem 0 1.1rem; padding: 1rem; border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.65); background: rgba(255, 255, 255, 0.82); box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);">
+            <div style="display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a;">Réservations par activité</h3>
+                    <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.9rem;">Vue rapide des réservations actuellement filtrées.</p>
+                </div>
+                <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.7rem; border-radius: 999px; background: rgba(37, 99, 235, 0.12); color: #1d4ed8; font-weight: 700; font-size: 0.82rem;">UX Chart.js</span>
+            </div>
+            <div style="height: 280px;">
+                {{ render_chart(reservationActivityChart) }}
+            </div>
+        </div>
 
         <style>
             .header-wave {
