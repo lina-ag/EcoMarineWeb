@@ -51,6 +51,9 @@
             {{ form_label(form.activiteEcologique, null, {'label_attr': {'class': 'form-label'}}) }}
             <div class="capacity-select-shell">
                 {{ form_widget(form.activiteEcologique, {'attr': {'class': 'form-input capacity-select'}}) }}
+                <div style="margin-top: 0.5rem;">
+                    <span class="reservation-rating" data-rating="0" data-editable-rating="reservation" style="display:inline-block;"></span>
+                </div>
                 <div id="activity-capacity-status" class="capacity-status capacity-status-default">
                     <div class="capacity-status-topline">
                         <div class="capacity-status-copy">
