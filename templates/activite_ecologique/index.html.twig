@@ -347,7 +347,7 @@
                             class="search-input"
                             value="{{ search_term|default('') }}"
                             placeholder="Rechercher (commence par)..."
-                            autocomplete="off"
+                            autocomplete="on"
                         >
                     </div>
                     <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="Rechercher" title="Rechercher">
@@ -435,7 +435,13 @@
                             </div>
                             <div class="fill-rate-value">{{ booked }}/{{ capacity }}</div>
                         </td>
-                        <td>{{ activite_ecologique.description }}</td>
+                        <td>
+                            <div>
+                                {{ activite_ecologique.description|default('') }}
+                            </div>
+                            {% set stars = capacity > 0 ? (5 * booked / capacity) : 0 %}
+                            <div class="reservation-rating" data-rating="{{ stars|number_format(1, '.', '') }}" data-readonly-rating="1" style="margin-top: 0.5em;"></div>
+                        </td>
                         <td>
                             {% if activiteStatus == 'active' %}
                                 <span class="status-badge status-badge-active">Active</span>
@@ -552,6 +558,9 @@
                         root.innerHTML = nextRoot.innerHTML;
                         window.history.replaceState({}, '', url);
                         initActiviteLiveSearch();
+                        if (typeof window.ecomarineRenderRatings === 'function') {
+                            window.ecomarineRenderRatings();
+                        }
                     })
                     .catch(function () {
                         window.location.href = url;

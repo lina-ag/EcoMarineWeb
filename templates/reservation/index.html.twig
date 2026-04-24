@@ -24,6 +24,7 @@
             <path d="M0,50 C180,110 320,0 520,48 C760,108 880,22 1200,74 L1200,140 L0,140 Z"></path>
         </svg>
 
+
         <div class="reservation-chart-panel" style="margin: 1rem 0 1.1rem; padding: 1rem; border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.65); background: rgba(255, 255, 255, 0.82); box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);">
             <div style="display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
                 <div>
@@ -33,7 +34,7 @@
                 <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.7rem; border-radius: 999px; background: rgba(37, 99, 235, 0.12); color: #1d4ed8; font-weight: 700; font-size: 0.82rem;">UX Chart.js</span>
             </div>
             <div style="height: 280px;">
-                {{ render_chart(reservationActivityChart) }}
+                {{ render_chart(reservationActivityChart, {'controller': '@symfony/ux-chartjs/chart'}) }}
             </div>
         </div>
 
