@@ -1,47 +1,73 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}ZonePlage index{% endblock %}
+{% block title %}Zone Plage{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Zones de plage</h2>
-                <p class="card-subtitle">Gestion des zones littorales et de leur statut.</p>
-            </div>
-            <a href="{{ path('app_zone_plage_new') }}" class="btn btn-primary">Create new</a>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nom</th>
-                        <th>Localisation</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for zone_plage in zone_plages %}
-                    <tr>
-                        <td>{{ zone_plage.id_zone }}</td>
-                        <td>{{ zone_plage.nom }}</td>
-                        <td>{{ zone_plage.localisation }}</td>
-                        <td>{{ zone_plage.statut }}</td>
-                        <td>
-                            <a href="{{ path('app_zone_plage_show', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_zone_plage_edit', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Zone Plage</h1>
+            <p>Toutes les zones enregistrées.</p>
         </div>
-    </section>
+        <div class="module-actions">
+            <a href="{{ path('app_zone_plage_new') }}" class="btn btn-primary">+ Ajouter une zone</a>
+        </div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">Total zones</div>
+            <div class="value">{{ zone_plages|length }}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Zones actives</div>
+            <div class="value">{{ zone_plages|filter(z => z.statut == 'active')|length }}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Zones inactives</div>
+            <div class="value">{{ zone_plages|filter(z => z.statut != 'active')|length }}</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        {% if zone_plages is empty %}
+            <div class="empty-state">
+                <h3>Aucune zone trouvée</h3>
+                <p>Ajoute une zone pour commencer.</p>
+            </div>
+        {% else %}
+            <div class="module-grid">
+                {% for zone in zone_plages %}
+                    <div class="entity-card">
+                        <div class="entity-id">{{ zone.idZone }}</div>
+
+                        <div class="entity-main">
+                            <h3>{{ zone.nom }}</h3>
+                            <p><strong>Localisation :</strong> {{ zone.localisation }}</p>
+                            <div class="badge-row">
+                                <span class="type-badge">?? Zone de plage</span>
+                            </div>
+                        </div>
+
+                        <div class="entity-meta">
+                            <p><strong>Statut :</strong> {{ zone.statut }}</p>
+                            <div class="badge-row">
+                                <span class="status-badge {% if zone.statut != 'active' %}warning{% endif %}">
+                                    {{ zone.statut|capitalize }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="entity-actions">
+                            <a href="{{ path('app_zone_plage_show', {'id_zone': zone.id_zone}) }}" class="btn btn-secondary">Voir</a>
+                            <a href="{{ path('app_zone_plage_edit', {'id_zone': zone.id_zone}) }}" class="btn btn-primary">Modifier</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

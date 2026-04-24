@@ -1,16 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Biodiversite{% endblock %}
+{% block title %}Nouvelle Observation{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Create new Biodiversite</h2>
-                <p class="card-subtitle">Ajouter une nouvelle observation biodiversite.</p>
-            </div>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        {{ include('biodiversite/_form.html.twig') }}
-    </section>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Ajouter une observation</h1>
+            <p>Créer une nouvelle entrée biodiversité.</p>
+        </div>
+    </div>
+
+    {{ include('biodiversite/_form.html.twig') }}
+</section>
 {% endblock %}

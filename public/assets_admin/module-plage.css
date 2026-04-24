@@ -1,0 +1,239 @@
+.module-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.module-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.module-title-wrap h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.module-title-wrap p {
+    margin: 8px 0 0;
+    color: #a9b4d0;
+    font-size: 1rem;
+}
+
+.module-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.kpi-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.kpi-card .label {
+    color: #91a0c6;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.kpi-card .value {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.module-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.entity-card {
+    display: grid;
+    grid-template-columns: 80px 1.3fr 1.2fr auto;
+    gap: 18px;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 20px;
+}
+
+.entity-id {
+    color: #c9d5f0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.entity-main h3 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.entity-main p,
+.entity-meta p {
+    margin: 6px 0;
+    color: #d8e2ff;
+    font-size: 0.98rem;
+}
+
+.badge-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.soft-badge,
+.status-badge,
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.soft-badge {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.status-badge {
+    color: #fff;
+    background: linear-gradient(90deg, #1d8ed4, #39b4f4);
+}
+
+.status-badge.warning {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.status-badge.danger {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.type-badge {
+    color: #fff;
+    background: linear-gradient(90deg, #228ed8, #3ab4f3);
+}
+
+.entity-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 170px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #d7e2ff;
+}
+
+.module-form-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 24px;
+}
+
+.module-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.module-form-grid .full {
+    grid-column: 1 / -1;
+}
+
+.module-form-card label {
+    display: block;
+    margin-bottom: 8px;
+    color: #dce6ff;
+    font-weight: 700;
+}
+
+.module-form-card input,
+.module-form-card select,
+.module-form-card textarea {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    padding: 12px 14px;
+}
+
+.module-form-card textarea {
+    min-height: 140px;
+}
+
+.module-form-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 14px;
+}
+
+.details-table th,
+.details-table td {
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+}
+
+.details-table th {
+    width: 220px;
+    border-radius: 16px 0 0 16px;
+    text-align: left;
+}
+
+.details-table td {
+    border-radius: 0 16px 16px 0;
+}
+
+@media (max-width: 1200px) {
+    .entity-card {
+        grid-template-columns: 1fr;
+    }
+
+    .entity-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-width: auto;
+    }
+
+    .module-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

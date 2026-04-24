@@ -1,49 +1,60 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Evenement index{% endblock %}
+{% block title %}Événements{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Evenements</h2>
-                <p class="card-subtitle">Gestion des evenements organises.</p>
-            </div>
-            <a href="{{ path('app_evenement_new') }}" class="btn btn-primary">Create new</a>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nom</th>
-                        <th>Date</th>
-                        <th>Lieu</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for evenement in evenements %}
-                    <tr>
-                        <td>{{ evenement.id }}</td>
-                        <td>{{ evenement.nom }}</td>
-                        <td>{{ evenement.date }}</td>
-                        <td>{{ evenement.lieu }}</td>
-                        <td>{{ evenement.description }}</td>
-                        <td>
-                            <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Événements</h1>
+            <p>Tous les événements liés à la plage.</p>
         </div>
-    </section>
+        <div class="module-actions">
+            <a href="{{ path('app_evenement_new') }}" class="btn btn-primary">+ Ajouter un événement</a>
+        </div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">Total événements</div>
+            <div class="value">{{ evenements|length }}</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        {% if evenements is empty %}
+            <div class="empty-state">
+                <h3>Aucun événement trouvé</h3>
+            </div>
+        {% else %}
+            <div class="module-grid">
+                {% for evenement in evenements %}
+                    <div class="entity-card">
+                        <div class="entity-id">{{ evenement.id }}</div>
+
+                        <div class="entity-main">
+                            <h3>{{ evenement.nom }}</h3>
+                            <p><strong>Lieu :</strong> {{ evenement.lieu }}</p>
+                            <p><strong>Description :</strong> {{ evenement.description }}</p>
+                            <div class="badge-row">
+                                <span class="type-badge">?? Événement</span>
+                            </div>
+                        </div>
+
+                        <div class="entity-meta">
+                            <p><strong>Date :</strong> {{ evenement.date }}</p>
+                        </div>
+
+                        <div class="entity-actions">
+                            <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" class="btn btn-secondary">Voir</a>
+                            <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-primary">Modifier</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}
