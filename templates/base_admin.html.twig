@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request ? app.request.locale|replace({'_':'-'}) : 'fr' }}" data-symfony-ux-translator-locale="{{ app.request ? app.request.locale : 'fr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,6 +47,7 @@
     </footer>
 
     <script src="/assets_admin/templatemo-glass-admin-script.js"></script>
+    {{ importmap('app') }}
     {% block admin_javascripts %}{% endblock %}
 
 </body>
