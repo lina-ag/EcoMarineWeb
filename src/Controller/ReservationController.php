@@ -44,21 +44,40 @@ final class ReservationController extends AbstractController
         $personnesFilter = (string) $request->query->get('personnes', 'all');
         $dateFrom = trim((string) $request->query->get('date_from', ''));
         $dateTo = trim((string) $request->query->get('date_to', ''));
-        $sort = (string) $request->query->get('sort', 'date_desc');
+        $sort = (string) $request->query->get('sort', 'id_desc');
 
-        $reservations = $reservationRepository
+        $allReservations = $reservationRepository
             ->createQueryBuilder('r')
             ->leftJoin('r.activiteEcologique', 'a')
             ->addSelect('a')
             ->getQuery()
             ->getResult();
 
-        $reservations = array_values(array_filter($reservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
+        $reservations = array_values(array_filter($allReservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
             return $this->matchesReservationSearch($reservation, $searchTerm, $searchField)
                 && $this->matchesReservationStatus($reservation, $statusFilter)
                 && $this->matchesReservationPersonnes($reservation, $personnesFilter)
                 && $this->matchesReservationDateRange($reservation, $dateFrom, $dateTo);
         }));
+
+        $hasActiveFilters = $searchTerm !== ''
+            || $searchField !== 'all'
+            || $statusFilter !== 'all'
+            || $personnesFilter !== 'all'
+            || $dateFrom !== ''
+            || $dateTo !== '';
+
+        if ($hasActiveFilters && count($reservations) === 0 && count($allReservations) > 0) {
+            $reservations = $allReservations;
+            $searchTerm = '';
+            $searchField = 'all';
+            $statusFilter = 'all';
+            $personnesFilter = 'all';
+            $dateFrom = '';
+            $dateTo = '';
+
+            $this->addFlash('error', 'Les filtres actifs masquaient vos réservations. La liste complète est affichée.');
+        }
 
         usort($reservations, function (Reservation $left, Reservation $right) use ($sort): int {
             return $this->compareReservations($left, $right, $sort);
@@ -263,7 +282,16 @@ final class ReservationController extends AbstractController
                 return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
             }
 
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
 
         }
 
@@ -351,8 +379,18 @@ final class ReservationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été mise à jour avec succès.');
 
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('reservation/edit.html.twig', [
@@ -367,8 +405,20 @@ final class ReservationController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($reservation);
             $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été supprimée avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide. Suppression annulée.');
         }
 
-        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_reservation_index', [
+            'q' => '',
+            'field' => 'all',
+            'status' => 'all',
+            'personnes' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+            'sort' => 'id_desc',
+            'page' => 1,
+        ], Response::HTTP_SEE_OTHER);
     }
 }

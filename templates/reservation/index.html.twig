@@ -3,13 +3,16 @@
 {% block title %}Réservations{% endblock %}
 
 {% block body %}
+    {% set success_flashes = app.flashes('success') %}
+    {% set error_flashes = app.flashes('error') %}
+
     <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list" style="position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(226, 239, 255, 0.6), rgba(209, 230, 255, 0.5)); backdrop-filter: blur(8px);">
         <div class="card-header">
             <div class="reservation-admin-header">
                 <span class="reservation-admin-kicker">Reservation Panel</span>
                 <h2 class="card-title">Liste des réservations</h2>
                 <p class="card-subtitle">Suivi des réservations enregistrées.</p>
-                <div style="margin-top: 0.35rem; font-weight: 700; color: #1e3a8a;">Compteur live: <span id="reservation-animated-counter" data-target="24">0</span></div>
+                <div style="margin-top: 0.35rem; font-weight: 700; color: #1e3a8a;">Compteur live: <span id="reservation-animated-counter" data-target="{{ result_count|default(0) }}">0</span></div>
             </div>
             <div class="card-actions">
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">Exporter PDF</a>
@@ -54,6 +57,10 @@
                 transform: translateY(-8px);
                 pointer-events: none;
                 transition: opacity 0.25s ease, transform 0.25s ease;
+            }
+
+            .reservation-toast.error {
+                background: linear-gradient(135deg, #dc2626, #7f1d1d);
             }
 
             .reservation-toast.show {
@@ -425,14 +432,14 @@
                     <span>Export CSV</span>
                 </button>
                 <select id="reservation-sort-by" name="sort" class="search-input combo-input" style="max-width: 170px; margin-left: auto;" onchange="this.form.submit();">
-                    <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}> Date recentes</option>
-                    <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}> Date anciennes</option>
-                    <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}> ID decroissant</option>
-                    <option value="id_asc" {{ sort_by|default('date_desc') == 'id_asc' ? 'selected' : '' }}> ID croissant</option>
-                    <option value="nom_asc" {{ sort_by|default('date_desc') == 'nom_asc' ? 'selected' : '' }}> Nom A-Z</option>
-                    <option value="nom_desc" {{ sort_by|default('date_desc') == 'nom_desc' ? 'selected' : '' }}> Nom Z-A</option>
-                    <option value="nombre_desc" {{ sort_by|default('date_desc') == 'nombre_desc' ? 'selected' : '' }}> Personnes max</option>
-                    <option value="nombre_asc" {{ sort_by|default('date_desc') == 'nombre_asc' ? 'selected' : '' }}> Personnes min</option>
+                    <option value="id_desc" {{ sort_by|default('id_desc') == 'id_desc' ? 'selected' : '' }}> Derniers ajouts</option>
+                    <option value="id_asc" {{ sort_by|default('id_desc') == 'id_asc' ? 'selected' : '' }}> Plus anciens ajouts</option>
+                    <option value="date_desc" {{ sort_by|default('id_desc') == 'date_desc' ? 'selected' : '' }}> Date recentes</option>
+                    <option value="date_asc" {{ sort_by|default('id_desc') == 'date_asc' ? 'selected' : '' }}> Date anciennes</option>
+                    <option value="nom_asc" {{ sort_by|default('id_desc') == 'nom_asc' ? 'selected' : '' }}> Nom A-Z</option>
+                    <option value="nom_desc" {{ sort_by|default('id_desc') == 'nom_desc' ? 'selected' : '' }}> Nom Z-A</option>
+                    <option value="nombre_desc" {{ sort_by|default('id_desc') == 'nombre_desc' ? 'selected' : '' }}> Personnes max</option>
+                    <option value="nombre_asc" {{ sort_by|default('id_desc') == 'nombre_asc' ? 'selected' : '' }}> Personnes min</option>
                 </select>
             </div>
         </form>
@@ -544,6 +551,14 @@
         </div>
 
         <div id="reservation-toast" class="reservation-toast" role="status" aria-live="polite"></div>
+        <div id="reservation-flash-messages" style="display: none;">
+            {% for message in success_flashes %}
+                <span data-type="success" data-message="{{ message|e('html_attr') }}"></span>
+            {% endfor %}
+            {% for message in error_flashes %}
+                <span data-type="error" data-message="{{ message|e('html_attr') }}"></span>
+            {% endfor %}
+        </div>
     </section>
 {% endblock %}
 
@@ -552,6 +567,53 @@
     <script>
         (function () {
             const animatedCounter = document.getElementById('reservation-animated-counter');
+
+            const initReservationFlashToasts = function () {
+                const flashRoot = document.getElementById('reservation-flash-messages');
+                const toast = document.getElementById('reservation-toast');
+
+                if (!flashRoot || !toast) {
+                    return;
+                }
+
+                const queue = Array.from(flashRoot.querySelectorAll('[data-message]')).map(function (node) {
+                    return {
+                        type: node.dataset.type || 'success',
+                        message: node.dataset.message || ''
+                    };
+                }).filter(function (item) {
+                    return item.message.trim() !== '';
+                });
+
+                if (!queue.length) {
+                    return;
+                }
+
+                let index = 0;
+
+                const showNext = function () {
+                    if (index >= queue.length) {
+                        return;
+                    }
+
+                    const current = queue[index];
+                    toast.classList.remove('error', 'show');
+                    toast.classList.toggle('error', current.type === 'error');
+                    toast.textContent = current.message;
+
+                    window.requestAnimationFrame(function () {
+                        toast.classList.add('show');
+                    });
+
+                    window.setTimeout(function () {
+                        toast.classList.remove('show');
+                        index += 1;
+                        window.setTimeout(showNext, 220);
+                    }, 2600);
+                };
+
+                showNext();
+            };
 
             const animateCounter = function () {
                 if (!animatedCounter || animatedCounter.dataset.animated === '1') {
@@ -634,6 +696,9 @@
                 if (!root) {
                     return;
                 }
+
+                // Use full page requests for reliability: avoids stale swapped DOM states.
+                return;
 
                 const form = root.querySelector('#reservation-search-form');
 
@@ -750,6 +815,7 @@
 
             initReservationLiveSearch();
             initReservationCsvExport();
+            initReservationFlashToasts();
             animateCounter();
         })();
     </script>

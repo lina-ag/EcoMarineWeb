@@ -1,4 +1,4 @@
-{% set reservation_form_options = {'attr': {'class': 'reservation-form'}} %}
+{% set reservation_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}} %}
 {% if form_action is defined and form_action %}
     {% set reservation_form_options = reservation_form_options|merge({'action': form_action}) %}
 {% endif %}
@@ -105,7 +105,8 @@
     const capacityUsed = capacityStatus ? capacityStatus.querySelector('[data-capacity-used]') : null;
     const capacityRemaining = capacityStatus ? capacityStatus.querySelector('[data-capacity-remaining]') : null;
     const capacityTotal = capacityStatus ? capacityStatus.querySelector('[data-capacity-total]') : null;
-    const urlTemplate = '{{ path('app_reservation_activity_date', {'id_activite': '__ID__'})|e('js') }}';
+    const activityDateBaseUrl = {{ path('app_reservation_activity_date', {'id_activite': 0})|json_encode|raw }};
+    const urlTemplate = activityDateBaseUrl.replace(/0$/, '__ID__');
 
     if (!activitySelect || !dateSelect || !dateHiddenInput || !hint || !capacityStatus || !capacityText || !capacityFill || !capacityPill || !capacityUsed || !capacityRemaining || !capacityTotal) {
         return;
@@ -143,7 +144,7 @@
         dateSelect.appendChild(placeholder);
         dateSelect.value = '';
         dateHiddenInput.value = '';
-        hint.textContent = 'Choisissez d\'abord une activité pour voir la date autorisée.';
+        hint.textContent = 'Choisissez d abord une activité pour voir la date autorisée.';
     };
 
     const resetCapacityState = () => {
