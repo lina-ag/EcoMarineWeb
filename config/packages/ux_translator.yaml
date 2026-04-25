@@ -8,7 +8,7 @@ ux_translator:
         - '/^status\./'
         - '/^survzone\./'
 
-    dump_directory: '%kernel.project_dir%/var/translations'
+  
 
 
 when@prod:
