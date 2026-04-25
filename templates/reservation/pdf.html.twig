@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réservation {{ reservation.idReservation }}</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            color: #0f172a;
+            font-size: 14px;
+            margin: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 6px;
+            color: #1e3a8a;
+        }
+
+        .meta {
+            margin-bottom: 16px;
+            color: #334155;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            width: 34%;
+            background: #e2e8f0;
+            font-weight: 700;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    {% set reservationStatus = reservation.activiteEcologique ? (reservation.dateReservation and reservation.dateReservation|date('Y-m-d') > "now"|date('Y-m-d') ? 'pending' : 'confirmed') : 'cancelled' %}
+
+    <h1>Fiche Réservation #{{ reservation.idReservation }}</h1>
+    <div class="meta">Généré le {{ generatedAt|date('Y-m-d H:i') }}</div>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>ID réservation</th>
+                <td>{{ reservation.idReservation }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ reservation.nom }}</td>
+            </tr>
+            <tr>
+                <th>Activité</th>
+                <td>{{ reservation.activiteEcologique ? reservation.activiteEcologique.nomActivite : 'Annulée' }}</td>
+            </tr>
+            <tr>
+                <th>Date réservation</th>
+                <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ reservation.email }}</td>
+            </tr>
+            <tr>
+                <th>Nombre de personnes</th>
+                <td>{{ reservation.nombrePersonnes }}</td>
+            </tr>
+            <tr>
+                <th>Statut</th>
+                <td>
+                    {% if reservationStatus == 'confirmed' %}
+                        <span class="status status-confirmed">Confirmée</span>
+                    {% elseif reservationStatus == 'pending' %}
+                        <span class="status status-pending">En attente</span>
+                    {% else %}
+                        <span class="status status-cancelled">Annulée</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

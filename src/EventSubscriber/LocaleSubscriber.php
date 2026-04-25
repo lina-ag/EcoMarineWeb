@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class LocaleSubscriber implements EventSubscriberInterface
 {
+
     private const SESSION_KEY = '_locale';
     private const ALLOWED_LOCALES = ['fr', 'en'];
 
@@ -41,8 +42,30 @@ class LocaleSubscriber implements EventSubscriberInterface
             $sessionLocale = $request->getSession()->get(self::SESSION_KEY);
 
             if (\is_string($sessionLocale) && \in_array($sessionLocale, self::ALLOWED_LOCALES, true)) {
+
+    public function onKernelRequest(RequestEvent $event): void
+    {
+        $request = $event->getRequest();
+
+        if ($request->hasSession()) {
+            $sessionLocale = $request->getSession()->get('_locale');
+
+            if ($sessionLocale) {
+
                 $request->setLocale($sessionLocale);
             }
         }
     }
+
 }
+
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => [['onKernelRequest', 20]],
+        ];
+    }
+}
+
+

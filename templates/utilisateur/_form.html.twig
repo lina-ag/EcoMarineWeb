@@ -1,53 +1,376 @@
-{{ form_start(form) }}
+{# Affichage des messages flash (erreurs de validation serveur) #}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>❌ Erreur !</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>✅ Succès !</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'user-form'}}) }}
     <div class="form-grid">
         <div class="form-group-settings">
-            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.nom, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.nom, 'Nom *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nom, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Entrez le nom',
+                'minlength': 2,
+                'maxlength': 100,
+                'pattern': '[a-zA-ZÀ-ÿ\\s\\-\']+'
+            }}) }}
             {{ form_errors(form.nom) }}
+            <small class="form-text text-muted">2 à 100 caractères, lettres uniquement</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.prenom, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.prenom, 'Prénom *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prenom, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Entrez le prénom',
+                'minlength': 2,
+                'maxlength': 100,
+                'pattern': '[a-zA-ZÀ-ÿ\\s\\-\']+'
+            }}) }}
             {{ form_errors(form.prenom) }}
+            <small class="form-text text-muted">2 à 100 caractères, lettres uniquement</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.email, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.email, 'Email *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.email, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'exemple@gmail.com',
+                'pattern': '.*@gmail\\.com$',
+                'title': 'L\'email doit être une adresse Gmail'
+            }}) }}
             {{ form_errors(form.email) }}
+            <small class="form-text text-muted">Doit être une adresse Gmail (@gmail.com)</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.mot_de_passe, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.mot_de_passe, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.mot_de_passe, 'Mot de passe *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.mot_de_passe, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Minimum 8 caractères',
+                'minlength': 8,
+                'pattern': '(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{8,}',
+                'title': '8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre'
+            }}) }}
             {{ form_errors(form.mot_de_passe) }}
+            <small class="form-text text-muted">8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.telephone, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.telephone, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.telephone, 'Téléphone *', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.telephone, {'attr': {
+                'class': 'form-input',
+                'placeholder': 'Ex: 51234567',
+                'pattern': '[259][0-9]{7}',
+                'maxlength': 8,
+                'title': '8 chiffres, commence par 2, 5 ou 9'
+            }}) }}
             {{ form_errors(form.telephone) }}
+            <small class="form-text text-muted">8 chiffres, commence par 2, 5 ou 9 (numéro tunisien)</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.role, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_label(form.role, 'Rôle *', {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.role, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.role) }}
+            <small class="form-text text-muted">Choisissez un rôle (admin, chercheur, utilisateur)</small>
         </div>
-
+        
         <div class="form-group-settings">
-            {{ form_label(form.date_naissance, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_naissance, {'attr': {'class': 'form-input'}}) }}
+            {{ form_label(form.date_naissance, 'Date de naissance', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.date_naissance, {'attr': {
+                'class': 'form-input',
+                'max': 'now'|date('Y-m-d')
+            }}) }}
             {{ form_errors(form.date_naissance) }}
+            <small class="form-text text-muted">Doit être dans le passé (strictement avant aujourd'hui)</small>
         </div>
-
     </div>
-
+    
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">back to list</a>
+        <button type="submit" class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_utilisateur_index') }}" class="btn btn-secondary">Retour à la liste</a>
     </div>
-
+    
     {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<style>
+    /* Alert styles */
+    .alert {
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        position: relative;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-dismissible {
+        padding-right: 40px;
+    }
+    
+    .btn-close {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.5;
+    }
+    
+    .btn-close:hover {
+        opacity: 1;
+    }
+    
+    /* Form styles */
+    .user-form {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .form-group-settings {
+        margin-bottom: 0;
+    }
+    
+    .form-label,
+    label.form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #284543;
+        font-size: 14px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+    
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #1e3c72;
+        box-shadow: 0 0 0 2px rgba(30, 60, 114, 0.1);
+    }
+    
+    .form-input.is-invalid {
+        border-color: #dc3545;
+        background-color: #fff5f5;
+    }
+    
+    .form-input.is-valid {
+        border-color: #28a745;
+    }
+    
+    /* Error styles */
+    .form-error-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    ul li {
+        list-style: none;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .text-muted {
+        color: #6c757d;
+    }
+    
+    /* Button styles */
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        justify-content: center;
+    }
+    
+    .btn {
+        padding: 10px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+    
+.btn-primary {
+    background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(46,196,182,0.3);
+}
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+    
+</style>
+
+<script>
+    // Validation en temps réel
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Validation email Gmail
+        const emailInput = document.querySelector('input[name="utilisateur[email]"]');
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                const email = this.value;
+                const isValid = /.*@gmail\.com$/.test(email);
+                if (!isValid && email.length > 0) {
+                    this.setCustomValidity('L\'email doit être une adresse @gmail.com');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    if (email.length > 0) {
+                        this.classList.add('is-valid');
+                    }
+                }
+            });
+        }
+        
+        // Validation téléphone tunisien
+        const telInput = document.querySelector('input[name="utilisateur[telephone]"]');
+        if (telInput) {
+            telInput.addEventListener('input', function() {
+                const tel = this.value;
+                const isValid = /^[259][0-9]{7}$/.test(tel);
+                if (!isValid && tel.length > 0) {
+                    this.setCustomValidity('Numéro tunisien valide (8 chiffres, commence par 2,5 ou 9)');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    if (tel.length === 8 && isValid) {
+                        this.classList.add('is-valid');
+                    }
+                }
+            });
+        }
+        
+        // Validation mot de passe
+        const pwdInput = document.querySelector('input[name="utilisateur[mot_de_passe]"]');
+        if (pwdInput) {
+            pwdInput.addEventListener('input', function() {
+                const pwd = this.value;
+                const hasUpperCase = /[A-Z]/.test(pwd);
+                const hasLowerCase = /[a-z]/.test(pwd);
+                const hasNumber = /[0-9]/.test(pwd);
+                const isValidLength = pwd.length >= 8;
+                
+                if (!isValidLength || !hasUpperCase || !hasLowerCase || !hasNumber) {
+                    this.setCustomValidity('Le mot de passe doit contenir 8+ caractères, une majuscule, une minuscule et un chiffre');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                }
+            });
+        }
+        
+        // Validation date de naissance
+        const dateInput = document.querySelector('input[name="utilisateur[date_naissance]"]');
+        if (dateInput) {
+            dateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate >= today) {
+                    this.setCustomValidity('La date de naissance doit être dans le passé');
+                    this.classList.add('is-invalid');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('is-invalid');
+                    if (this.value) {
+                        this.classList.add('is-valid');
+                    }
+                }
+            });
+        }
+    });
+</script>

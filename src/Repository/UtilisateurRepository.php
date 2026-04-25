@@ -25,8 +25,9 @@ class UtilisateurRepository extends ServiceEntityRepository
         
         // Filtre par rôle
         if ($role && $role !== 'all') {
-            $qb->andWhere('u.role = :role')
-               ->setParameter('role', $role);
+            $qb->join('u.role', 'r')
+                ->andWhere('r.nomRole = :role')
+                ->setParameter('role', $role);
         }
         
         // Filtre par recherche (nom ou prénom)
@@ -84,4 +85,13 @@ class UtilisateurRepository extends ServiceEntityRepository
             'utilisateur' => $utilisateur,
         ];
     }
+    public function findAllWithFaceEncoding(): array
+{
+    return $this->createQueryBuilder('u')
+        ->where('u.faceEncoding IS NOT NULL')
+        ->andWhere('u.faceEncoding != :empty')
+        ->setParameter('empty', '')
+        ->getQuery()
+        ->getResult();
+}
 }
