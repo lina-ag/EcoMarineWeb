@@ -3,29 +3,56 @@ import { trans } from './translator.js';
 
 window.ecomarineTrans = trans;
 
-// Ajout rating étoiles vanilla pour toutes les cellules .reservation-rating
-function renderRatings() {
+function createReadonlyStar(fillRatio) {
+    const star = document.createElement('span');
+    star.style.display = 'inline-block';
+    star.style.position = 'relative';
+    star.style.width = '1.1em';
+    star.style.height = '1.1em';
+    star.style.lineHeight = '1.1em';
+    star.style.fontSize = '1.1em';
+    star.style.marginRight = '1px';
+
+    const empty = document.createElement('span');
+    empty.textContent = '\u2606'; // ☆
+    empty.style.color = '#cbd5e1';
+
+    const filled = document.createElement('span');
+    filled.textContent = '\u2605'; // ★
+    filled.style.color = '#f59e42';
+    filled.style.position = 'absolute';
+    filled.style.left = '0';
+    filled.style.top = '0';
+    filled.style.width = `${Math.max(0, Math.min(1, fillRatio)) * 100}%`;
+    filled.style.overflow = 'hidden';
+    filled.style.whiteSpace = 'nowrap';
+
+    star.appendChild(empty);
+    star.appendChild(filled);
+    return star;
+}
+
+function renderReservationRatingEditors() {
     document.querySelectorAll('.reservation-rating[data-editable-rating="reservation"]').forEach(function (el) {
         const rating = parseInt(el.dataset.rating || '0', 10);
         el.innerHTML = '';
+
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('span');
-            star.textContent = i <= rating ? '★' : '☆';
+            star.textContent = i <= rating ? '\u2605' : '\u2606';
             star.style.cursor = 'pointer';
             star.style.color = i <= rating ? '#f59e42' : '#cbd5e1';
             star.style.fontSize = '1.1em';
             star.addEventListener('click', function () {
-                // TODO: envoyer la note au serveur via fetch/ajax si besoin
-                el.dataset.rating = i;
-                renderRatings();
+                el.dataset.rating = String(i);
+                renderReservationRatingEditors();
             });
             el.appendChild(star);
         }
     });
 }
 
-// Forcer le rating à côté de l'activité dans le formulaire
-function renderActivityRating() {
+function renderActivityRatingEditor() {
     const ratingEl = document.getElementById('activity-rating-stars');
     const descField = document.getElementById('description-field');
     if (!ratingEl || !descField) return;
@@ -42,53 +69,49 @@ function renderActivityRating() {
     ratingEl.innerHTML = '';
     for (let i = 1; i <= 5; i++) {
         const star = document.createElement('span');
-        star.textContent = i <= rating ? '★' : '☆';
+        star.textContent = i <= rating ? '\u2605' : '\u2606';
         star.style.cursor = 'pointer';
         star.style.color = i <= rating ? '#f59e42' : '#cbd5e1';
         star.style.fontSize = '1.3em';
         star.addEventListener('click', function () {
-            ratingEl.dataset.rating = i;
-            // Ajoute ou remplace la note dans la description
+            ratingEl.dataset.rating = String(i);
+
             let desc = descField.value
                 .replace(/\n?\[Note:\s*[1-5]\s+etoiles\]/gi, '')
                 .replace(/\n?\[Note:\s*[1-5]\s+étoiles\]/gi, '')
                 .trimEnd();
 
-            descField.value = desc ? desc + '\n[Note: ' + i + ' etoiles]' : '[Note: ' + i + ' etoiles]';
-            renderActivityRating();
+            descField.value = desc ? `${desc}\n[Note: ${i} etoiles]` : `[Note: ${i} etoiles]`;
+            renderActivityRatingEditor();
         });
         ratingEl.appendChild(star);
     }
 }
 
-// Affichage étoiles/demi-étoiles selon data-rating (float)
-function renderActivityListRatings() {
+function renderReadonlyRatings() {
     document.querySelectorAll('.reservation-rating[data-readonly-rating="1"]').forEach(function (el) {
-        let rating = parseFloat(el.dataset.rating || '0');
+        const rating = parseFloat(el.dataset.rating || '0');
         el.innerHTML = '';
+
         for (let i = 1; i <= 5; i++) {
             if (rating >= i) {
-                // Pleine étoile
-                el.innerHTML += '<span style="color:#f59e42;font-size:1.1em;cursor:pointer">★</span>';
+                el.appendChild(createReadonlyStar(1));
             } else if (rating >= i - 0.5) {
-                // Demi-étoile
-                el.innerHTML += '<span style="color:#f59e42;font-size:1.1em;cursor:pointer">⯨</span>';
+                el.appendChild(createReadonlyStar(0.5));
             } else {
-                // Vide
-                el.innerHTML += '<span style="color:#cbd5e1;font-size:1.1em;cursor:pointer">☆</span>';
+                el.appendChild(createReadonlyStar(0));
             }
         }
     });
 }
 
 function renderAllRatings() {
-    renderRatings();
-    renderActivityRating();
-    renderActivityListRatings();
+    renderReservationRatingEditors();
+    renderActivityRatingEditor();
+    renderReadonlyRatings();
 }
 
 window.ecomarineRenderRatings = renderAllRatings;
 
 document.addEventListener('DOMContentLoaded', renderAllRatings);
-document.addEventListener('htmx:afterSettle', renderAllRatings); // si tu utilises htmx ou du DOM dynamique
 document.addEventListener('turbo:load', renderAllRatings);

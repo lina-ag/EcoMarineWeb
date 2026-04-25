@@ -309,18 +309,6 @@
             "./assets/react/controllers/Hello.jsx"
         ]
     },
-    "symfony/ux-svelte": {
-        "version": "2.35",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "2.9",
-            "ref": "c85ee9983c42bd20221bddf87c4f66abb7077fdd"
-        },
-        "files": [
-            "./assets/svelte/controllers/Hello.svelte"
-        ]
-    },
     "symfony/ux-translator": {
         "version": "2.35",
         "recipe": {

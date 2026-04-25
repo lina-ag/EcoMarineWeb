@@ -45,7 +45,6 @@
         "symfony/ux-chartjs": "^2.35",
         "symfony/ux-live-component": "^2.35",
         "symfony/ux-react": "^2.35",
-        "symfony/ux-svelte": "^2.35",
         "symfony/ux-translator": "^2.35",
         "symfony/ux-turbo": "^2.35",
         "symfony/validator": "6.4.*",

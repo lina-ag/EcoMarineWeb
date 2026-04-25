@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request ? app.request.locale|replace({'_':'-'}) : 'fr' }}" data-symfony-ux-translator-locale="{{ app.request ? app.request.locale : 'fr' }}">
 
 {% set current_route = app.request ? app.request.get('_route') : null %}
 
