@@ -4,15 +4,9 @@ knp_snappy:
     process_timeout: 30
     pdf:
         enabled: true
-        binary: '%env(resolve:WKHTMLTOPDF_PATH)%'
-        options:
-            encoding: 'utf-8'
-            enable-local-file-access: true
-
-    pdf:
-        enabled: true
         binary: wkhtmltopdf
         options:
+            encoding: 'utf-8'
             enable-local-file-access: true
             margin-top: 8
             margin-right: 8

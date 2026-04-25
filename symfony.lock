@@ -307,49 +307,45 @@
     },
 
     "symfony/ux-leaflet-map": {
-
+        "version": "v2.35.0"
+    },
     "symfony/ux-chartjs": {
         "version": "v2.35.0"
     },
     "symfony/ux-live-component": {
-
-        "version": "2.35",
+        "version": "v2.35.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-
             "version": "2.19",
             "ref": "bed7e7f6d7c04e0de9665859ddbf0e842e5323e3"
-        }
-    },
-    "symfony/ux-map": {
-
-            "version": "2.6",
-            "ref": "b7130b7b5ddc2f8994bd6149d7c093b184782f0c"
         },
         "files": [
             "./config/routes/ux_live_component.yaml"
         ]
     },
-    "symfony/ux-react": {
-
-        "version": "2.35",
+    "symfony/ux-map": {
+        "version": "v2.35.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-
-            "version": "2.19",
-            "ref": "04de870967555f00bd82f542e9e2d29683c3d39e"
+            "version": "2.6",
+            "ref": "b7130b7b5ddc2f8994bd6149d7c093b184782f0c"
         },
         "files": [
             "./config/packages/ux_map.yaml"
-
+        ]
+    },
+    "symfony/ux-react": {
+        "version": "v2.35.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
             "version": "2.9",
             "ref": "adec905b8d643c7e15a3a8d070c58ff3021288c6"
         },
         "files": [
             "./assets/react/controllers/Hello.jsx"
-
         ]
     },
     "symfony/ux-translator": {

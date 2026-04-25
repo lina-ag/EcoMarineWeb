@@ -1,4 +1,3 @@
-
 zonep:
     title: 'Marine Zones Management'
     created: 'Zone created successfully!'
@@ -73,6 +72,9 @@ common:
     id: 'Id'
     actions: 'Actions'
     date: 'Date'
+    switch_language: 'Switch language'
+    language_fr: 'Français'
+    language_en: 'English'
 
 reservation:
   title: 'Reservations'
@@ -233,12 +235,5 @@ calendar:
   button_day: 'Day'
   button_list: 'List'
 
-common:
-  switch_language: 'Switch language'
-  language_fr: 'Français'
-  language_en: 'English'
-
 demo:
   hello: 'Hello from UX Translator'
-
-
