@@ -1,0 +1,9 @@
+knp_snappy:
+    temporary_folder: '%kernel.cache_dir%/snappy'
+    process_timeout: 30
+    pdf:
+        enabled: true
+        binary: '%env(resolve:WKHTMLTOPDF_PATH)%'
+        options:
+            encoding: 'utf-8'
+            enable-local-file-access: true

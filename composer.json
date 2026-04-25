@@ -10,11 +10,11 @@
         "doctrine/doctrine-bundle": "^2.18",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
-<<<<<<< HEAD
         "dompdf/dompdf": "^3.1",
-=======
->>>>>>> 11b43394e6d5a8f5fb3152f83b4f67bda2b41c35
+        "friendsofsymfony/elastica-bundle": "^7.1",
         "knplabs/knp-paginator-bundle": "^6.10",
+        "knplabs/knp-snappy-bundle": "^1.10",
+        "masterminds/html5": "^2.10",
         "phpdocumentor/reflection-docblock": "^5.2",
         "phpstan/phpdoc-parser": "^2.3",
         "symfony/asset": "6.4.*",
@@ -42,7 +42,11 @@
         "symfony/string": "6.4.*",
         "symfony/translation": "6.4.*",
         "symfony/twig-bundle": "6.4.*",
-        "symfony/ux-turbo": "^2.34",
+        "symfony/ux-autocomplete": "^2.35",
+        "symfony/ux-leaflet-map": "^2.35",
+        "symfony/ux-map": "^2.35",
+        "symfony/ux-translator": "^2.35",
+        "symfony/ux-turbo": "^2.35",
         "symfony/validator": "6.4.*",
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
