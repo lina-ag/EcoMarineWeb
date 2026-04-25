@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="{{ app.request.locale ?? 'fr' }}">
+
+<html lang="{{ app.request ? app.request.locale|replace({'_':'-'}) : 'fr' }}" data-symfony-ux-translator-locale="{{ app.request ? app.request.locale : 'fr' }}">
+
 
 {% set current_route = app.request ? app.request.get('_route') : null %}
 {% set current_route_params = app.request ? app.request.attributes.get('_route_params', {}) : {} %}
@@ -33,6 +37,7 @@
             <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
             <link rel="stylesheet" href="/assets_admin/templatemo-glass-admin-style.css">
         {% endif %}
+
 
         <link rel="stylesheet" href="/assets/styles/app.css">
 
@@ -124,6 +129,11 @@
                 pointer-events: none;
             }
         </style>
+
+        {# 🔥 CORRECTION ICI - Utiliser un fichier CSS qui existe ou commenter #}
+        {# <link rel="stylesheet" href="/assets/styles/app.css"> #}
+        <link rel="stylesheet" href="/assets/css/templatemo-style.css">
+
     {% endblock %}
 
     <title>{% block title %}EcoMarine{% endblock %}</title>
@@ -198,6 +208,8 @@
     {% else %}
         <script src="/assets_admin/templatemo-glass-admin-script.js"></script>
     {% endif %}
+
+
 
     {{ importmap('app') }}
 {% endblock %}

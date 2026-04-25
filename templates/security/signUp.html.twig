@@ -5,90 +5,104 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .auth-page {
-            background: none;
-            min-height: 100vh;
-            color: #fff;
-        }
+        .auth-page { background: none; min-height: 100vh; color: #fff; }
         .auth-container {
-            min-height: calc(100vh - 0px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 16px;
+            min-height: 100vh; display: flex;
+            align-items: center; justify-content: center; padding: 40px 16px;
         }
         .auth-card {
-            width: 100%;
-            max-width: 520px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+            width: 100%; max-width: 520px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.18);
             backdrop-filter: blur(18px);
-            border-radius: 24px;
-            padding: 34px 32px;
+            border-radius: 24px; padding: 34px 32px;
         }
-        .auth-card h2 {
-            margin-bottom: 1rem;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .auth-card p {
-            color: rgba(255, 255, 255, 0.82);
-            margin-bottom: 1.8rem;
-        }
+        .auth-card h2 { margin-bottom:1rem; font-size:2rem; font-weight:700; color:#fff; }
+        .auth-card > p { color:rgba(255,255,255,0.82); margin-bottom:1.8rem; }
         .auth-card .form-control {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            color: #fff;
-            box-shadow: none;
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin-bottom: 1rem;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #fff; box-shadow: none;
+            border-radius: 14px; padding: 14px 16px; margin-bottom: 1rem;
         }
+        .auth-card .form-control::placeholder { color: rgba(255,255,255,0.5); }
         .auth-card .form-control:focus {
-            border-color: rgba(255, 255, 255, 0.78);
-            box-shadow: 0 0 0 0.2rem rgba(173, 214, 255, 0.25);
-            background: rgba(255, 255, 255, 0.16);
-            color: #fff;
+            border-color: rgba(255,255,255,0.78);
+            box-shadow: 0 0 0 0.2rem rgba(173,214,255,0.25);
+            background: rgba(255,255,255,0.16); color: #fff;
         }
-        .auth-card label {
-            display: block;
-            margin-bottom: 0.4rem;
-            color: rgba(255, 255, 255, 0.88);
-            font-weight: 500;
+        .auth-card label { display:block; margin-bottom:0.4rem; color:rgba(255,255,255,0.88); font-weight:500; }
+        .auth-card .form-label { color:rgba(255,255,255,0.88) !important; font-weight:500; }
+        .auth-card select.form-control option { background:#1a3a4a; color:#fff; }
+        .auth-card .invalid-feedback { color:#ff8080; }
+        .auth-card .btn { border-radius:14px; padding:12px 18px; font-weight:700; letter-spacing:0.02em; }
+        .auth-card .btn-success { background:#00c774; border-color:#00c774; color:#fff; }
+        .auth-card .btn-success:hover { background:#1cff9d; border-color:#1cff9d; transform:translateY(-2px); }
+        .auth-card .text-center a { color:#fff; text-decoration:underline; }
+        .video-bg { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+
+        /* Section visage */
+        .face-section {
+            display:none; margin-top:20px; padding:18px;
+            background:rgba(46,196,182,0.15);
+            border:1px solid rgba(46,196,182,0.3); border-radius:12px;
         }
-        .auth-card .btn {
-            border-radius: 14px;
-            padding: 12px 18px;
-            font-weight: 700;
-            letter-spacing: 0.02em;
+        .btn-face {
+            background:linear-gradient(135deg,#2ec4b6,#1b9aaa); color:white;
+            border:none; padding:11px 20px; border-radius:8px;
+            font-weight:600; cursor:pointer; width:100%; transition:all 0.3s;
         }
-        .auth-card .btn-success {
-            background: #00c774;
-            border-color: #00c774;
+        .btn-face:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(46,196,182,0.3); }
+
+        /* Overlay modal */
+        .face-modal {
+            display:none; position:fixed; top:0; left:0;
+            width:100%; height:100%; background:rgba(0,0,0,0.88);
+            z-index:10000; align-items:center; justify-content:center;
         }
-        .auth-card .btn-success:hover {
-            background: #1cff9d;
-            border-color: #1cff9d;
+        .face-modal-content {
+            background:white; border-radius:20px; padding:26px;
+            max-width:520px; width:90%; text-align:center;
+            box-shadow:0 24px 60px rgba(0,0,0,0.4);
         }
-        .auth-card .text-center {
-            margin-top: 1rem;
-            color: rgba(255, 255, 255, 0.85);
+        .face-modal-content h3 { color:#1e3c72; margin-bottom:6px; }
+        .face-modal-content p  { color:#666; font-size:13px; margin-bottom:12px; }
+
+        /* Conteneur vidéo avec loader */
+        .video-wrapper {
+            position:relative; width:100%; height:270px;
+            border-radius:12px; overflow:hidden; background:#111; margin-bottom:12px;
         }
-        .auth-card .text-center a {
-            color: #ffffff;
-            text-decoration: underline;
+        .video-wrapper video {
+            width:100%; height:100%; object-fit:cover;
+            transform:scaleX(-1); display:block;
         }
-        .video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
+        .video-loader {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            color:white; font-size:14px; text-align:center;
         }
+        .video-loader.hidden { display:none; }
+
+        .modal-message { margin:10px 0; padding:10px; border-radius:8px; font-size:13px; }
+        .modal-message.info    { background:#cce5ff; color:#004085; }
+        .modal-message.success { background:#d4edda; color:#155724; }
+        .modal-message.error   { background:#f8d7da; color:#721c24; }
+        .modal-message.loading { background:#fff3cd; color:#856404; }
+
+        .modal-buttons { display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+        .btn-capture {
+            background:linear-gradient(135deg,#28a745,#1e7e34); color:white;
+            border:none; padding:11px 26px; border-radius:8px;
+            font-weight:600; cursor:pointer; transition:all 0.3s; min-width:160px;
+        }
+        .btn-capture:disabled { background:#aaa; opacity:0.6; cursor:not-allowed; }
+        .btn-capture:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 4px 12px rgba(40,167,69,0.4); }
+        .btn-cancel {
+            background:#6c757d; color:white; border:none;
+            padding:11px 26px; border-radius:8px; font-weight:600; cursor:pointer; transition:all 0.3s;
+        }
+        .btn-cancel:hover { background:#5a6268; transform:translateY(-2px); }
     </style>
 {% endblock %}
 
@@ -109,31 +123,197 @@
 
         {{ form_start(form) }}
 
-<div class="row">
-    <div class="col-md-6">
-        {{ form_row(form.nom) }}
-    </div>
-    <div class="col-md-6">
-        {{ form_row(form.prenom) }}
+        <div class="row">
+            <div class="col-md-6">{{ form_row(form.nom) }}</div>
+            <div class="col-md-6">{{ form_row(form.prenom) }}</div>
+        </div>
+        {{ form_row(form.email) }}
+        {{ form_row(form.mot_de_passe) }}
+        {{ form_row(form.telephone) }}
+        {{ form_row(form.role) }}
+        {{ form_row(form.date_naissance) }}
+
+        {# Section visage #}
+        <div id="faceSection" class="face-section">
+            <h5 style="color:#fff; margin-bottom:8px;">📸 Enregistrement du visage</h5>
+            <p style="color:rgba(255,255,255,0.8); font-size:0.85rem; margin-bottom:12px;">
+                En tant que chercheur, enregistrez votre visage pour vous connecter rapidement.
+            </p>
+            <button type="button" id="openFaceModalBtn" class="btn-face">
+                📷 Enregistrer mon visage
+            </button>
+            <div id="faceStatus" style="margin-top:8px; font-size:0.85rem;"></div>
+            <div id="facePreview" style="display:none; margin-top:10px; text-align:center;">
+                <img id="facePreviewImg" src="" alt="Aperçu"
+                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #2ec4b6;">
+            </div>
+            <input type="hidden" id="faceImageData" name="face_image_data">
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 mt-3">S'inscrire</button>
+
+        {{ form_rest(form) }}
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="{{ path('app_signIn') }}">Déjà un compte ?</a>
+        </div>
     </div>
 </div>
 
-{{ form_row(form.email) }}
-{{ form_row(form.mot_de_passe) }}
-{{ form_row(form.telephone) }}
-{{ form_row(form.role) }}
-{{ form_row(form.date_naissance) }}
+{# Modal caméra #}
+<div id="faceModal" class="face-modal">
+    <div class="face-modal-content">
+        <h3>📷 Enregistrement de votre visage</h3>
+        <p>Placez-vous face à la caméra puis cliquez sur "Capturer"</p>
 
-<button class="btn btn-success w-100 mt-3">
-    S'inscrire
-</button>
+        <div class="video-wrapper">
+            <video id="faceVideo" autoplay playsinline muted style="display:none;"></video>
+            <div id="videoLoader" class="video-loader">
+                ⏳ Activation de la caméra...
+            </div>
+        </div>
+        <canvas id="faceCanvas" style="display:none;"></canvas>
 
-{{ form_end(form) }}
+        <div id="modalMessage" class="modal-message info">🎥 Demande d'accès à la caméra en cours...</div>
 
-<div class="text-center mt-3">
-    <a href="{{ path('app_signIn') }}">Déjà un compte ?</a>
-</div>
+        <div class="modal-buttons">
+            <button id="captureFaceBtn" class="btn-capture" disabled>
+                📸 Capturer mon visage
+            </button>
+            <button id="closeModalBtn" class="btn-cancel">
+                ❌ Annuler
+            </button>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const roleSelect     = document.querySelector('select[name*="role"]');
+    const faceSection    = document.getElementById('faceSection');
+    const openModalBtn   = document.getElementById('openFaceModalBtn');
+    const faceModal      = document.getElementById('faceModal');
+    const faceVideo      = document.getElementById('faceVideo');
+    const videoLoader    = document.getElementById('videoLoader');
+    const faceCanvas     = document.getElementById('faceCanvas');
+    const captureFaceBtn = document.getElementById('captureFaceBtn');
+    const closeModalBtn  = document.getElementById('closeModalBtn');
+    const modalMessage   = document.getElementById('modalMessage');
+    const faceStatus     = document.getElementById('faceStatus');
+    const facePreview    = document.getElementById('facePreview');
+    const facePreviewImg = document.getElementById('facePreviewImg');
+    const faceImageData  = document.getElementById('faceImageData');
+
+    let mediaStream = null;
+
+    function setMsg(type, text) {
+        modalMessage.className = 'modal-message ' + type;
+        modalMessage.innerHTML = text;
+    }
+
+    // Afficher/masquer section visage
+    function toggleFace() {
+        if (!roleSelect) return;
+        const role = roleSelect.options[roleSelect.selectedIndex]?.text?.toLowerCase().trim();
+        faceSection.style.display = role === 'chercheur' ? 'block' : 'none';
+        if (role !== 'chercheur') {
+            faceImageData.value = '';
+            faceStatus.innerHTML = '';
+            facePreview.style.display = 'none';
+        }
+    }
+    if (roleSelect) { roleSelect.addEventListener('change', toggleFace); toggleFace(); }
+
+    // Ouvrir modal — démarrer caméra immédiatement
+    openModalBtn.addEventListener('click', async function () {
+        // 1. Afficher le modal tout de suite
+        faceModal.style.display = 'flex';
+        faceVideo.style.display = 'none';
+        videoLoader.classList.remove('hidden');
+        captureFaceBtn.disabled = true;
+        setMsg('info', '🎥 Activation de la caméra...');
+
+        // 2. Démarrer la caméra
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
+            });
+
+            faceVideo.srcObject = mediaStream;
+
+            // Quand la vidéo est prête, l'afficher et cacher le loader
+            faceVideo.onloadedmetadata = async function () {
+                await faceVideo.play();
+                faceVideo.style.display = 'block';
+                videoLoader.classList.add('hidden');
+                captureFaceBtn.disabled = false;
+                setMsg('success', '✅ Caméra prête ! Positionnez-vous et cliquez sur "Capturer".');
+            };
+
+        } catch (err) {
+            videoLoader.innerHTML = '❌ Caméra inaccessible';
+            setMsg('error', '❌ Impossible d\'accéder à la caméra : ' + err.message);
+            console.error(err);
+        }
+    });
+
+    // Capturer l'image
+    captureFaceBtn.addEventListener('click', function () {
+        if (!mediaStream) return;
+
+        const ctx = faceCanvas.getContext('2d');
+        faceCanvas.width  = faceVideo.videoWidth;
+        faceCanvas.height = faceVideo.videoHeight;
+        ctx.drawImage(faceVideo, 0, 0, faceCanvas.width, faceCanvas.height);
+
+        const img = faceCanvas.toDataURL('image/jpeg');
+        faceImageData.value = img;
+        facePreviewImg.src  = img;
+        facePreview.style.display = 'block';
+        faceStatus.innerHTML = '<span style="color:#1cff9d;">✅ Visage capturé !</span>';
+        setMsg('success', '✅ Visage capturé avec succès ! Fermeture dans 1 seconde...');
+
+        setTimeout(closeModal, 1000);
+    });
+
+    // Fermer modal
+    function closeModal() {
+        faceModal.style.display = 'none';
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(t => t.stop());
+            mediaStream = null;
+        }
+        faceVideo.style.display = 'none';
+        faceVideo.srcObject = null;
+        videoLoader.classList.remove('hidden');
+        videoLoader.innerHTML = '⏳ Activation de la caméra...';
+        captureFaceBtn.disabled = true;
+        setMsg('info', '🎥 Demande d\'accès à la caméra en cours...');
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    faceModal.addEventListener('click', e => { if (e.target === faceModal) closeModal(); });
+
+    // Bloquer soumission si chercheur sans visage
+    const theForm = document.querySelector('form');
+if (theForm) {
+    theForm.addEventListener('submit', function (e) {
+        const role = roleSelect?.options[roleSelect?.selectedIndex]?.text?.toLowerCase().trim();
+        console.log('Submit - role:', role, 'face value length:', faceImageData.value.length);
+        
+        if (role === 'chercheur' && !faceImageData.value) {
+            e.preventDefault();
+            e.stopPropagation();
+            faceStatus.innerHTML = '<span style="color:#ff8080;">❌ Veuillez capturer votre visage avant de vous inscrire.</span>';
+            faceSection.scrollIntoView({ behavior: 'smooth' });
+            return false;
+        }
+        // ✅ Laisser le formulaire se soumettre normalement
+    });
+}
+});
+</script>
 
 {% endblock %}

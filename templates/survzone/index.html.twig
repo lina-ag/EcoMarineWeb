@@ -13,6 +13,7 @@
             <a href="{{ path('app_survzone_new') }}" class="btn btn-primary">{{ 'common.create'|trans }}</a>
         </div>
 
+
         <form method="get" action="{{ path('app_survzone_index') }}" class="search-box">
             <input type="hidden" name="tri" value="{{ sortBy }}">
             <input type="hidden" name="sens" value="{{ order }}">
@@ -33,6 +34,51 @@
                 <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">{{ 'common.reset'|trans }}</a>
             {% endif %}
         </form>
+
+        <div class="table-wrapper">
+            <table class="data-table" id="survzoneTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'idSurv', 'sens': sortBy == 'idSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Id {{ sortBy == 'idSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'dateSurv', 'sens': sortBy == 'dateSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Date {{ sortBy == 'dateSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ path('app_survzone_index', {'tri': 'observation', 'sens': sortBy == 'observation' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1}) }}">
+                                Observation {{ sortBy == 'observation' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                            </a>
+                        </th>
+                        <th>Zone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for survzone in survzones %}
+                    <tr class="search-row">
+                        <td>{{ survzone.idSurv }}</td>
+                        <td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td>
+                        <td>{{ survzone.observation }}</td>
+                        <td>{{ survzone.zone ? survzone.zone.nomZone : '—' }}</td>
+                        <td>
+                            <a href="{{ path('app_survzone_show', {'idSurv': survzone.idSurv}) }}" class="btn btn-secondary">show</a>
+                            <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="no-results">
+                        <td colspan="5">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
 
         {{ include('survzone/_results.html.twig') }}
     </section>

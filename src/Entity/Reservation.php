@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Table(name: 'reservation')]
 class Reservation
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

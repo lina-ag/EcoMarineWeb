@@ -22,4 +22,8 @@
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
+/public/build/
 ###< symfony/asset-mapper ###
+
+/.composer-cache/
+/.composer-home/
