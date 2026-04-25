@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Réservations{% endblock %}
+{% block title %}{{ 'reservation.title'|trans }}{% endblock %}
 
 {% block body %}
     {% set success_flashes = app.flashes('success') %}
@@ -15,6 +15,22 @@
                 <div style="margin-top: 0.35rem; font-weight: 700; color: #1e3a8a;">Compteur live: <span id="reservation-animated-counter" data-target="{{ result_count|default(0) }}">0</span></div>
             </div>
             <div class="card-actions">
+                {% set target_locale = app.request.locale == 'fr' ? 'en' : 'fr' %}
+                <button 
+                    class="btn btn-secondary reservation-admin-cta" 
+                    title="{{ 'common.switch_language'|trans }}"
+                    data-controller="language-switcher"
+                    data-language-switcher-url-value="{{ path('app_change_locale', {'locale': target_locale}) }}"
+                    data-action="click->language-switcher#switch"
+                    style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(4px);"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>{{ (app.request.locale == 'fr' ? 'EN' : 'FR') }}</span>
+                </button>
                 <a href="{{ path('app_front_calendar') }}" class="btn btn-secondary reservation-admin-cta">Voir le calendrier</a>
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">Exporter PDF</a>
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">Créer une réservation</a>

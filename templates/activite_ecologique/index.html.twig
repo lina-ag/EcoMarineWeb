@@ -1,19 +1,35 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block page_title %}Activités écologiques{% endblock %}
-{% block navbar_title %}Activités écologiques{% endblock %}
+{% block page_title %}{{ 'activite.title'|trans }}{% endblock %}
+{% block navbar_title %}{{ 'activite.title'|trans }}{% endblock %}
 
 {% block admin_content %}
     <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list" style="background: linear-gradient(135deg, rgba(226, 239, 255, 0.6), rgba(209, 230, 255, 0.5)); backdrop-filter: blur(8px);">
         <div class="card-header">
             <div class="reservation-admin-header">
-                <span class="reservation-admin-kicker">Activity Panel</span>
-                <h2 class="card-title">Liste des activités écologiques</h2>
-                <p class="card-subtitle">Suivi des activités enregistrées dans la plateforme.</p>
+                <span class="reservation-admin-kicker">{{ 'activite.panel'|trans }}</span>
+                <h2 class="card-title">{{ 'activite.list_title'|trans }}</h2>
+                <p class="card-subtitle">{{ 'activite.subtitle'|trans }}</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_activite_ecologique_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">Exporter PDF</a>
-                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary reservation-admin-cta">Créer une activité</a>
+                {% set target_locale = app.request.locale == 'fr' ? 'en' : 'fr' %}
+                <button 
+                    class="btn btn-secondary reservation-admin-cta" 
+                    title="{{ 'common.switch_language'|trans }}"
+                    data-controller="language-switcher"
+                    data-language-switcher-url-value="{{ path('app_change_locale', {'locale': target_locale}) }}"
+                    data-action="click->language-switcher#switch"
+                    style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(4px);"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>{{ (app.request.locale == 'fr' ? 'EN' : 'FR') }}</span>
+                </button>
+                <a href="{{ path('app_activite_ecologique_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">{{ 'activite.export_pdf'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'activite.create'|trans }}</a>
             </div>
         </div>
 
@@ -329,10 +345,10 @@
                 <select id="activite-search-field" name="field" class="search-input" style="max-width: 150px;">
                     <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>Chercher par: Tous</option>
                     <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>ID</option>
-                    <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>Nom</option>
-                    <option value="date" {{ search_field|default('all') == 'date' ? 'selected' : '' }}>Date</option>
-                    <option value="capacite" {{ search_field|default('all') == 'capacite' ? 'selected' : '' }}>Capacite</option>
-                    <option value="description" {{ search_field|default('all') == 'description' ? 'selected' : '' }}>Description</option>
+                    <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'activite.name'|trans }}</option>
+                    <option value="date" {{ search_field|default('all') == 'date' ? 'selected' : '' }}>{{ 'activite.date'|trans }}</option>
+                    <option value="capacite" {{ search_field|default('all') == 'capacite' ? 'selected' : '' }}>{{ 'activite.capacity'|trans }}</option>
+                    <option value="description" {{ search_field|default('all') == 'description' ? 'selected' : '' }}>{{ 'activite.description'|trans }}</option>
                 </select>
                 <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 260px;">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
@@ -346,54 +362,54 @@
                             name="q"
                             class="search-input"
                             value="{{ search_term|default('') }}"
-                            placeholder="Rechercher (commence par)..."
+                            placeholder="{{ 'activite.search_placeholder'|trans }}"
                             autocomplete="on"
                         >
                     </div>
-                    <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="Rechercher" title="Rechercher">
+                    <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'activite.search'|trans }}" title="{{ 'activite.search'|trans }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        <span>Rechercher</span>
+                        <span>{{ 'activite.search'|trans }}</span>
                     </button>
                 </div>
-                <small id="activite-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(activite_ecologiques|length) }} resultat(s)</small>
+                <small id="activite-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
             </div>
 
             <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
-                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">Tous</a>
-                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'today', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'today' ? 'active' : '' }}" title="Filtrer les activités du jour">Aujourd'hui</a>
-                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'week', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'week' ? 'active' : '' }}" title="Filtrer les activités de cette semaine">Cette semaine</a>
-                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'current', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'current' ? 'active' : '' }}" title="Filtrer les activités de ce mois">Ce mois</a>
-                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'capacite': 'medium-large', 'page': 1})) }}" class="quick-filter-btn {{ capacite_filter|default('all') == 'medium-large' ? 'active' : '' }}" title="Afficher les activités avec capacité supérieure à 10">Capacité > 10</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">{{ 'activite.all'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'today', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'today' ? 'active' : '' }}" title="Filtrer les activités du jour">{{ 'activite.today'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'week', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'week' ? 'active' : '' }}" title="Filtrer les activités de cette semaine">{{ 'activite.this_week'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'current', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'current' ? 'active' : '' }}" title="Filtrer les activités de ce mois">{{ 'activite.this_month'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'capacite': 'medium-large', 'page': 1})) }}" class="quick-filter-btn {{ capacite_filter|default('all') == 'medium-large' ? 'active' : '' }}" title="Afficher les activités avec capacité supérieure à 10">{{ 'activite.capacity_over_10'|trans }}</a>
                 <select id="activite-sort-by" name="sort" class="search-input" style="max-width: 150px; margin-left: auto;" onchange="this.form.submit();">
-                    <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}>Tri: Date recentes</option>
-                    <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}>Tri: Date anciennes</option>
-                    <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}>Tri: ID decroissant</option>
-                    <option value="id_asc" {{ sort_by|default('date_desc') == 'id_asc' ? 'selected' : '' }}>Tri: ID croissant</option>
-                    <option value="nom_asc" {{ sort_by|default('date_desc') == 'nom_asc' ? 'selected' : '' }}>Tri: Nom A-Z</option>
-                    <option value="nom_desc" {{ sort_by|default('date_desc') == 'nom_desc' ? 'selected' : '' }}>Tri: Nom Z-A</option>
-                    <option value="capacite_desc" {{ sort_by|default('date_desc') == 'capacite_desc' ? 'selected' : '' }}>Tri: Capacite max</option>
-                    <option value="capacite_asc" {{ sort_by|default('date_desc') == 'capacite_asc' ? 'selected' : '' }}>Tri: Capacite min</option>
+                    <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'activite.sort_date_recent'|trans }}</option>
+                    <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}>{{ 'activite.sort_date_old'|trans }}</option>
+                    <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'activite.sort_id_desc'|trans }}</option>
+                    <option value="id_asc" {{ sort_by|default('date_desc') == 'id_asc' ? 'selected' : '' }}>{{ 'activite.sort_id_asc'|trans }}</option>
+                    <option value="nom_asc" {{ sort_by|default('date_desc') == 'nom_asc' ? 'selected' : '' }}>{{ 'activite.sort_name_az'|trans }}</option>
+                    <option value="nom_desc" {{ sort_by|default('date_desc') == 'nom_desc' ? 'selected' : '' }}>{{ 'activite.sort_name_za'|trans }}</option>
+                    <option value="capacite_desc" {{ sort_by|default('date_desc') == 'capacite_desc' ? 'selected' : '' }}>{{ 'activite.sort_capacity_max'|trans }}</option>
+                    <option value="capacite_asc" {{ sort_by|default('date_desc') == 'capacite_asc' ? 'selected' : '' }}>{{ 'activite.sort_capacity_min'|trans }}</option>
                 </select>
             </div>
         </form>
 
-        <div id="activite-empty-message" class="ux-empty-message" style="display: none;">Aucun résultat ne correspond à vos filtres.</div>
+        <div id="activite-empty-message" class="ux-empty-message" style="display: none;">{{ 'activite.empty_message'|trans }}</div>
 
         <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Id activité</th>
-                        <th>Nom activité</th>
-                        <th>Date activité</th>
-                        <th>Capacité</th>
-                        <th>Taux remplissage</th>
-                        <th>Description</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
+                        <th>{{ 'activite.id'|trans }}</th>
+                        <th>{{ 'activite.name'|trans }}</th>
+                        <th>{{ 'activite.date'|trans }}</th>
+                        <th>{{ 'activite.capacity'|trans }}</th>
+                        <th>{{ 'activite.fill_rate'|trans }}</th>
+                        <th>{{ 'activite.description'|trans }}</th>
+                        <th>{{ 'activite.status'|trans }}</th>
+                        <th>{{ 'activite.actions'|trans }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -430,7 +446,7 @@
                         <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
                         <td>{{ activite_ecologique.capacite }}</td>
                         <td class="fill-rate-cell">
-                            <div class="fill-rate-track" title="{{ booked }}/{{ capacity }} places réservées">
+                            <div class="fill-rate-track" title="{{ booked }}/{{ capacity }} {{ 'activite.seats_reserved'|trans }}">
                                 <div class="fill-rate-bar fill-rate-{{ tone }}" style="width: {{ rateCapped }}%;"></div>
                             </div>
                             <div class="fill-rate-value">{{ booked }}/{{ capacity }}</div>
@@ -444,27 +460,27 @@
                         </td>
                         <td>
                             {% if activiteStatus == 'active' %}
-                                <span class="status-badge status-badge-active">Active</span>
+                                <span class="status-badge status-badge-active">{{ 'activite.status_active'|trans }}</span>
                             {% elseif activiteStatus == 'completed' %}
-                                <span class="status-badge status-badge-completed">Complète</span>
+                                <span class="status-badge status-badge-completed">{{ 'activite.status_completed'|trans }}</span>
                             {% else %}
-                                <span class="status-badge status-badge-cancelled">Annulée</span>
+                                <span class="status-badge status-badge-cancelled">{{ 'activite.status_cancelled'|trans }}</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="reservation-admin-actions">
-                                <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn" title="Voir l'activité">Voir</a>
-                                <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary reservation-admin-action-btn" title="Modifier l'activité">Modifier</a>
+                                <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn" title="{{ 'activite.show_activity'|trans }}">{{ 'activite.view'|trans }}</a>
+                                <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary reservation-admin-action-btn" title="{{ 'activite.edit_activity'|trans }}">{{ 'activite.edit'|trans }}</a>
                             </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="8">Aucun enregistrement trouvé</td>
+                        <td colspan="8">{{ 'activite.no_records'|trans }}</td>
                     </tr>
                 {% endfor %}
                     <tr id="activite-no-match-row" style="display: none;">
-                        <td colspan="8">Aucun resultat pour cette recherche</td>
+                        <td colspan="8">{{ 'activite.no_search_results'|trans }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -473,15 +489,15 @@
         <div class="list-pagination">
             <div class="list-pagination-meta">
                 {% if result_count|default(0) > 0 %}
-                    Affichage {{ page_start|default(0) }}-{{ page_end|default(0) }} sur {{ result_count|default(0) }} résultat(s)
+                    {{ 'activite.showing'|trans }} {{ page_start|default(0) }}-{{ page_end|default(0) }} {{ 'activite.of'|trans }} {{ result_count|default(0) }} {{ 'activite.results'|trans }}
                 {% else %}
-                    Aucun résultat
+                    {{ 'activite.no_results'|trans }}
                 {% endif %}
             </div>
             {% if total_pages|default(1) > 1 %}
                 <div class="list-pagination-links">
                     {% if page|default(1) > 1 %}
-                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page - 1})) }}" aria-label="Page précédente">Préc.</a>
+                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page - 1})) }}" aria-label="{{ 'activite.previous_page'|trans }}">{{ 'activite.prev'|trans }}</a>
                     {% endif %}
 
                     {% for pageNumber in 1..total_pages %}
@@ -489,7 +505,7 @@
                     {% endfor %}
 
                     {% if page|default(1) < total_pages %}
-                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page + 1})) }}" aria-label="Page suivante">Suiv.</a>
+                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page + 1})) }}" aria-label="{{ 'activite.next_page'|trans }}">{{ 'activite.next'|trans }}</a>
                     {% endif %}
                 </div>
             {% endif %}
