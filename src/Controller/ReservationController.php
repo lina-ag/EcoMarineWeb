@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
@@ -154,6 +155,205 @@ final class ReservationController extends AbstractController
             'page_end' => $pageEnd,
             'reservationActivityChart' => $reservationActivityChart,
         ]);
+    }
+
+    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $reservation = new Reservation();
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
+
+            if ($request->query->get('source') === 'front') {
+                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->redirectToRoute('app_reservation_quiz', [
+                'id_reservation' => $reservation->getIdReservation(),
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/new.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
+    public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
+    {
+        $apiKey = $_ENV['8ARNMqo7uXgU5NTweEmWn46Hvewjcp1PtqfXTKDZTj29'] ?? '';
+        $questions = [];
+
+        try {
+            $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
+                'headers' => ['X-Api-Key' => $apiKey],
+                'query' => ['category' => 'nature', 'limit' => 3],
+            ]);
+            $questions = $response->toArray();
+        } catch (\Throwable) {
+            $questions = [];
+        }
+
+        if ($request->isMethod('POST')) {
+            $answers = $request->request->all('answers');
+            $correctCount = 0;
+
+            foreach ($questions as $index => $question) {
+                $userAnswer = strtolower(trim($answers[$index] ?? ''));
+                $correct = strtolower(trim($question['answer'] ?? ''));
+                if ($userAnswer === $correct) {
+                    $correctCount++;
+                }
+            }
+
+            $badge = match(true) {
+                $correctCount === count($questions) => 'gold',
+                $correctCount >= 2 => 'silver',
+                default => 'bronze',
+            };
+
+            return $this->render('reservation/quiz_result.html.twig', [
+                'reservation' => $reservation,
+                'questions' => $questions,
+                'answers' => $answers,
+                'correct_count' => $correctCount,
+                'total' => count($questions),
+                'badge' => $badge,
+            ]);
+        }
+
+        return $this->render('reservation/quiz.html.twig', [
+            'reservation' => $reservation,
+            'questions' => $questions,
+        ]);
+    }
+
+    #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
+    public function exportAllPdf(ReservationRepository $reservationRepository): Response
+    {
+        $reservations = $reservationRepository
+            ->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->orderBy('r.date_reservation', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $html = $this->renderView('reservation/pdf_list.html.twig', [
+            'reservations' => $reservations,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
+            ]
+        );
+    }
+
+    #[Route('/{id_reservation}', name: 'app_reservation_show', methods: ['GET'])]
+    public function show(Reservation $reservation): Response
+    {
+        return $this->render('reservation/show.html.twig', [
+            'reservation' => $reservation,
+        ]);
+    }
+
+    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
+    public function exportPdf(Reservation $reservation): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $html = $this->renderView('reservation/pdf.html.twig', [
+            'reservation' => $reservation,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
+    }
+
+    #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été mise à jour avec succès.');
+
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/edit.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id_reservation}', name: 'app_reservation_delete', methods: ['POST'])]
+    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($reservation);
+            $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été supprimée avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide. Suppression annulée.');
+        }
+
+        return $this->redirectToRoute('app_reservation_index', [
+            'q' => '',
+            'field' => 'all',
+            'status' => 'all',
+            'personnes' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+            'sort' => 'id_desc',
+            'page' => 1,
+        ], Response::HTTP_SEE_OTHER);
     }
 
     private function buildReservationActivityChart(array $reservations, ChartBuilderInterface $chartBuilder): Chart
@@ -368,162 +568,5 @@ final class ReservationController extends AbstractController
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
-    }
-
-    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $reservation = new Reservation();
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($reservation);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
-
-            if ($request->query->get('source') === 'front') {
-                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
-            }
-
-            return $this->redirectToRoute('app_reservation_index', [
-                'q' => '',
-                'field' => 'all',
-                'status' => 'all',
-                'personnes' => 'all',
-                'date_from' => '',
-                'date_to' => '',
-                'sort' => 'id_desc',
-                'page' => 1,
-            ], Response::HTTP_SEE_OTHER);
-
-        }
-
-        return $this->render('reservation/new.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id_reservation}', name: 'app_reservation_show', methods: ['GET'])]
-    public function show(Reservation $reservation): Response
-    {
-        return $this->render('reservation/show.html.twig', [
-            'reservation' => $reservation,
-        ]);
-    }
-
-    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
-    public function exportPdf(Reservation $reservation): Response
-    {
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
-        $html = $this->renderView('reservation/pdf.html.twig', [
-            'reservation' => $reservation,
-            'generatedAt' => new \DateTimeImmutable(),
-        ]);
-
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-            ]
-        );
-    }
-
-    #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
-    public function exportAllPdf(ReservationRepository $reservationRepository): Response
-    {
-        $reservations = $reservationRepository
-            ->createQueryBuilder('r')
-            ->leftJoin('r.activiteEcologique', 'a')
-            ->addSelect('a')
-            ->orderBy('r.date_reservation', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        $html = $this->renderView('reservation/pdf_list.html.twig', [
-            'reservations' => $reservations,
-            'generatedAt' => new \DateTimeImmutable(),
-        ]);
-
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->render();
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
-            ]
-        );
-    }
-
-    #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            $this->addFlash('success', 'La réservation a été mise à jour avec succès.');
-
-            return $this->redirectToRoute('app_reservation_index', [
-                'q' => '',
-                'field' => 'all',
-                'status' => 'all',
-                'personnes' => 'all',
-                'date_from' => '',
-                'date_to' => '',
-                'sort' => 'id_desc',
-                'page' => 1,
-            ], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('reservation/edit.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id_reservation}', name: 'app_reservation_delete', methods: ['POST'])]
-    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($reservation);
-            $entityManager->flush();
-            $this->addFlash('success', 'La réservation a été supprimée avec succès.');
-        } else {
-            $this->addFlash('error', 'Jeton CSRF invalide. Suppression annulée.');
-        }
-
-        return $this->redirectToRoute('app_reservation_index', [
-            'q' => '',
-            'field' => 'all',
-            'status' => 'all',
-            'personnes' => 'all',
-            'date_from' => '',
-            'date_to' => '',
-            'sort' => 'id_desc',
-            'page' => 1,
-        ], Response::HTTP_SEE_OTHER);
     }
 }

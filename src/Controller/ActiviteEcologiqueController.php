@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ActiviteEcologique;
 use App\Form\ActiviteEcologiqueType;
 use App\Repository\ActiviteEcologiqueRepository;
+use App\Service\WeatherService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
-    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
+    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository, WeatherService $weatherService): Response
     {
         $searchTerm = trim((string) $request->query->get('q', ''));
         $searchField = (string) $request->query->get('field', 'all');
@@ -47,8 +48,11 @@ final class ActiviteEcologiqueController extends AbstractController
         $pageStart = $totalItems > 0 ? $offset + 1 : 0;
         $pageEnd = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
 
+        $weather = $weatherService->getWeatherForCity('Monastir');
+
         return $this->render('activite_ecologique/index.html.twig', [
             'activite_ecologiques' => $paginatedActivities,
+            'weather' => $weather,
             'search_term' => $searchTerm,
             'search_field' => $searchField,
             'periode_filter' => $periodeFilter,
