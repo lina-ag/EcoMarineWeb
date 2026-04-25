@@ -71,12 +71,6 @@ return [
     '@symfony/ux-react' => [
         'path' => './vendor/symfony/ux-react/assets/dist/loader.js',
     ],
-    'svelte/internal' => [
-        'version' => '3.59.2',
-    ],
-    '@symfony/ux-svelte' => [
-        'path' => './vendor/symfony/ux-svelte/assets/dist/loader.js',
-    ],
     'intl-messageformat' => [
         'version' => '10.7.18',
     ],

@@ -97,7 +97,7 @@
 
 <script>
 (() => {
-    const translate = window.ecomarineTrans || ((message) => message);
+    const translate = (message) => window.ecomarineTrans ? window.ecomarineTrans(message) : message;
     const activitySelect = document.getElementById('{{ form.activiteEcologique.vars.id }}');
     const dateSelect = document.getElementById('{{ form.date_reservation_choice.vars.id }}');
     const dateHiddenInput = document.getElementById('{{ form.date_reservation.vars.id }}');

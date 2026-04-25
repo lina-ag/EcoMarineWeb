@@ -123,6 +123,40 @@ activite:
   seats_reserved: 'places réservées'
   places_booked: 'places réservées'
 
+calendar:
+  title: 'Calendrier des activités'
+  subtitle: 'Vue consolidée des activités avec navigation rapide et exports professionnels. Les événements sont hiérarchisés visuellement pour une lecture immédiate.'
+  tag_year_view: 'Vue année compacte'
+  tag_exports: 'Exports PDF & Excel'
+  period_displayed: 'Période affichée'
+  search_placeholder: 'Rechercher: activité, description, capacité'
+  status_all: 'Tous les statuts'
+  status_upcoming: 'A venir'
+  status_today: "Aujourd'hui"
+  status_past: 'Passées'
+  export_pdf: 'Exporter PDF'
+  export_excel: 'Exporter Excel'
+  reset: 'Réinitialiser'
+  stats_displayed: 'Activités affichées'
+  details_title: "Détails de l'activité"
+  details_empty: 'Clique sur une activité pour voir ses détails.'
+  activity: 'Activité'
+  description: 'Description'
+  capacity: 'Capacité'
+  reserved_people: 'Places réservées'
+  remaining_seats: 'Places restantes'
+  fill_rate: 'Taux de remplissage'
+  date: 'Date'
+  status: 'Statut'
+  open_activity: "Ouvrir l'activité"
+  year_view: 'Année'
+  load_error: 'Erreur lors du chargement du calendrier.'
+  button_today: "Aujourd'hui"
+  button_month: 'Mois'
+  button_week: 'Semaine'
+  button_day: 'Jour'
+  button_list: 'Liste'
+
 common:
   switch_language: 'Changer la langue'
   language_fr: 'Français'

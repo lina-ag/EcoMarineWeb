@@ -1,6 +1,6 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block page_title %}Calendrier des activites{% endblock %}
+{% block page_title %}{{ 'calendar.title'|trans }}{% endblock %}
 
 {% block admin_stylesheets %}
     <style>
@@ -463,15 +463,15 @@
     <section class="calendar-page">
         <div class="calendar-hero">
             <div>
-                <h2 class="calendar-hero-title">Planning intelligent des activités</h2>
-                <p class="calendar-hero-subtitle">Vue consolidée des activités avec navigation rapide et exports professionnels. Les événements sont hiérarchisés visuellement pour une lecture immédiate.</p>
+                <h2 class="calendar-hero-title">{{ 'calendar.title'|trans }}</h2>
+                <p class="calendar-hero-subtitle">{{ 'calendar.subtitle'|trans }}</p>
                 <div class="calendar-hero-tags">
-                    <span class="calendar-hero-tag">Vue année compacte</span>
-                    <span class="calendar-hero-tag">Exports PDF & Excel</span>
+                    <span class="calendar-hero-tag">{{ 'calendar.tag_year_view'|trans }}</span>
+                    <span class="calendar-hero-tag">{{ 'calendar.tag_exports'|trans }}</span>
                 </div>
             </div>
             <div class="calendar-hero-summary">
-                <span class="calendar-hero-summary-label">Période affichée</span>
+                <span class="calendar-hero-summary-label">{{ 'calendar.period_displayed'|trans }}</span>
                 <span class="calendar-hero-summary-value" id="hero-month">--</span>
                 <span class="calendar-hero-summary-label" id="hero-year">----</span>
             </div>
@@ -480,12 +480,12 @@
         <div class="calendar-shell">
             <div class="calendar-main">
             <div class="calendar-toolbar">
-                <input id="calendar-search" class="calendar-filter" type="text" placeholder="Rechercher: activite, description, capacite">
+                <input id="calendar-search" class="calendar-filter" type="text" placeholder="{{ 'calendar.search_placeholder'|trans }}">
                 <select id="calendar-status" class="calendar-filter">
-                    <option value="all">Tous les statuts</option>
-                    <option value="upcoming">A venir</option>
-                    <option value="today">Aujourd'hui</option>
-                    <option value="past">Passes</option>
+                    <option value="all">{{ 'calendar.status_all'|trans }}</option>
+                    <option value="upcoming">{{ 'calendar.status_upcoming'|trans }}</option>
+                    <option value="today">{{ 'calendar.status_today'|trans }}</option>
+                    <option value="past">{{ 'calendar.status_past'|trans }}</option>
                 </select>
                 {% set target_locale = app.request.locale == 'fr' ? 'en' : 'fr' %}
                 <button 
@@ -503,30 +503,30 @@
                     </svg>
                     <span>{{ (app.request.locale == 'fr' ? 'EN' : 'FR') }}</span>
                 </button>
-                <button id="calendar-export-pdf" class="calendar-export-btn" type="button">Exporter PDF</button>
-                <button id="calendar-export-excel" class="calendar-export-alt-btn" type="button">Exporter Excel</button>
-                <button id="calendar-reset" class="calendar-reset-btn" type="button">Reinitialiser</button>
+                <button id="calendar-export-pdf" class="calendar-export-btn" type="button">{{ 'calendar.export_pdf'|trans }}</button>
+                <button id="calendar-export-excel" class="calendar-export-alt-btn" type="button">{{ 'calendar.export_excel'|trans }}</button>
+                <button id="calendar-reset" class="calendar-reset-btn" type="button">{{ 'calendar.reset'|trans }}</button>
             </div>
 
             <div class="calendar-stats">
                 <div class="calendar-stat-card">
-                    <div class="calendar-stat-label">Activites affichees</div>
+                    <div class="calendar-stat-label">{{ 'calendar.stats_displayed'|trans }}</div>
                     <div id="stat-total" class="calendar-stat-value">0</div>
                 </div>
                 <div class="calendar-stat-card">
-                    <div class="calendar-stat-label">A venir</div>
+                    <div class="calendar-stat-label">{{ 'calendar.status_upcoming'|trans }}</div>
                     <div id="stat-upcoming" class="calendar-stat-value">0</div>
                 </div>
                 <div class="calendar-stat-card">
-                    <div class="calendar-stat-label">Aujourd'hui</div>
+                    <div class="calendar-stat-label">{{ 'calendar.status_today'|trans }}</div>
                     <div id="stat-today" class="calendar-stat-value">0</div>
                 </div>
             </div>
 
             <div class="calendar-legend">
-                <span><span class="calendar-legend-dot" style="background:#0ea5a5"></span>A venir</span>
-                <span><span class="calendar-legend-dot" style="background:#f59e0b"></span>Aujourd'hui</span>
-                <span><span class="calendar-legend-dot" style="background:#94a3b8"></span>Passes</span>
+                <span><span class="calendar-legend-dot" style="background:#0ea5a5"></span>{{ 'calendar.status_upcoming'|trans }}</span>
+                <span><span class="calendar-legend-dot" style="background:#f59e0b"></span>{{ 'calendar.status_today'|trans }}</span>
+                <span><span class="calendar-legend-dot" style="background:#94a3b8"></span>{{ 'calendar.status_past'|trans }}</span>
             </div>
 
             <div id="calendar-holder"></div>
@@ -534,8 +534,8 @@
 
             <aside class="calendar-side">
                 <div class="calendar-side-header">
-                    <h3 class="calendar-side-title">Details de l'activite</h3>
-                    <div id="event-details-empty" class="event-detail-line">Clique sur une activite pour voir ses details.</div>
+                    <h3 class="calendar-side-title">{{ 'calendar.details_title'|trans }}</h3>
+                    <div id="event-details-empty" class="event-detail-line">{{ 'calendar.details_empty'|trans }}</div>
                 </div>
                 <div id="event-details" style="display:none;"></div>
             </aside>
@@ -547,6 +547,28 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const calendarI18n = {{ {
+                status_upcoming: 'calendar.status_upcoming'|trans,
+                status_today: 'calendar.status_today'|trans,
+                status_past: 'calendar.status_past'|trans,
+                activity: 'calendar.activity'|trans,
+                description: 'calendar.description'|trans,
+                capacity: 'calendar.capacity'|trans,
+                reserved_people: 'calendar.reserved_people'|trans,
+                remaining_seats: 'calendar.remaining_seats'|trans,
+                fill_rate: 'calendar.fill_rate'|trans,
+                date: 'calendar.date'|trans,
+                status: 'calendar.status'|trans,
+                open_activity: 'calendar.open_activity'|trans,
+                year_view: 'calendar.year_view'|trans,
+                load_error: 'calendar.load_error'|trans,
+                button_today: 'calendar.button_today'|trans,
+                button_month: 'calendar.button_month'|trans,
+                button_week: 'calendar.button_week'|trans,
+                button_day: 'calendar.button_day'|trans,
+                button_list: 'calendar.button_list'|trans
+            }|json_encode|raw }};
+            const locale = (document.documentElement.lang || 'fr').slice(0, 2);
             const calendarEl = document.getElementById('calendar-holder');
             const searchInput = document.getElementById('calendar-search');
             const statusSelect = document.getElementById('calendar-status');
@@ -602,24 +624,24 @@
             const renderDetails = (event) => {
                 const props = event.extendedProps || {};
                 const statusMap = {
-                    upcoming: 'A venir',
-                    today: 'Aujourd\'hui',
-                    past: 'Passe'
+                    upcoming: calendarI18n.status_upcoming,
+                    today: calendarI18n.status_today,
+                    past: calendarI18n.status_past
                 };
-                const startDate = event.start ? event.start.toLocaleDateString('fr-FR') : '-';
+                const startDate = event.start ? event.start.toLocaleDateString(locale) : '-';
 
                 detailsEmpty.style.display = 'none';
                 detailsBox.style.display = 'block';
                 detailsBox.innerHTML = `
-                    <div class="event-detail-line"><strong>Activite:</strong> ${props.activity || '-'}</div>
-                    <div class="event-detail-line"><strong>Description:</strong> ${props.description || '-'}</div>
-                    <div class="event-detail-line"><strong>Capacite:</strong> ${props.capacity ?? '-'}</div>
-                    <div class="event-detail-line"><strong>Places reservees:</strong> ${props.reservedPeople ?? '-'}</div>
-                    <div class="event-detail-line"><strong>Places restantes:</strong> ${props.remaining ?? '-'}</div>
-                    <div class="event-detail-line"><strong>Taux de remplissage:</strong> ${props.fillRate ?? 0}%</div>
-                    <div class="event-detail-line"><strong>Date:</strong> ${startDate}</div>
-                    <div class="event-detail-line"><strong>Statut:</strong> ${statusMap[props.status] || '-'}</div>
-                    ${event.url ? `<a class="event-detail-link" href="${event.url}">Ouvrir l'activite</a>` : ''}
+                    <div class="event-detail-line"><strong>${calendarI18n.activity}:</strong> ${props.activity || '-'}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.description}:</strong> ${props.description || '-'}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.capacity}:</strong> ${props.capacity ?? '-'}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.reserved_people}:</strong> ${props.reservedPeople ?? '-'}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.remaining_seats}:</strong> ${props.remaining ?? '-'}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.fill_rate}:</strong> ${props.fillRate ?? 0}%</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.date}:</strong> ${startDate}</div>
+                    <div class="event-detail-line"><strong>${calendarI18n.status}:</strong> ${statusMap[props.status] || '-'}</div>
+                    ${event.url ? `<a class="event-detail-link" href="${event.url}">${calendarI18n.open_activity}</a>` : ''}
                 `;
             };
 
@@ -628,7 +650,7 @@
             }, 250);
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                locale: 'fr',
+                locale: locale,
                 initialView: 'dayGridMonth',
                 firstDay: 1,
                 height: 'auto',
@@ -643,7 +665,7 @@
                 },
                 customButtons: {
                     yearView: {
-                        text: 'Annee',
+                        text: calendarI18n.year_view,
                         click: function () {
                             calendar.changeView('multiMonthYear');
                         }
@@ -657,7 +679,7 @@
                             filters: JSON.stringify(currentFilters)
                         }),
                         failure: function () {
-                            console.error('Erreur lors du chargement du calendrier.');
+                            console.error(calendarI18n.load_error);
                         }
                     }
                 ],
@@ -667,11 +689,11 @@
                     end: 'yearView,dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 },
                 buttonText: {
-                    today: 'Aujourd\'hui',
-                    month: 'Mois',
-                    week: 'Semaine',
-                    day: 'Jour',
-                    list: 'Liste'
+                    today: calendarI18n.button_today,
+                    month: calendarI18n.button_month,
+                    week: calendarI18n.button_week,
+                    day: calendarI18n.button_day,
+                    list: calendarI18n.button_list
                 },
                 navLinks: true,
                 dateClick: function (info) {
@@ -684,8 +706,8 @@
                 },
                 datesSet: function (info) {
                     const current = info.view && info.view.currentStart ? info.view.currentStart : (info.start || new Date());
-                    heroMonth.textContent = current.toLocaleDateString('fr-FR', { month: 'long' });
-                    heroYear.textContent = current.toLocaleDateString('fr-FR', { year: 'numeric' });
+                    heroMonth.textContent = current.toLocaleDateString(locale, { month: 'long' });
+                    heroYear.textContent = current.toLocaleDateString(locale, { year: 'numeric' });
                 },
                 eventClick: function (info) {
                     info.jsEvent.preventDefault();
