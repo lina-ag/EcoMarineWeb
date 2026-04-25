@@ -25,6 +25,36 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+
+    'leaflet' => [
+        'version' => '1.9.4',
+    ],
+    'leaflet/dist/leaflet.min.css' => [
+        'version' => '1.9.4',
+        'type' => 'css',
+    ],
+    '@symfony/ux-leaflet-map' => [
+        'path' => './vendor/symfony/ux-leaflet-map/assets/dist/map_controller.js',
+    ],
+    'intl-messageformat' => [
+        'version' => '10.7.18',
+    ],
+    'tslib' => [
+        'version' => '2.8.1',
+    ],
+    '@formatjs/fast-memoize' => [
+        'version' => '2.2.7',
+    ],
+    '@formatjs/icu-messageformat-parser' => [
+        'version' => '2.11.4',
+    ],
+    '@formatjs/icu-skeleton-parser' => [
+        'version' => '1.8.16',
+    ],
+    '@symfony/ux-translator' => [
+        'path' => './vendor/symfony/ux-translator/assets/dist/translator_controller.js',
+    ],
+
     'tom-select' => [
         'version' => '2.6.0',
     ],
@@ -50,6 +80,7 @@ return [
         'version' => '2.6.0',
         'type' => 'css',
     ],
+
     'chart.js' => [
         'version' => '3.9.1',
     ],
@@ -89,4 +120,5 @@ return [
     '@symfony/ux-translator' => [
         'path' => './vendor/symfony/ux-translator/assets/dist/translator_controller.js',
     ],
+
 ];
