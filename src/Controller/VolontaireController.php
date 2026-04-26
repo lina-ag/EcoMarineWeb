@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/volontaire')]
+#[Route('/admin/volontaire')]
 final class VolontaireController extends AbstractController
 {
     #[Route('', name: 'app_volontaire_index', methods: ['GET'])]

@@ -14,12 +14,15 @@ class ActionNettoyage
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'id_action', type: 'integer')]
+    #[ORM\Column(type: 'integer')]
     private ?int $id_action = null;
 
-    #[ORM\Column(name: 'date_action', type: 'date')]
+    #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotBlank(message: "La date de l’action est obligatoire.")]
-    #[Assert\GreaterThanOrEqual('today', message: "La date doit être aujourd’hui ou dans le futur.")]
+    #[Assert\GreaterThanOrEqual(
+        "today",
+        message: "La date de l’action doit être aujourd’hui ou dans le futur."
+    )]
     private ?\DateTimeInterface $date_action = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
@@ -31,19 +34,14 @@ class ActionNettoyage
         maxMessage: "Le lieu ne doit pas dépasser {{ limit }} caractères."
     )]
     #[Assert\Regex(
-        pattern: "/^[\p{L}\s'\-0-9,]+$/u",
-        message: "Le lieu contient des caractères non autorisés."
+        pattern: "/^[\p{L}\s'-]+$/u",
+        message: "Le lieu ne doit contenir que des lettres et des espaces."
     )]
     private ?string $lieu = null;
 
-    #[ORM\Column(name: 'limite_benevoles', type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     #[Assert\NotBlank(message: "La limite de bénévoles est obligatoire.")]
     #[Assert\Positive(message: "La limite de bénévoles doit être un nombre positif.")]
-    #[Assert\Range(
-        min: 1,
-        max: 1000,
-        notInRangeMessage: "La limite doit être entre {{ min }} et {{ max }}."
-    )]
     private ?int $limiteBenevoles = null;
 
     #[ORM\OneToMany(mappedBy: 'id_action', targetEntity: Volontaire::class, orphanRemoval: false)]
@@ -52,6 +50,12 @@ class ActionNettoyage
     public function __construct()
     {
         $this->volontaires = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        $date = $this->date_action ? $this->date_action->format('Y-m-d') : 'Sans date';
+        return $this->lieu . ' - ' . $date;
     }
 
     public function getId_action(): ?int
@@ -120,7 +124,7 @@ class ActionNettoyage
     {
         if (!$this->volontaires->contains($volontaire)) {
             $this->volontaires->add($volontaire);
-            $volontaire->setId_action($this);
+            $volontaire->setIdAction($this);
         }
 
         return $this;
@@ -129,8 +133,8 @@ class ActionNettoyage
     public function removeVolontaire(Volontaire $volontaire): self
     {
         if ($this->volontaires->removeElement($volontaire)) {
-            if ($volontaire->getId_action() === $this) {
-                $volontaire->setId_action(null);
+            if ($volontaire->getIdAction() === $this) {
+                $volontaire->setIdAction(null);
             }
         }
 
@@ -149,11 +153,5 @@ class ActionNettoyage
         }
 
         return $this->getNombreVolontaires() >= $this->limiteBenevoles;
-    }
-
-    public function __toString(): string
-    {
-        $date = $this->date_action ? $this->date_action->format('Y-m-d') : 'Sans date';
-        return $this->lieu . ' - ' . $date;
     }
 }

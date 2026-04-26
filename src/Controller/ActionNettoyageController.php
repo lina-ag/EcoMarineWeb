@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/action-nettoyage')]
+#[Route('/admin/action-nettoyage')]
 final class ActionNettoyageController extends AbstractController
 {
     #[Route('', name: 'app_action_nettoyage_index', methods: ['GET'])]
@@ -26,6 +26,7 @@ final class ActionNettoyageController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $actionNettoyage = new ActionNettoyage();
+
         $form = $this->createForm(ActionNettoyageType::class, $actionNettoyage);
         $form->handleRequest($request);
 
@@ -34,6 +35,7 @@ final class ActionNettoyageController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Action de nettoyage ajoutée avec succès.');
+
             return $this->redirectToRoute('app_action_nettoyage_index');
         }
 
@@ -52,8 +54,11 @@ final class ActionNettoyageController extends AbstractController
     }
 
     #[Route('/{id_action}/edit', name: 'app_action_nettoyage_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, ActionNettoyage $actionNettoyage, EntityManagerInterface $entityManager): Response
-    {
+    public function edit(
+        Request $request,
+        ActionNettoyage $actionNettoyage,
+        EntityManagerInterface $entityManager
+    ): Response {
         $form = $this->createForm(ActionNettoyageType::class, $actionNettoyage);
         $form->handleRequest($request);
 
@@ -61,6 +66,7 @@ final class ActionNettoyageController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Action de nettoyage modifiée avec succès.');
+
             return $this->redirectToRoute('app_action_nettoyage_index');
         }
 
@@ -71,11 +77,16 @@ final class ActionNettoyageController extends AbstractController
     }
 
     #[Route('/{id_action}', name: 'app_action_nettoyage_delete', methods: ['POST'])]
-    public function delete(Request $request, ActionNettoyage $actionNettoyage, EntityManagerInterface $entityManager): Response
-    {
+    public function delete(
+        Request $request,
+        ActionNettoyage $actionNettoyage,
+        EntityManagerInterface $entityManager
+    ): Response {
         if ($this->isCsrfTokenValid('delete' . $actionNettoyage->getIdAction(), $request->request->get('_token'))) {
             $entityManager->remove($actionNettoyage);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Action de nettoyage supprimée avec succès.');
         }
 
         return $this->redirectToRoute('app_action_nettoyage_index');

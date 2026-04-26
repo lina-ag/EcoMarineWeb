@@ -168,6 +168,28 @@
 
 {% block body %}
 
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            background:
+                {% if label == 'success' %}#198754
+                {% elseif label == 'danger' %}#dc3545
+                {% elseif label == 'warning' %}#ffc107
+                {% else %}#0d6efd
+                {% endif %};
+        ">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
 <div id="video">
 
     <!-- Preloader -->
@@ -204,6 +226,7 @@
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
                                 <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Nettoyage</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -609,8 +632,213 @@
             </div>
         </div>
 
-    </div>{# fin #fullpage #}
+   
 
+        <!-- SLIDE 09 — Nettoyage -->
+    <div class="section animated-row" data-anchor="slide09">
+        <div class="section-inner">
+            <div class="row justify-content-center">
+                <div class="col-md-10 wide-col-laptop">
+
+                    <div class="title-block animate" data-animate="fadeInUp">
+                        <span>Actions de nettoyage</span>
+                        <h2>Participez à la protection du littoral</h2>
+                    </div>
+
+                    <!-- Bloc Récos : Actions recommandées -->
+                    <div class="form-card animate" data-animate="fadeInUp">
+                        <h3>Actions recommandées pour vous</h3>
+                        <p class="form-subtitle">
+                            Recommandations personnalisées sur les actions de nettoyage disponibles.
+                        </p>
+
+                        {% if app.user is not null %}
+                            {% if actions_recommandees is defined and actions_recommandees is not empty %}
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Lieu</th>
+                                                <th>Date</th>
+                                                <th>Places</th>
+                                                <th>Raison</th>
+                                                <th>Participation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rec in actions_recommandees %}
+                                                {% set action = rec.action %}
+                                                <tr>
+                                                    <td>{{ action.lieu }}</td>
+                                                    <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
+                                                    <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
+                                                    <td>{{ rec.raison }}</td>
+                                                    <td>
+                                                        <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+                                                            <button type="submit" class="btn btn-success btn-sm">
+                                                                Participer
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Aucune recommandation disponible pour le moment.</p>
+                            {% endif %}
+                        {% else %}
+                            <p>Connectez-vous pour recevoir des recommandations personnalisées.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Bloc 1 : Actions disponibles -->
+                    <div class="form-card animate" data-animate="fadeInUp">
+                        <h3>Actions disponibles</h3>
+                        <p class="form-subtitle">
+                            Consultez les actions de nettoyage disponibles et participez comme bénévole.
+                        </p>
+
+                        {% if actions_nettoyage is defined and actions_nettoyage is not empty %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Lieu</th>
+                                            <th>Date</th>
+                                            <th>Places</th>
+                                            <th>Statut</th>
+                                            <th>Participation</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for action in actions_nettoyage %}
+                                            {% set dejaInscrit = inscriptions_utilisateur is defined and action.getIdAction() in inscriptions_utilisateur %}
+
+                                            <tr>
+                                                <td>{{ action.lieu }}</td>
+
+                                                <td>
+                                                    {{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}
+                                                </td>
+
+                                                <td>
+                                                    {{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}
+                                                </td>
+
+                                                <td>
+                                                    {% if action.estComplete() %}
+                                                        <span class="badge bg-danger">Complet</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">Disponible</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td>
+                                                    {% if dejaInscrit %}
+                                                        <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                Annuler
+                                                            </button>
+                                                        </form>
+                                                    {% elseif action.estComplete() %}
+                                                        <button class="btn btn-secondary btn-sm" disabled>
+                                                            Complet
+                                                        </button>
+                                                    {% else %}
+                                                        <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+
+                                                            <button type="submit" class="btn btn-success btn-sm">
+                                                                Participer
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p>Aucune action de nettoyage disponible pour le moment.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Bloc 2 : Mes participations -->
+                    <div class="form-card mt-4 animate" data-animate="fadeInUp">
+                        <h3>Mes actions de nettoyage</h3>
+                        <p class="form-subtitle">
+                            Retrouvez les actions de nettoyage auxquelles vous participez déjà.
+                        </p>
+
+                        {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Lieu</th>
+                                            <th>Date</th>
+                                            <th>Places</th>
+                                            <th>Statut</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for inscription in mes_inscriptions_nettoyage %}
+                                            {% set action = inscription.getIdAction() %}
+
+                                            {% if action %}
+                                                <tr>
+                                                    <td>{{ action.lieu }}</td>
+
+                                                    <td>
+                                                        {{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}
+                                                    </td>
+
+                                                    <td>
+                                                        {% if action.estComplete() %}
+                                                            <span class="badge bg-danger">Complet</span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">Disponible</span>
+                                                        {% endif %}
+                                                    </td>
+
+                                                    <td>
+                                                        <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+
+                                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                                Annuler ma participation
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p>Vous ne participez encore à aucune action de nettoyage.</p>
+                        {% endif %}
+                    </div>
+
+                </div>  
+            </div>
+        </div>
+    </div>
+ </div>{# fin #fullpage #}
     <!-- Réseaux sociaux -->
     <div id="social-icons">
         <div class="text-right">
