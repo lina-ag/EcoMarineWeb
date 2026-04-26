@@ -27,7 +27,7 @@
 
         .utilisateurs-compact .data-table th:last-child,
         .utilisateurs-compact .data-table td:last-child {
-            width: 220px;
+            width: 280px;
             overflow: visible;
             text-overflow: initial;
         }
@@ -40,30 +40,21 @@
             max-width: 980px;
             margin: 0 auto 1rem auto;
         }
+
         .utilisateurs-compact .btn-success {
-    background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
-    border: none;
-    color: #fff;
-
-    /* 🔽 taille carrée */
-    width: 70px;
-    height: 50px;
-    padding: 0;
-
-    /* 🔽 centrer contenu (icône ou texte) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    /* 🔽 espace entre boutons */
-    margin-right: 0.3cm;
-
-    /* 🔽 optionnel : joli */
-    border-radius: 8px;
-}
-.utilisateurs-compact .btn-success {
-    font-size: 10px; /* 🔽 réduit la taille du texte */
-}
+            background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+            border: none;
+            color: #fff;
+            width: 70px;
+            height: 50px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.3cm;
+            border-radius: 8px;
+            font-size: 10px;
+        }
 
         .utilisateurs-compact .btn-primary {
             background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
@@ -206,48 +197,60 @@
             background-color: #6c757d;
             color: white;
         }
+
+        .badge.bg-blocked {
+            background-color: #ff416c;
+            color: white;
+        }
+
         /* Pagination KnpPaginator */
-.pagination {
-    display: flex;
-    gap: 6px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+        .pagination {
+            display: flex;
+            gap: 6px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-.pagination span.current {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background-color: #495057 !important;
-    color: #fff !important;
-    font-weight: 600;
-    border: 1px solid #495057;
-}
+        .pagination span.current {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background-color: #495057 !important;
+            color: #fff !important;
+            font-weight: 600;
+            border: 1px solid #495057;
+        }
 
-.pagination span.page a,
-.pagination span.next a,
-.pagination span.last a,
-.pagination span.previous a,
-.pagination span.first a {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 6px;
-    color: #495057 !important;
-    background-color: #fff !important;
-    border: 1px solid #495057 !important;
-    text-decoration: none;
-    transition: all 0.3s;
-}
+        .pagination span.page a,
+        .pagination span.next a,
+        .pagination span.last a,
+        .pagination span.previous a,
+        .pagination span.first a {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #495057 !important;
+            background-color: #fff !important;
+            border: 1px solid #495057 !important;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
 
-.pagination span.page a:hover,
-.pagination span.next a:hover,
-.pagination span.last a:hover,
-.pagination span.previous a:hover,
-.pagination span.first a:hover {
-    background-color: #495057 !important;
-    color: #fff !important;
-}
+        .pagination span.page a:hover,
+        .pagination span.next a:hover,
+        .pagination span.last a:hover,
+        .pagination span.previous a:hover,
+        .pagination span.first a:hover {
+            background-color: #495057 !important;
+            color: #fff !important;
+        }
+
+        /* Ligne bloquée */
+        tr.blocked-row {
+            background-color: rgba(255, 65, 108, 0.12) !important;
+            border-left: 4px solid #ff416c;
+        }
     </style>
 {% endblock %}
 
@@ -259,7 +262,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endfor %}
-    
+
     {% for message in app.flashes('error') %}
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ message }}
@@ -269,9 +272,9 @@
 
     <section class="glass-card utilisateurs-compact">
         <div class="card-header">
-        <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">
-        📥Excel
-    </a>
+            <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">
+                📥Excel
+            </a>
             <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
         </div>
 
@@ -317,7 +320,7 @@
                 </thead>
                 <tbody>
                 {% for utilisateur in utilisateurs %}
-                    <tr>
+                    <tr class="{{ utilisateur.isBlocked ? 'blocked-row' : '' }}">
                         <td>{{ utilisateur.idUtilisateur }}</td>
                         <td>{{ utilisateur.nom }}</td>
                         <td>{{ utilisateur.prenom }}</td>
@@ -332,6 +335,9 @@
                             {% else %}
                                 <span class="badge bg-secondary">Utilisateur</span>
                             {% endif %}
+                            {% if utilisateur.isBlocked %}
+                                <span class="badge bg-blocked">🚫 Bloqué</span>
+                            {% endif %}
                         </td>
                         <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('d/m/Y') : '-' }}</td>
                         <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y H:i') : '-' }}</td>
@@ -339,6 +345,21 @@
                             <div class="btn-group" role="group">
                                 <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-info">Voir</a>
                                 <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-warning">Modifier</a>
+
+                                {% if utilisateur.isBlocked %}
+                                    <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'unblock')"
+                                            class="btn btn-sm"
+                                            style="background:linear-gradient(135deg,#28a745,#20c997); color:white; border:none; border-radius:6px;">
+                                        ✅ Débloquer
+                                    </button>
+                                {% else %}
+                                    <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'block')"
+                                            class="btn btn-sm"
+                                            style="background:linear-gradient(135deg,#ff416c,#ff4b2b); color:white; border:none; border-radius:6px;">
+                                        🚫 Bloquer
+                                    </button>
+                                {% endif %}
+
                                 <form action="{{ path('app_utilisateur_delete', {'id_utilisateur': utilisateur.idUtilisateur}) }}" method="post" style="display:inline-block" onsubmit="return confirm('Confirmer la suppression de {{ utilisateur.nom }} {{ utilisateur.prenom }} ?')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.idUtilisateur) }}">
                                     <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
@@ -354,56 +375,61 @@
                 </tbody>
             </table>
         </div>
+
         {# Pagination #}
-       <div style="display:flex; justify-content:center; margin-top:50px;">
-    {{ knp_pagination_render(utilisateurs) }}
-</div>
+        <div style="display:flex; justify-content:center; margin-top:50px;">
+            {{ knp_pagination_render(utilisateurs) }}
+        </div>
     </section>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // ── Bloquer / Débloquer via API ──
+        async function toggleBlock(id, action) {
+            const msg = action === 'block' ? '🚫 Bloquer cet utilisateur ?' : '✅ Débloquer cet utilisateur ?';
+            if (!confirm(msg)) return;
+
+            try {
+                const response = await fetch(`/api/users/${id}/${action}`, { method: 'PUT' });
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        // ── Recherche dynamique ──
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('user-search');
             const roleFilter = document.getElementById('role-filter');
             const searchForm = document.getElementById('search-form');
             const tableWrapper = document.querySelector('.table-wrapper');
 
-            // Fonction pour faire une recherche dynamique
             function performSearch() {
                 const searchValue = searchInput.value;
                 const roleValue = roleFilter.value;
-                
-                // Construire l'URL avec les paramètres
-                let url = new URL(searchForm.action);
-                if (searchValue) {
-                    url.searchParams.set('search', searchValue);
-                }
-                if (roleValue && roleValue !== 'all') {
-                    url.searchParams.set('role', roleValue);
-                }
 
-                // Faire la requête AJAX
+                let url = new URL(searchForm.action);
+                if (searchValue) url.searchParams.set('search', searchValue);
+                if (roleValue && roleValue !== 'all') url.searchParams.set('role', roleValue);
+
                 fetch(url.toString(), {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 })
                 .then(response => response.text())
                 .then(html => {
-                    // Créer un élément temporaire pour parser le HTML
                     const parser = new DOMParser();
                     const newDoc = parser.parseFromString(html, 'text/html');
-                    
-                    // Extraire la nouvelle table
                     const newTable = newDoc.querySelector('.table-wrapper');
-                    if (newTable) {
-                        // Remplacer la table existante
-                        tableWrapper.innerHTML = newTable.innerHTML;
-                    }
+                    if (newTable) tableWrapper.innerHTML = newTable.innerHTML;
                 })
                 .catch(error => console.error('Erreur lors de la recherche:', error));
             }
 
-            // Ajouter les écouteurs d'événements
             searchInput.addEventListener('input', performSearch);
             roleFilter.addEventListener('change', performSearch);
         });
