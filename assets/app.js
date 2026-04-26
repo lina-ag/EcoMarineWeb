@@ -1,13 +1,10 @@
 
 import '@hotwired/turbo';
-import { startStimulusApp } from '@symfony/stimulus-bundle';
+import app from './bootstrap.js';
 import ZonepMapController from './controllers/zonep_map_controller.js';
-
-const app = startStimulusApp();
 
 app.register('zonep-map', ZonepMapController);
 
-import './bootstrap.js';
 import { trans } from './translator.js';
 
 window.ecomarineTrans = trans;

@@ -11,6 +11,9 @@
         </div>
 
         <div style="display:flex; gap:10px;">
+            <a href="{{ path('app_zonep_export_excel') }}" class="btn btn-secondary">
+                Export Excel
+            </a>
             <a href="{{ path('app_zonep_export_pdf') }}" class="btn btn-secondary">
                 {{ 'common.export_pdf'|trans }}
             </a>
@@ -75,8 +78,7 @@
     <div
         class="zonep-map-panel"
         data-controller="zonep-map"
-        data-zonep-map-default-style-value="night"
-        data-action="ux:map:connect->zonep-map#registerMap"
+        data-zonep-map-default-style-value="satellite"
     >
         <div class="zonep-map-toolbar">
             <div>
@@ -87,7 +89,7 @@
             <div class="zonep-map-switch" role="group" aria-label="{{ 'zonep.map.title'|trans }}">
                 <button
                     type="button"
-                    class="zonep-map-style-btn is-active"
+                    class="zonep-map-style-btn"
                     data-zonep-map-target="button"
                     data-style-name="night"
                     data-action="zonep-map#switchStyle"
@@ -107,7 +109,7 @@
                 </button>
                 <button
                     type="button"
-                    class="zonep-map-style-btn"
+                    class="zonep-map-style-btn is-active"
                     data-zonep-map-target="button"
                     data-style-name="satellite"
                     data-action="zonep-map#switchStyle"
