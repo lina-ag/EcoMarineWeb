@@ -26,20 +26,12 @@ class WeatherService
      */
     public function getCurrentWeather(float $lat, float $lon): ?array
     {
-        // Données fictives pour les tests
-        return [
-            'temperature' => 18.5,
-            'humidity' => 65,
-            'wind_speed' => 12.5,
-            'wind_direction' => 225,
-            'description' => 'ciel dégagé',
-            'main' => 'Clear',
-            'pressure' => 1013,
-            'visibility' => 10000,
-            'clouds' => 20,
-        ];
+        // Si la clé API n'est pas configurée, on utilise des données de fallback
+        if (empty($this->apiKey) || $this->apiKey === 'votre_cle_api_ici') {
+            $this->logger->warning('Clé API OpenWeather non configurée, utilisation des données de fallback.');
+            return $this->getFallbackWeatherData();
+        }
 
-        /* Code original commenté pour les tests
         try {
             $response = $this->httpClient->request('GET', $this->baseUrl . '/weather', [
                 'query' => [
@@ -64,17 +56,38 @@ class WeatherService
                     'pressure' => $data['main']['pressure'] ?? null,
                     'visibility' => $data['visibility'] ?? null,
                     'clouds' => $data['clouds']['all'] ?? null,
+                    'location' => $data['name'] ?? null,
+                    'country' => $data['sys']['country'] ?? null,
                 ];
             }
 
             $this->logger->error('Erreur API météo: ' . $response->getStatusCode());
-            return null;
+            return $this->getFallbackWeatherData();
 
-        } catch (TransportExceptionInterface $e) {
+        } catch (\Exception $e) {
             $this->logger->error('Erreur de connexion à l\'API météo: ' . $e->getMessage());
-            return null;
+            return $this->getFallbackWeatherData();
         }
-        */
+    }
+
+    /**
+     * Données météo de fallback quand l'API n'est pas disponible
+     */
+    private function getFallbackWeatherData(): array
+    {
+        return [
+            'temperature' => 20.0,
+            'humidity' => 60,
+            'wind_speed' => 10.0,
+            'wind_direction' => 180,
+            'description' => 'données estimées',
+            'main' => 'Clear',
+            'pressure' => 1013,
+            'visibility' => 10000,
+            'clouds' => 20,
+            'location' => 'Inconnu',
+            'country' => 'TN',
+        ];
     }
 
     /**

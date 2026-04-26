@@ -137,7 +137,16 @@ class PredictionService
                 'temperature' => $weatherData['temperature'] ?? null,
                 'windSpeed' => $weatherData['wind_speed'] ?? null,
                 'humidity' => $weatherData['humidity'] ?? null,
-                'description' => $weatherData['description'] ?? 'Non disponible'
+                'description' => sprintf(
+                    '%s, %s - %s',
+                    $weatherData['country'] ?? 'Pays inconnu',
+                    $weatherData['location'] ?? 'Lieu inconnu',
+                    $weatherData['description'] ?? 'Non disponible'
+                ),
+                'category' => $this->weatherService->mapWeatherToCategory(
+                    $weatherData['main'] ?? null,
+                    $weatherData['description'] ?? null
+                )
             ] : null,
             'zone' => $zone,
             'date' => $date->format('Y-m-d H:i:s'),

@@ -15,6 +15,14 @@ use App\Entity\FauneMarine;
 #[ORM\Table(name: 'observation')]
 class Observation
 {
+    #[ORM\OneToMany(mappedBy: 'observation', targetEntity: ChatMessage::class, orphanRemoval: true)]
+    private Collection $chatMessages;
+
+    public function __construct()
+    {
+        $this->chatMessages = new ArrayCollection();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -127,6 +135,36 @@ class Observation
 
     public function setIdAnimal(int $id_animal): static
     {
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ChatMessage>
+     */
+    public function getChatMessages(): Collection
+    {
+        return $this->chatMessages;
+    }
+
+    public function addChatMessage(ChatMessage $chatMessage): self
+    {
+        if (!$this->chatMessages->contains($chatMessage)) {
+            $this->chatMessages->add($chatMessage);
+            $chatMessage->setObservation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChatMessage(ChatMessage $chatMessage): self
+    {
+        if ($this->chatMessages->removeElement($chatMessage)) {
+            // set the owning side to null (unless already changed)
+            if ($chatMessage->getObservation() === $this) {
+                $chatMessage->setObservation(null);
+            }
+        }
+
         return $this;
     }
 }

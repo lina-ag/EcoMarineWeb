@@ -25,52 +25,18 @@
         border: 2px solid #1a3a7d;
         box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         z-index: 1000;
-        max-height: 85vh;
+        max-height: 580px;
         overflow-y: auto;
         transition: all 0.3s ease;
         font-size: 0.95rem;
-        line-height: 1.6;
-    }
-
     .prediction-panel.collapsed {
-        width: 70px;
-        height: 70px;
-        padding: 12px;
-        overflow: hidden;
-    }
-
-    .prediction-panel.collapsed .panel-content {
-        display: none;
-    }
-
-    .prediction-panel.collapsed .panel-header {
-        display: block !important;
-    }
-
-    .panel-header {
-        display: none;
-        text-align: center;
-        margin-bottom: 15px;
-        color: #ffffff;
+        transform: translateX(120%);
+        opacity: 0;
+        pointer-events: none;
     }
 
     .panel-toggle {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: #0d6efd;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1002;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        display: none !important;
     }
 
     .panel-toggle:hover {
@@ -435,14 +401,15 @@
             <!-- Panneau de prédiction -->
             <div class="prediction-panel" id="prediction-panel">
                 <div class="panel-content">
-                    <div class="panel-header">
-                        <h4><i class="fas fa-brain"></i> Agent IA</h4>
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2 border-secondary">
+                        <h4 class="mb-0">
+                            <i class="fas fa-map-marked-alt text-primary"></i>
+                            Agent de Prédiction
+                        </h4>
+                        <button id="minimize-panel-btn" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);" title="Réduire le panneau">
+                            <i class="fas fa-minus"></i>
+                        </button>
                     </div>
-
-                    <h4 class="mb-3">
-                        <i class="fas fa-map-marked-alt"></i>
-                        Agent de Prédiction
-                    </h4>
 
                     <!-- Section Bookmarks -->
                     <div class="bookmarks-section">
@@ -625,22 +592,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fonction pour basculer le panneau
     function togglePanel() {
         const panel = document.getElementById('prediction-panel');
-        const toggleBtn = document.getElementById('panel-toggle');
-        const icon = toggleBtn.querySelector('i');
-
         panel.classList.toggle('collapsed');
-
-        if (panel.classList.contains('collapsed')) {
-            icon.className = 'fas fa-expand';
-            toggleBtn.title = 'Agrandir';
-        } else {
-            icon.className = 'fas fa-bars';
-            toggleBtn.title = 'Réduire';
-        }
     }
 
-    // Gestionnaire du bouton toggle
-    document.getElementById('panel-toggle').addEventListener('click', togglePanel);
+    // Gestionnaire du bouton pour réduire (à l'intérieur du panneau)
+    const minimizeBtn = document.getElementById('minimize-panel-btn');
+    if (minimizeBtn) {
+        minimizeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Évite de déclencher le clic sur le panneau lui-même
+            togglePanel();
+        });
+    }
+
+    // Injection du bouton dans la navbar globale (en haut à droite)
+    const headerBtn = document.createElement('button');
+    headerBtn.type = 'button';
+    headerBtn.className = 'nav-btn';
+    headerBtn.id = 'header-panel-toggle';
+    headerBtn.title = 'Afficher/Masquer l\'Agent IA';
+    headerBtn.innerHTML = '<i class="fas fa-brain fa-lg" style="color: #4a7aed;"></i>';
+    
+    const searchBox = document.querySelector('.search-box');
+    if (searchBox && searchBox.parentNode) {
+        searchBox.parentNode.insertBefore(headerBtn, searchBox.nextSibling);
+    }
+    
+    headerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
 
     // Chargement des zones depuis l'API
     fetch('/prediction/map/zones')
@@ -997,7 +979,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         niveau_risque: riskLevelValue,
                         facteurs: data.prediction.factors,
                         recommandations: data.prediction.recommendations,
-                        date_prediction: document.getElementById('prediction-date').value
+                        date_prediction: document.getElementById('prediction-date').value,
+                        temperature_eau: data.prediction.weather ? data.prediction.weather.temperature : null,
+                        conditions_meteo: data.prediction.weather ? data.prediction.weather.category : null,
+                        description: data.prediction.weather ? data.prediction.weather.description : null
                     })
                 });
             } else {
@@ -1150,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <h6><i class="fas fa-cloud-sun"></i> Conditions météo</h6>
                                 <div class="weather-details">
                                     <div class="weather-item">
-                                        <span class="weather-label">Température:</span>
+                                        <span class="weather-label">Température d'eau:</span>
                                         <span class="weather-value">${prediction.weather.temperature}°C</span>
                                     </div>
                                     <div class="weather-item">
@@ -1240,7 +1225,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         niveau_risque: data.prediction.riskLevel,
                         facteurs: data.prediction.factors,
                         recommandations: data.prediction.recommendations,
-                        date_prediction: document.getElementById('prediction-date').value
+                        date_prediction: document.getElementById('prediction-date').value,
+                        temperature_eau: data.prediction.weather ? data.prediction.weather.temperature : null,
+                        conditions_meteo: data.prediction.weather ? data.prediction.weather.category : null,
+                        description: data.prediction.weather ? data.prediction.weather.description : null
                     })
                 });
             } else {

@@ -158,8 +158,30 @@ final class PredictionMapController extends AbstractController
             }
             $prediction->setNiveauRisque((int) $riskLevel);
 
+            $recommandationsStr = "";
+            if (isset($data['description']) && !empty($data['description'])) {
+                $recommandationsStr .= "Météo: " . $data['description'] . "\n\n";
+            }
+
             if (isset($data['recommandations']) && !empty($data['recommandations'])) {
-                $prediction->setRecommandations($data['recommandations']);
+                $recs = is_array($data['recommandations']) 
+                    ? implode("\n• ", $data['recommandations']) 
+                    : $data['recommandations'];
+                if (is_array($data['recommandations']) && !empty($recs)) {
+                    $recs = "• " . $recs;
+                }
+                $recommandationsStr .= $recs;
+            }
+
+            if (!empty($recommandationsStr)) {
+                $prediction->setRecommandations($recommandationsStr);
+            }
+
+            if (isset($data['temperature_eau'])) {
+                $prediction->setTemperatureEau((float) $data['temperature_eau']);
+            }
+            if (isset($data['conditions_meteo'])) {
+                $prediction->setConditionsMeteo($data['conditions_meteo']);
             }
 
             // Sauvegarder en base de données
