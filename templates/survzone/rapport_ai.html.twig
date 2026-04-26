@@ -4,24 +4,106 @@
 
 {% block body %}
 <section class="glass-card">
-    <div class="card-header">
-        <div>
+    <div class="card-header" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div style="flex:1;">
             <h2 class="card-title">🤖 Rapport IA des Surveillances</h2>
-            <p class="card-subtitle">Généré automatiquement par Google Gemini</p>
+            <p class="card-subtitle">Généré automatiquement par Groq — LLaMA 3.3 70B</p>
         </div>
-        <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary">← Retour</a>
+        <a href="{{ path('app_survzone_index') }}" class="btn btn-secondary" style="padding:8px 16px; font-size:13px; border-radius:10px;">← Retour</a>
     </div>
 
-    <div class="rapport-content" style="
-        background: rgba(15, 23, 42, 0.28);
-        border-radius: 14px;
-        padding: 28px;
-        margin-top: 20px;
-        line-height: 1.8;
-        white-space: pre-wrap;
-        color: #e2e8f0;
-        font-size: 14px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-    ">{{ rapport }}</div>
+    <div class="rapport-wrapper" style="margin-top: 24px;">
+        {% set sections = rapport|split('\n') %}
+        {% set content = '' %}
+
+        <div class="rapport-body">
+            {% for line in sections %}
+                {% if line starts with '## ' %}
+                    {% if content is not empty %}
+                        <p class="rapport-paragraph">{{ content|trim }}</p>
+                        {% set content = '' %}
+                    {% endif %}
+                    <h3 class="rapport-h3">{{ line|replace({'## ': ''})|replace({'**': ''}) }}</h3>
+                {% elseif line starts with '# ' or line starts with '**' and line ends with '**' %}
+                    {% if content is not empty %}
+                        <p class="rapport-paragraph">{{ content|trim }}</p>
+                        {% set content = '' %}
+                    {% endif %}
+                    <h2 class="rapport-h2">{{ line|replace({'# ': ''})|replace({'**': ''}) }}</h2>
+                {% elseif line starts with '- ' or line starts with '* ' %}
+                    <div class="rapport-bullet">
+                        <span class="bullet-dot">●</span>
+                        <span>{{ line|slice(2)|replace({'**': ''})|trim }}</span>
+                    </div>
+                {% elseif line matches '/^\\d+\\./' %}
+                    <div class="rapport-numbered">
+                        {{ line|replace({'**': ''})|trim }}
+                    </div>
+                {% elseif line|trim is not empty %}
+                    <p class="rapport-paragraph">{{ line|replace({'**': ''})|trim }}</p>
+                {% else %}
+                    <div style="height: 8px;"></div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
 </section>
+
+<style>
+    .rapport-body {
+        background: rgba(15, 23, 42, 0.22);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 16px;
+        padding: 32px 36px;
+        line-height: 1.8;
+        color: #0b0b0c;
+    }
+
+    .rapport-h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #38bdf8;
+        margin: 28px 0 12px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .rapport-h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #7dd3fc;
+        margin: 20px 0 8px 0;
+    }
+
+    .rapport-paragraph {
+        font-size: 14px;
+        color: #0c0e10;
+        margin: 6px 0;
+        line-height: 1.8;
+    }
+
+    .rapport-bullet {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 6px 0;
+        font-size: 14px;
+        color: #0f0f10;
+        padding-left: 8px;
+    }
+
+    .bullet-dot {
+        color: #38bdf8;
+        font-size: 8px;
+        margin-top: 6px;
+        flex-shrink: 0;
+    }
+
+    .rapport-numbered {
+        font-size: 14px;
+        color: #0f1215;
+        margin: 6px 0 6px 16px;
+        line-height: 1.8;
+    }
+</style>
 {% endblock %}
