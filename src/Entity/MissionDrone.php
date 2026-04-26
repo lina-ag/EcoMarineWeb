@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 use App\Repository\MissionDroneRepository;
 
@@ -150,6 +151,18 @@ class MissionDrone
     {
         $this->observations = $observations;
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateTimes(ExecutionContextInterface $context): void
+    {
+        if ($this->heure_debut && $this->heure_fin) {
+            if ($this->heure_fin <= $this->heure_debut) {
+                $context->buildViolation("L'heure de fin doit être postérieure à l'heure de début.")
+                    ->atPath('heure_fin')
+                    ->addViolation();
+            }
+        }
     }
 
     public function getIdMission(): ?int

@@ -1,4 +1,10 @@
-import './bootstrap.js';
+
+import '@hotwired/turbo';
+import app from './bootstrap.js';
+import ZonepMapController from './controllers/zonep_map_controller.js';
+
+app.register('zonep-map', ZonepMapController);
+
 import { trans } from './translator.js';
 
 window.ecomarineTrans = trans;
@@ -115,3 +121,4 @@ window.ecomarineRenderRatings = renderAllRatings;
 
 document.addEventListener('DOMContentLoaded', renderAllRatings);
 document.addEventListener('turbo:load', renderAllRatings);
+

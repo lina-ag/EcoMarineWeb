@@ -35,6 +35,15 @@
             "./migrations/.gitignore"
         ]
     },
+    "friendsofsymfony/elastica-bundle": {
+        "version": "7.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "5.0",
+            "ref": "46c9cd2c1e07f0fcfd97e96f12b03b2e0845c4cd"
+        }
+    },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.10.0"
     },
@@ -46,6 +55,18 @@
             "version": "1.5",
             "ref": "c81bdcf4a9d4e7b1959071457f9608631865d381"
         }
+    },
+    "php-http/discovery": {
+        "version": "1.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.18",
+            "ref": "f45b5dd173a27873ab19f5e3180b2f661c21de02"
+        },
+        "files": [
+            "./config/packages/http_discovery.yaml"
+        ]
     },
     "phpunit/phpunit": {
         "version": "9.6",
@@ -131,6 +152,15 @@
             "./src/Controller/.gitignore",
             "./src/Kernel.php"
         ]
+    },
+    "symfony/google-mailer": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "4.4",
+            "ref": "f8fd4ddb9b477510f8f4bce2b9c054ab428c0120"
+        }
     },
     "symfony/mailer": {
         "version": "6.4",
@@ -285,8 +315,23 @@
     "symfony/ux-chartjs": {
         "version": "v2.35.0"
     },
+    "symfony/ux-leaflet-map": {
+        "version": "v2.35.0"
+    },
     "symfony/ux-live-component": {
-        "version": "2.35",
+        "version": "v2.35.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.19",
+            "ref": "bed7e7f6d7c04e0de9665859ddbf0e842e5323e3"
+        },
+        "files": [
+            "./config/routes/ux_live_component.yaml"
+        ]
+    },
+    "symfony/ux-map": {
+        "version": "v2.35.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -294,11 +339,11 @@
             "ref": "b7130b7b5ddc2f8994bd6149d7c093b184782f0c"
         },
         "files": [
-            "./config/routes/ux_live_component.yaml"
+            "./config/packages/ux_map.yaml"
         ]
     },
     "symfony/ux-react": {
-        "version": "2.35",
+        "version": "v2.35.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",

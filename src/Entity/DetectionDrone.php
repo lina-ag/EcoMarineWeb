@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 use App\Repository\DetectionDroneRepository;
 
@@ -49,7 +50,8 @@ class DetectionDrone
     #[ORM\Column(type: 'string', nullable: false)]
     #[Assert\NotBlank(message: "L'esp\u00e8ce ne peut pas \u00eatre vide.")]
     #[Assert\Length(min: 3, max: 100, minMessage: "L'esp\u00e8ce doit contenir au moins 3 caract\u00e8res.", maxMessage: "L'esp\u00e8ce ne peut pas d\u00e9passer 100 caract\u00e8res.")]
-    #[Assert\Regex(pattern: "/^[a-zA-Z\u00c0-\u00ff\s\-']+$/", message: "L'esp\u00e8ce ne peut contenir que des lettres.")]
+    #[Assert\Regex(pattern: "/^[a-zA-Z\u00c0-\u00ff\s\-']+$/", message: "L'esp\u00e8ce ne peut contenir que des lettres, espaces, tirets et apostrophes.")]
+    #[Assert\Regex(pattern: "/\S/", message: "L'esp\u00e8ce ne peut pas \u00eatre compos\u00e9e uniquement d'espaces.")]
     private ?string $espece = null;
 
     public function getEspece(): ?string
@@ -167,6 +169,17 @@ class DetectionDrone
     {
         $this->timestamp = $timestamp;
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateCoordinates(ExecutionContextInterface $context): void
+    {
+        if (($this->latitude !== null && $this->longitude === null) ||
+            ($this->latitude === null && $this->longitude !== null)) {
+            $context->buildViolation("Si une coordonnée GPS est fournie, les deux (latitude et longitude) doivent être spécifiées.")
+                ->atPath('latitude')
+                ->addViolation();
+        }
     }
 
     public function getIdDetection(): ?int

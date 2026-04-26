@@ -33,7 +33,98 @@
             </div>
         </div>
 
+        <div class="d-flex justify-content-end mb-3">
+            <div class="card weather-widget shadow-sm border-0">
+                <div class="card-body py-3 px-3">
+                    {% if weather.error is defined %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="weather-widget-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 8v5"/>
+                                    <path d="M12 16h.01"/>
+                                </svg>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Weather</div>
+                                <div class="small text-muted">{{ weather.error }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% set condition = weather.condition ?? 'unknown' %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="weather-widget-icon">
+                                {% if condition == 'clear' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="4"/>
+                                        <path d="M12 2v2"/><path d="M12 20v2"/>
+                                        <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                                        <path d="M2 12h2"/><path d="M20 12h2"/>
+                                        <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
+                                    </svg>
+                                {% elseif condition == 'partly_cloudy' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M2 12h2"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19 18a4.5 4.5 0 0 0-1.2-8.8 5.5 5.5 0 0 0-10.6 1.7A3.8 3.8 0 0 0 7.5 18H19z"/>
+                                    </svg>
+                                {% elseif condition == 'cloudy' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 18a4.5 4.5 0 0 0-1.2-8.8 5.5 5.5 0 0 0-10.6 1.7A3.8 3.8 0 0 0 7.5 18H19z"/>
+                                    </svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/>
+                                        <path d="M12 17h.01"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Weather in {{ weather.city ?? 'Monastir' }}</div>
+                                <div class="small text-muted">
+                                    {% if condition == 'clear' %}Clear{% elseif condition == 'partly_cloudy' %}Partly cloudy{% elseif condition == 'cloudy' %}Cloudy{% else %}Unknown{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <div class="h5 mb-0">{{ (weather.temp is defined and weather.temp is not null) ? weather.temp : '—' }}°C</div>
+                                <div class="small text-muted">Humidity: {{ (weather.humidity is defined and weather.humidity is not null) ? weather.humidity : '—' }}%</div>
+                                <div class="small text-muted">Wind: {{ (weather.wind_speed is defined and weather.wind_speed is not null) ? (weather.wind_speed|number_format(1, '.', '')) : '—' }} m/s</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
         <style>
+            .weather-widget {
+                min-width: 280px;
+                max-width: 420px;
+                background: rgba(255, 255, 255, 0.85);
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                backdrop-filter: blur(8px);
+            }
+
+            .weather-widget-icon {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(14, 165, 233, 0.18));
+                color: #1d4ed8;
+                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.12);
+            }
+
+            .weather-widget-icon svg {
+                width: 1.65rem;
+                height: 1.65rem;
+            }
+
             .activity-search-row {
                 display: flex;
                 align-items: center;
@@ -41,7 +132,58 @@
                 flex-wrap: wrap;
             }
 
+            .admin-live-form {
+                margin-bottom: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.1rem;
+                padding: 1.1rem;
+                border-radius: 20px;
+                border: 1px solid rgba(191, 219, 254, 0.55);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-live-form-row {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form-row--split {
+                padding-top: 0.5rem;
+                border-top: 1px solid rgba(203, 213, 225, 0.3);
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .admin-field-select {
+                max-width: 170px;
+                min-width: 170px;
+            }
+
+            .admin-sort-select {
+                max-width: 190px;
+                margin-left: auto;
+            }
+
+            .admin-result-count {
+                opacity: 0.82;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #334155;
+            }
+
             .search-box {
+                position: relative;
                 display: flex;
                 align-items: center;
                 gap: 0.95rem;
@@ -75,7 +217,7 @@
             .search-box .search-input {
                 min-width: 0;
                 width: 100%;
-                padding: 0.4rem 0;
+                padding: 0.4rem 3rem 0.4rem 0;
                 border: 0;
                 background: transparent;
                 color: #0f172a;
@@ -129,6 +271,85 @@
             .search-icon-btn:focus-visible {
                 outline: 3px solid rgba(96, 165, 250, 0.35);
                 outline-offset: 2px;
+            }
+
+            .voice-btn {
+                position: absolute;
+                right: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                color: #94a3b8;
+                cursor: pointer;
+                transition: color 0.2s, background 0.2s;
+                flex-shrink: 0;
+            }
+
+            .voice-btn:hover {
+                background: rgba(56, 189, 248, 0.1);
+                color: #38bdf8;
+            }
+
+            .voice-btn--active {
+                color: #f87171;
+                background: rgba(248, 113, 113, 0.12);
+                animation: voice-pulse 1.2s ease-in-out infinite;
+            }
+
+            .voice-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .voice-toast {
+                position: fixed;
+                left: 50%;
+                bottom: 24px;
+                transform: translateX(-50%) translateY(20px);
+                padding: 0.85rem 1.1rem;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, 0.92);
+                color: #fff;
+                font-size: 0.92rem;
+                font-weight: 600;
+                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.24s ease, transform 0.24s ease;
+                z-index: 1300;
+            }
+
+            .voice-toast--visible {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .voice-toast--success {
+                background: rgba(5, 150, 105, 0.95);
+            }
+
+            .voice-toast--error {
+                background: rgba(220, 38, 38, 0.95);
+            }
+
+            .voice-toast--info {
+                background: rgba(15, 23, 42, 0.92);
+            }
+
+            @keyframes voice-pulse {
+                0%, 100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.24);
+                }
+                50% {
+                    transform: scale(1.04);
+                    box-shadow: 0 0 0 8px rgba(248, 113, 113, 0);
+                }
             }
 
             .search-input {
@@ -340,9 +561,9 @@
         </style>
 
         <div id="activite-live-root">
-        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; padding: 1.1rem; background: linear-gradient(135deg, rgba(251, 253, 254, 0.64), rgba(239, 246, 255, 0.42)); border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.55); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" class="admin-live-form">
             <div class="activity-search-row">
-                <select id="activite-search-field" name="field" class="search-input" style="max-width: 150px;">
+                <select id="activite-search-field" name="field" class="search-input admin-field-select">
                     <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>Chercher par: Tous</option>
                     <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>ID</option>
                     <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'activite.name'|trans }}</option>
@@ -350,7 +571,7 @@
                     <option value="capacite" {{ search_field|default('all') == 'capacite' ? 'selected' : '' }}>{{ 'activite.capacity'|trans }}</option>
                     <option value="description" {{ search_field|default('all') == 'description' ? 'selected' : '' }}>{{ 'activite.description'|trans }}</option>
                 </select>
-                <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 260px;">
+                <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -364,7 +585,22 @@
                             value="{{ search_term|default('') }}"
                             placeholder="{{ 'activite.search_placeholder'|trans }}"
                             autocomplete="on"
+                            list="activite-search-suggestions"
+                            data-autocomplete-source="{{ autocomplete_suggestions|default([])|json_encode|e('html_attr') }}"
                         >
+                        <button type="button" id="activite-voice-btn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
+                            <svg id="activite-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </button>
+                        <datalist id="activite-search-suggestions">
+                            {% for suggestion in autocomplete_suggestions|default([]) %}
+                                <option value="{{ suggestion }}">
+                            {% endfor %}
+                        </datalist>
                     </div>
                     <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'activite.search'|trans }}" title="{{ 'activite.search'|trans }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -374,16 +610,49 @@
                         <span>{{ 'activite.search'|trans }}</span>
                     </button>
                 </div>
-                <small id="activite-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
+                <small id="activite-result-count" class="admin-result-count">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
             </div>
+            <div class="autocomplete-hint">Suggestions rapides disponibles pendant la saisie.</div>
+            <script>
+                (() => {
+                    const input = document.getElementById('activite-search-input');
+                    const datalist = document.getElementById('activite-search-suggestions');
 
-            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
+                    if (!input || !datalist) {
+                        return;
+                    }
+
+                    const source = JSON.parse(input.dataset.autocompleteSource || '[]');
+                    const normalize = (value) => value
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .trim();
+
+                    const renderSuggestions = (rawValue) => {
+                        const query = normalize(rawValue);
+                        const suggestions = query === ''
+                            ? source.slice(0, 8)
+                            : source.filter((item) => normalize(item).startsWith(query)).slice(0, 8);
+
+                        datalist.innerHTML = suggestions
+                            .map((item) => '<option value="' + String(item).replace(/"/g, '&quot;') + '">')
+                            .join('');
+                    };
+
+                    input.addEventListener('input', () => renderSuggestions(input.value));
+                    input.addEventListener('focus', () => renderSuggestions(input.value));
+                    renderSuggestions(input.value);
+                })();
+            </script>
+
+            <div class="admin-live-form-row admin-live-form-row--split">
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">{{ 'activite.all'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'today', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'today' ? 'active' : '' }}" title="Filtrer les activités du jour">{{ 'activite.today'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'week', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'week' ? 'active' : '' }}" title="Filtrer les activités de cette semaine">{{ 'activite.this_week'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'current', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'current' ? 'active' : '' }}" title="Filtrer les activités de ce mois">{{ 'activite.this_month'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'capacite': 'medium-large', 'page': 1})) }}" class="quick-filter-btn {{ capacite_filter|default('all') == 'medium-large' ? 'active' : '' }}" title="Afficher les activités avec capacité supérieure à 10">{{ 'activite.capacity_over_10'|trans }}</a>
-                <select id="activite-sort-by" name="sort" class="search-input" style="max-width: 150px; margin-left: auto;" onchange="this.form.submit();">
+                <select id="activite-sort-by" name="sort" class="search-input admin-sort-select" onchange="this.form.submit();">
                     <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'activite.sort_date_recent'|trans }}</option>
                     <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}>{{ 'activite.sort_date_old'|trans }}</option>
                     <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'activite.sort_id_desc'|trans }}</option>
@@ -395,6 +664,8 @@
                 </select>
             </div>
         </form>
+
+        <div id="activite-voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
 
         <div id="activite-empty-message" class="ux-empty-message" style="display: none;">{{ 'activite.empty_message'|trans }}</div>
 
@@ -528,6 +799,106 @@
 
             if (!form) {
                 return;
+            }
+
+            const voiceBtn = form.querySelector('#activite-voice-btn');
+            const voiceInput = form.querySelector('input[name="q"]');
+            const voiceToast = document.getElementById('activite-voice-toast');
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (voiceBtn && voiceInput && voiceToast) {
+                if (!SpeechRecognition) {
+                    voiceBtn.style.display = 'none';
+                } else {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'fr-FR';
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.maxAlternatives = 1;
+
+                    let isListening = false;
+                    let toastTimer = null;
+
+                    const micSVG = `<svg id="activite-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>`;
+
+                    const stopSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="3"/>
+                        </svg>`;
+
+                    const showToast = function (message, type) {
+                        window.clearTimeout(toastTimer);
+                        voiceToast.textContent = message;
+                        voiceToast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
+                        toastTimer = window.setTimeout(function () {
+                            voiceToast.classList.remove('voice-toast--visible');
+                        }, 2800);
+                    };
+
+                    const startListening = function () {
+                        isListening = true;
+                        voiceBtn.classList.add('voice-btn--active');
+                        voiceBtn.innerHTML = stopSVG;
+                        voiceBtn.setAttribute('aria-label', 'Arrêter la recherche vocale');
+                        showToast('🎙 Parlez maintenant…', 'info');
+                        recognition.start();
+                    };
+
+                    const stopListening = function () {
+                        isListening = false;
+                        voiceBtn.classList.remove('voice-btn--active');
+                        voiceBtn.innerHTML = micSVG;
+                        voiceBtn.setAttribute('aria-label', 'Démarrer la recherche vocale');
+                        recognition.stop();
+                    };
+
+                    voiceBtn.addEventListener('click', function () {
+                        if (isListening) {
+                            stopListening();
+                        } else {
+                            startListening();
+                        }
+                    });
+
+                    recognition.addEventListener('result', function (event) {
+                        const transcript = Array.from(event.results)
+                            .map(function (result) {
+                                return result[0].transcript;
+                            })
+                            .join('');
+
+                        voiceInput.value = transcript;
+
+                        if (event.results[0].isFinal) {
+                            showToast('Recherche : « ' + transcript + ' »', 'success');
+                            form.requestSubmit();
+                        }
+                    });
+
+                    recognition.addEventListener('end', function () {
+                        if (isListening) {
+                            stopListening();
+                        }
+                    });
+
+                    recognition.addEventListener('error', function (event) {
+                        stopListening();
+
+                        const messages = {
+                            'not-allowed': 'Microphone non autorisé. Vérifiez les permissions.',
+                            'no-speech': 'Aucune voix détectée. Réessayez.',
+                            'audio-capture': 'Impossible d\'accéder au microphone.',
+                            'network': 'Erreur réseau lors de la reconnaissance vocale.'
+                        };
+
+                        showToast(messages[event.error] || 'Erreur vocale : ' + event.error, 'error');
+                    });
+                }
             }
 
             const queryInput = form.querySelector('input[name="q"]');

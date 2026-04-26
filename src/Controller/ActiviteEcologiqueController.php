@@ -5,9 +5,13 @@ namespace App\Controller;
 use App\Entity\ActiviteEcologique;
 use App\Form\ActiviteEcologiqueType;
 use App\Repository\ActiviteEcologiqueRepository;
+use App\Repository\ReservationRepository;
+use App\Service\WeatherService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
-    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
+    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository, WeatherService $weatherService): Response
     {
         $searchTerm = trim((string) $request->query->get('q', ''));
         $searchField = (string) $request->query->get('field', 'all');
@@ -47,8 +51,11 @@ final class ActiviteEcologiqueController extends AbstractController
         $pageStart = $totalItems > 0 ? $offset + 1 : 0;
         $pageEnd = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
 
+        $weather = $weatherService->getWeatherForCity('Monastir');
+
         return $this->render('activite_ecologique/index.html.twig', [
             'activite_ecologiques' => $paginatedActivities,
+            'weather' => $weather,
             'search_term' => $searchTerm,
             'search_field' => $searchField,
             'periode_filter' => $periodeFilter,
@@ -59,6 +66,7 @@ final class ActiviteEcologiqueController extends AbstractController
             'total_pages' => $totalPages,
             'page_start' => $pageStart,
             'page_end' => $pageEnd,
+            'autocomplete_suggestions' => $this->buildActivityAutocompleteSuggestions($activites),
         ]);
     }
 
@@ -74,6 +82,7 @@ final class ActiviteEcologiqueController extends AbstractController
 
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -213,12 +222,193 @@ final class ActiviteEcologiqueController extends AbstractController
         return $leftDate <=> $rightDate;
     }
 
+    private function buildFilteredActivityQueryBuilder(
+        ActiviteEcologiqueRepository $activiteEcologiqueRepository,
+        string $searchTerm,
+        string $searchField,
+        string $periodeFilter,
+        string $capaciteFilter
+    ): QueryBuilder {
+        $queryBuilder = $activiteEcologiqueRepository->createQueryBuilder('a');
+
+        $this->applyActivitySearchFilter($queryBuilder, $searchTerm, $searchField);
+        $this->applyActivityCapacityFilter($queryBuilder, $capaciteFilter);
+        $this->applyActivityPeriodFilter($queryBuilder, $periodeFilter);
+
+        return $queryBuilder;
+    }
+
+    private function applyActivitySearchFilter(QueryBuilder $queryBuilder, string $searchTerm, string $searchField): void
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return;
+        }
+
+        if ($searchField === 'all') {
+            foreach ($tokens as $index => $token) {
+                $parameter = sprintf('activity_search_token_%d', $index);
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.id_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(a.nom_activite)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.date_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.capacite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(COALESCE(a.description, \'\'))', ':' . $parameter)
+                        )
+                    )
+                    ->setParameter($parameter, '%' . $token . '%');
+            }
+
+            return;
+        }
+
+        $fieldExpression = match ($searchField) {
+            'id' => 'LOWER(CONCAT(a.id_activite, \'\'))',
+            'nom' => 'LOWER(a.nom_activite)',
+            'date' => 'LOWER(CONCAT(a.date_activite, \'\'))',
+            'capacite' => 'LOWER(CONCAT(a.capacite, \'\'))',
+            'description' => 'LOWER(COALESCE(a.description, \'\'))',
+            default => null,
+        };
+
+        if ($fieldExpression === null) {
+            return;
+        }
+
+        foreach ($tokens as $index => $token) {
+            $parameter = sprintf('activity_search_field_token_%d', $index);
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->like($fieldExpression, ':' . $parameter))
+                ->setParameter($parameter, '%' . $token . '%');
+        }
+    }
+
+    private function applyActivityCapacityFilter(QueryBuilder $queryBuilder, string $capaciteFilter): void
+    {
+        if ($capaciteFilter === 'all') {
+            return;
+        }
+
+        match ($capaciteFilter) {
+            'small' => $queryBuilder->andWhere('a.capacite <= 20'),
+            'medium' => $queryBuilder->andWhere('a.capacite BETWEEN 21 AND 50'),
+            'large' => $queryBuilder->andWhere('a.capacite >= 51'),
+            'medium-large' => $queryBuilder->andWhere('a.capacite >= 10'),
+            default => null,
+        };
+    }
+
+    private function applyActivityPeriodFilter(QueryBuilder $queryBuilder, string $periodeFilter): void
+    {
+        if ($periodeFilter === 'all') {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        match ($periodeFilter) {
+            'today' => $queryBuilder->andWhere('a.date_activite = :activityToday')->setParameter('activityToday', $today),
+            'week' => $queryBuilder
+                ->andWhere('a.date_activite BETWEEN :activityWeekStart AND :activityWeekEnd')
+                ->setParameter('activityWeekStart', (clone $today)->modify('last sunday')->setTime(0, 0))
+                ->setParameter('activityWeekEnd', (clone $today)->modify('next saturday')->setTime(23, 59, 59)),
+            'current' => $queryBuilder
+                ->andWhere('a.date_activite BETWEEN :activityMonthStart AND :activityMonthEnd')
+                ->setParameter('activityMonthStart', $today->modify('first day of this month')->setTime(0, 0))
+                ->setParameter('activityMonthEnd', $today->modify('last day of this month')->setTime(23, 59, 59)),
+            default => null,
+        };
+    }
+
+    private function applyActivitySort(QueryBuilder $queryBuilder, string $sort): void
+    {
+        match ($sort) {
+            'id_asc' => $queryBuilder->orderBy('a.id_activite', 'ASC'),
+            'id_desc' => $queryBuilder->orderBy('a.id_activite', 'DESC'),
+            'nom_asc' => $queryBuilder->orderBy('a.nom_activite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'nom_desc' => $queryBuilder->orderBy('a.nom_activite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+            'date_asc' => $queryBuilder->orderBy('a.date_activite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'capacite_asc' => $queryBuilder->orderBy('a.capacite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'capacite_desc' => $queryBuilder->orderBy('a.capacite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+            default => $queryBuilder->orderBy('a.date_activite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+        };
+    }
+
+    /**
+     * @param ActiviteEcologique[] $activities
+     */
+    private function loadBookedPeopleByActivity(ReservationRepository $reservationRepository, array $activities): array
+    {
+        $activityIds = [];
+
+        foreach ($activities as $activity) {
+            if ($activity instanceof ActiviteEcologique && $activity->getIdActivite() !== null) {
+                $activityIds[] = $activity->getIdActivite();
+            }
+        }
+
+        if ($activityIds === []) {
+            return [];
+        }
+
+        $rows = $reservationRepository->createQueryBuilder('r')
+            ->select('IDENTITY(r.activiteEcologique) AS activity_id, COALESCE(SUM(r.nombre_personnes), 0) AS booked_people')
+            ->andWhere('r.activiteEcologique IN (:activityIds)')
+            ->setParameter('activityIds', $activityIds)
+            ->groupBy('activity_id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $bookedPeopleByActivity = [];
+        foreach ($rows as $row) {
+            $activityId = (int) ($row['activity_id'] ?? 0);
+            $bookedPeopleByActivity[$activityId] = (int) ($row['booked_people'] ?? 0);
+        }
+
+        return $bookedPeopleByActivity;
+    }
+
     private function normalizeSearchValue(string $value): string
     {
         $normalized = mb_strtolower(trim($value));
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
+    }
+
+    /**
+     * @param ActiviteEcologique[] $activities
+     *
+     * @return string[]
+     */
+    private function buildActivityAutocompleteSuggestions(array $activities): array
+    {
+        $suggestions = [];
+
+        foreach ($activities as $activity) {
+            if (!$activity instanceof ActiviteEcologique) {
+                continue;
+            }
+
+            $name = trim((string) $activity->getNomActivite());
+            if ($name !== '') {
+                $suggestions[] = $name;
+            }
+
+            $date = $activity->getDateActivite();
+            if ($date instanceof \DateTimeInterface) {
+                $suggestions[] = $date->format('Y-m-d');
+                $suggestions[] = $date->format('d/m/Y');
+            }
+        }
+
+        $suggestions = array_values(array_unique($suggestions));
+        sort($suggestions, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return array_slice($suggestions, 0, 12);
     }
 
     #[Route('/new', name: 'app_activite_ecologique_new', methods: ['GET', 'POST'])]

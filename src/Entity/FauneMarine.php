@@ -35,7 +35,8 @@ class FauneMarine
     #[ORM\Column(type: 'string', nullable: false, unique: true)]
     #[Assert\NotBlank(message: "L'espèce ne peut pas être vide.")]
     #[Assert\Length(min: 3, max: 100, minMessage: "L'espèce doit contenir au moins 3 caractères.", maxMessage: "L'espèce ne peut pas dépasser 100 caractères.")]
-    #[Assert\Regex(pattern: "/^[a-zA-ZÀ-ÿ\s\-']+$/", message: "L'espèce ne peut contenir que des lettres, espaces et tirets (pas de chiffres).")]
+    #[Assert\Regex(pattern: "/^[a-zA-ZÀ-ÿ\s\-']+$/", message: "L'espèce ne peut contenir que des lettres, espaces, tirets et apostrophes.")]
+    #[Assert\Regex(pattern: "/\S/", message: "L'espèce ne peut pas être composée uniquement d'espaces.")]
     private ?string $espece = null;
 
     public function getEspece(): ?string

@@ -1,0 +1,54 @@
+<div id="zonepResults">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>{{ 'common.id'|trans }}</th>
+                <th>{{ 'zonep.fields.name'|trans }}</th>
+                <th>{{ 'zonep.fields.category'|trans }}</th>
+                <th>{{ 'zonep.fields.status'|trans }}</th>
+                <th>{{ 'common.actions'|trans }}</th>
+            </tr>
+            </thead>
+
+            <tbody id="tableBody">
+            {% for zonep in zoneps %}
+                <tr>
+                    <td>{{ zonep.idZone }}</td>
+                    <td>{{ zonep.nomZone }}</td>
+                    <td>{{ zonep.categorieZone }}</td>
+
+                    <td>
+                        {% if zonep.status == 'Actif' %}
+                            <span class="badge badge-actif">{{ 'status.actif'|trans }}</span>
+                        {% elseif zonep.status == 'En surveillance' %}
+                            <span class="badge badge-surveillance">{{ 'status.en_surveillance'|trans }}</span>
+                        {% elseif zonep.status == 'En maintenance' %}
+                            <span class="badge badge-maintenance">{{ 'status.en_maintenance'|trans }}</span>
+                        {% else %}
+                            <span class="badge badge-inactif">{{ 'status.inactif'|trans }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{{ path('app_zonep_show', {'idZone': zonep.idZone}) }}" class="btn btn-secondary">
+                            {{ 'common.show'|trans }}
+                        </a>
+                        <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">
+                            {{ 'common.edit'|trans }}
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5">{{ 'zonep.no_records'|trans }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="paginationBox">
+        {{ knp_pagination_render(zoneps) }}
+    </div>
+</div>

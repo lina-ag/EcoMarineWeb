@@ -1,8 +1,12 @@
 knp_snappy:
+
+    temporary_folder: '%kernel.cache_dir%/snappy'
+    process_timeout: 30
     pdf:
         enabled: true
         binary: wkhtmltopdf
         options:
+            encoding: 'utf-8'
             enable-local-file-access: true
             margin-top: 8
             margin-right: 8
@@ -10,3 +14,4 @@ knp_snappy:
             margin-left: 8
     image:
         enabled: false
+
