@@ -731,15 +731,22 @@
                     status: currentFilters.status
                 });
 
-                window.open(`${path}?${params.toString()}`, '_blank', 'noopener');
+                const exportUrl = `${path}?${params.toString()}`;
+                const link = document.createElement('a');
+                link.href = exportUrl;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
             };
 
             exportPdfBtn.addEventListener('click', function () {
-                openExport('/calendar/export/pdf');
+                openExport('{{ path('app_calendar_export_pdf') }}');
             });
 
             exportExcelBtn.addEventListener('click', function () {
-                openExport('/calendar/export/excel');
+                openExport('{{ path('app_calendar_export_excel') }}');
             });
 
             resetBtn.addEventListener('click', function () {

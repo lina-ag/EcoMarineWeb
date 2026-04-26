@@ -1,0 +1,231 @@
+{% set capacity = this.capacity %}
+{% set activity = this.activity %}
+{% set dates = this.formattedDates %}
+
+<div {{ attributes.defaults({class: 'reservation-live-preview reservation-live-preview-' ~ capacity.state}) }}>
+    <input type="hidden" class="js-live-activity-id" data-model="activityId" value="{{ activityId ?? '' }}">
+    <input type="hidden" class="js-live-requested-people" data-model="requestedPeople" value="{{ requestedPeople }}">
+
+    <div class="reservation-live-preview-head">
+        <div>
+            <div class="reservation-live-preview-kicker">Tableau reservation</div>
+            <div class="reservation-live-preview-title">
+                {{ activity ? activity.nomActivite : 'Disponibilite de l activite' }}
+            </div>
+        </div>
+        <span class="reservation-live-preview-pill">{{ capacity.state_label }}</span>
+    </div>
+
+    <div class="reservation-live-preview-hero">
+        <div class="reservation-live-preview-hero-copy">
+            <strong>{{ capacity.remaining }}</strong>
+            <span>places encore ouvertes</span>
+        </div>
+        <div class="reservation-live-preview-hero-copy">
+            <strong>{{ capacity.requested }}</strong>
+            <span>participants demandes</span>
+        </div>
+    </div>
+
+    <p class="reservation-live-preview-message">{{ capacity.request_message }}</p>
+
+    <div class="reservation-live-preview-metrics">
+        <div class="reservation-live-preview-metric">
+            <span>Occupees</span>
+            <strong>{{ capacity.used }}</strong>
+        </div>
+        <div class="reservation-live-preview-metric">
+            <span>Restantes</span>
+            <strong>{{ capacity.remaining }}</strong>
+        </div>
+        <div class="reservation-live-preview-metric">
+            <span>Total</span>
+            <strong>{{ capacity.total }}</strong>
+        </div>
+        <div class="reservation-live-preview-metric">
+            <span>Demande</span>
+            <strong>{{ capacity.requested }}</strong>
+        </div>
+    </div>
+
+    <div class="reservation-live-preview-bar" aria-hidden="true">
+        <span style="width: {{ capacity.progress_percent }}%;"></span>
+    </div>
+
+    <div class="reservation-live-preview-dates">
+        <span>Dates autorisees</span>
+        <strong>{{ dates is not empty ? dates|join(' / ') : 'Selectionnez une activite.' }}</strong>
+    </div>
+
+    <div class="reservation-live-preview-footnote">
+        {{ activity ? 'Selection actuelle synchronisee avec le formulaire en temps reel.' : 'Choisissez une activite pour activer le suivi live.' }}
+    </div>
+</div>
+
+<style>
+    .reservation-live-preview {
+        margin-top: 1rem;
+        padding: 1.1rem 1.15rem;
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background:
+            radial-gradient(circle at top right, rgba(34, 211, 238, 0.16), transparent 42%),
+            linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.88));
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .reservation-live-preview-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .reservation-live-preview-kicker {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0f766e;
+    }
+
+    .reservation-live-preview-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .reservation-live-preview-pill {
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .reservation-live-preview-message,
+    .reservation-live-preview-dates {
+        margin: 0;
+        color: #475569;
+        font-size: 0.92rem;
+    }
+
+    .reservation-live-preview-hero {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .reservation-live-preview-hero-copy {
+        padding: 0.95rem 1rem;
+        border-radius: 16px;
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid rgba(191, 219, 254, 0.75);
+    }
+
+    .reservation-live-preview-hero-copy strong {
+        display: block;
+        font-size: 1.35rem;
+        color: #0f172a;
+    }
+
+    .reservation-live-preview-hero-copy span {
+        display: block;
+        margin-top: 0.15rem;
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .reservation-live-preview-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin: 0.95rem 0;
+    }
+
+    .reservation-live-preview-metric {
+        padding: 0.75rem;
+        border-radius: 14px;
+        background: rgba(248, 250, 252, 0.95);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .reservation-live-preview-metric span {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    .reservation-live-preview-metric strong {
+        font-size: 1.05rem;
+        color: #0f172a;
+    }
+
+    .reservation-live-preview-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.2);
+        overflow: hidden;
+        margin-bottom: 0.95rem;
+    }
+
+    .reservation-live-preview-bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #1d4ed8, #0f766e);
+    }
+
+    .reservation-live-preview-dates span {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .reservation-live-preview-footnote {
+        margin-top: 0.85rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.18);
+        font-size: 0.82rem;
+        color: #64748b;
+    }
+
+    .reservation-live-preview-available .reservation-live-preview-pill {
+        color: #166534;
+        background: rgba(22, 163, 74, 0.12);
+    }
+
+    .reservation-live-preview-warning .reservation-live-preview-pill {
+        color: #9a3412;
+        background: rgba(217, 119, 6, 0.14);
+    }
+
+    .reservation-live-preview-full .reservation-live-preview-pill {
+        color: #991b1b;
+        background: rgba(220, 38, 38, 0.12);
+    }
+
+    .reservation-live-preview-default .reservation-live-preview-pill {
+        color: #334155;
+        background: rgba(148, 163, 184, 0.16);
+    }
+
+    @media (max-width: 768px) {
+        .reservation-live-preview-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .reservation-live-preview-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>

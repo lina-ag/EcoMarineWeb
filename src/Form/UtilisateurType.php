@@ -37,13 +37,13 @@ class UtilisateurType extends AbstractType
                 ]
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Email * (doit être @gmail.com)',
+                'label' => 'Email * (doit être @outlook.com ou @hotmail.com)',
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'exemple@gmail.com',
-                    'pattern' => '.*@gmail\.com$',
-                    'title' => 'L\'email doit être une adresse Gmail'
+                    'placeholder' => 'exemple@outlook.com',
+                    'pattern' => '.*@(outlook|hotmail)\.com$',
+                    'title' => 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)'
                 ]
             ])
             ->add('mot_de_passe', PasswordType::class, [

@@ -1,4 +1,3 @@
-
 {% set reservation_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate', 'data-turbo': 'false'}} %}
 {% if form_action is defined and form_action %}
     {% set reservation_form_options = reservation_form_options|merge({'action': form_action}) %}
@@ -31,7 +30,7 @@
                 {{ form_widget(form.date_reservation) }}
             </div>
             <small id="activity-date-hint" style="display:block; margin-top:6px; color:#b91c1c; font-weight:600;">
-                Choisissez d'abord une activité pour voir la date autorisée.
+                Choisissez d'abord une activite pour voir la date autorisee.
             </small>
             {{ form_errors(form.date_reservation_choice) }}
         </div>
@@ -51,36 +50,7 @@
         <div class="form-group-settings full-width">
             {{ form_label(form.activiteEcologique, null, {'label_attr': {'class': 'form-label'}}) }}
             <div class="capacity-select-shell">
-                {{ form_widget(form.activiteEcologique, {'attr': {'class': 'form-input capacity-select'}}) }}
-                <div id="activity-capacity-status" class="capacity-status capacity-status-default">
-                    <div class="capacity-status-topline">
-                        <div class="capacity-status-copy">
-                            <span class="capacity-status-dot" aria-hidden="true"></span>
-                            <div>
-                                <div class="capacity-status-title">Capacité de l'activité</div>
-                                <div class="capacity-status-text">Sélectionnez une activité.</div>
-                            </div>
-                        </div>
-                        <span class="capacity-status-pill">--</span>
-                    </div>
-                    <div class="capacity-metrics" aria-hidden="true">
-                        <div class="capacity-metric">
-                            <span class="capacity-metric-label">Occupées</span>
-                            <strong class="capacity-metric-value" data-capacity-used>0</strong>
-                        </div>
-                        <div class="capacity-metric">
-                            <span class="capacity-metric-label">Restantes</span>
-                            <strong class="capacity-metric-value" data-capacity-remaining>0</strong>
-                        </div>
-                        <div class="capacity-metric">
-                            <span class="capacity-metric-label">Total</span>
-                            <strong class="capacity-metric-value" data-capacity-total>0</strong>
-                        </div>
-                    </div>
-                    <div class="capacity-progress" aria-hidden="true">
-                        <span class="capacity-progress-fill" style="width:0%;"></span>
-                    </div>
-                </div>
+                {{ form_widget(form.activiteEcologique, {'attr': {'class': 'form-input capacity-select reservation-activity-autocomplete', 'data-autocomplete-theme': 'marine'}}) }}
             </div>
             {{ form_errors(form.activiteEcologique) }}
         </div>
@@ -97,20 +67,14 @@
 (() => {
     const translate = (message) => window.ecomarineTrans ? window.ecomarineTrans(message) : message;
     const activitySelect = document.getElementById('{{ form.activiteEcologique.vars.id }}');
+    const peopleInput = document.getElementById('{{ form.nombre_personnes.vars.id }}');
     const dateSelect = document.getElementById('{{ form.date_reservation_choice.vars.id }}');
     const dateHiddenInput = document.getElementById('{{ form.date_reservation.vars.id }}');
     const hint = document.getElementById('activity-date-hint');
-    const capacityStatus = document.getElementById('activity-capacity-status');
-    const capacityPill = capacityStatus ? capacityStatus.querySelector('.capacity-status-pill') : null;
-    const capacityText = capacityStatus ? capacityStatus.querySelector('.capacity-status-text') : null;
-    const capacityFill = capacityStatus ? capacityStatus.querySelector('.capacity-progress-fill') : null;
-    const capacityUsed = capacityStatus ? capacityStatus.querySelector('[data-capacity-used]') : null;
-    const capacityRemaining = capacityStatus ? capacityStatus.querySelector('[data-capacity-remaining]') : null;
-    const capacityTotal = capacityStatus ? capacityStatus.querySelector('[data-capacity-total]') : null;
     const activityDataBaseUrl = {{ path('app_reservation_activity_data', {'id_activite': 0})|json_encode|raw }};
     const urlTemplate = activityDataBaseUrl.replace(/0$/, '__ID__');
 
-    if (!activitySelect || !dateSelect || !dateHiddenInput || !hint || !capacityStatus || !capacityText || !capacityFill || !capacityPill || !capacityUsed || !capacityRemaining || !capacityTotal) {
+    if (!activitySelect || !peopleInput || !dateSelect || !dateHiddenInput || !hint) {
         return;
     }
 
@@ -119,13 +83,20 @@
         const currentValue = activitySelect.value;
 
         Array.from(activitySelect.options).forEach((option) => {
-            if (!option.value) return;
+            if (!option.value) {
+                return;
+            }
+
             const key = option.textContent ? option.textContent.trim().toLowerCase() : '';
-            if (!key) return;
+            if (!key) {
+                return;
+            }
+
             if (seen.has(key) && option.value !== currentValue) {
                 option.remove();
                 return;
             }
+
             seen.add(key);
         });
     };
@@ -138,79 +109,14 @@
         dateSelect.appendChild(placeholder);
         dateSelect.value = '';
         dateHiddenInput.value = '';
-        hint.textContent = translate('Choisissez d abord une activité pour voir la date autorisée.');
-    };
-
-    const resetCapacityState = () => {
-        activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
-        capacityStatus.className = 'capacity-status capacity-status-default';
-        capacityPill.textContent = '--';
-        capacityText.textContent = 'Sélectionnez une activité.';
-        capacityUsed.textContent = '0';
-        capacityRemaining.textContent = '0';
-        capacityTotal.textContent = '0';
-        capacityFill.style.width = '0%';
-    };
-
-    const applyCapacityState = () => {
-        const selectedOption = activitySelect.options[activitySelect.selectedIndex];
-        if (!selectedOption || !selectedOption.value) {
-            resetCapacityState();
-            return;
-        }
-
-        const state = selectedOption.dataset.capacityState || 'available';
-        const used = selectedOption.dataset.capacityUsed || '0';
-        const total = selectedOption.dataset.capacityTotal || '0';
-        const remaining = selectedOption.dataset.capacityRemaining || '0';
-        const totalValue = Math.max(0, Number(total));
-        const usedValue = Math.max(0, Number(used));
-        const percent = totalValue > 0 ? Math.min(100, Math.round((usedValue / totalValue) * 100)) : 0;
-
-        activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
-        activitySelect.classList.add('capacity-select-' + state);
-        capacityStatus.className = 'capacity-status capacity-status-' + state;
-        capacityStatus.classList.remove('is-updating');
-        void capacityStatus.offsetWidth;
-        capacityStatus.classList.add('is-updating');
-        capacityPill.textContent = state === 'full' ? 'Complet' : state === 'warning' ? 'Alerte' : 'Disponible';
-        capacityUsed.textContent = used;
-        capacityRemaining.textContent = remaining;
-        capacityTotal.textContent = total;
-        capacityFill.style.width = percent + '%';
-        capacityText.textContent = used + '/' + total + ' utilisées • ' + remaining + ' restantes';
-    };
-
-    const applyCapacityFromResponse = (capacity) => {
-        if (!capacity || typeof capacity !== 'object') {
-            applyCapacityState();
-            return;
-        }
-
-        const state = capacity.state || 'available';
-        const used = String(capacity.used ?? '0');
-        const total = String(capacity.total ?? '0');
-        const remaining = String(capacity.remaining ?? '0');
-        const totalValue = Math.max(0, Number(total));
-        const usedValue = Math.max(0, Number(used));
-        const percent = totalValue > 0 ? Math.min(100, Math.round((usedValue / totalValue) * 100)) : 0;
-
-        activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
-        activitySelect.classList.add('capacity-select-' + state);
-        capacityStatus.className = 'capacity-status capacity-status-' + state;
-        capacityStatus.classList.remove('is-updating');
-        void capacityStatus.offsetWidth;
-        capacityStatus.classList.add('is-updating');
-        capacityPill.textContent = state === 'full' ? 'Complet' : state === 'warning' ? 'Alerte' : 'Disponible';
-        capacityUsed.textContent = used;
-        capacityRemaining.textContent = remaining;
-        capacityTotal.textContent = total;
-        capacityFill.style.width = percent + '%';
-        capacityText.textContent = used + '/' + total + ' utilisées • ' + remaining + ' restantes';
+        hint.textContent = translate('Choisissez d abord une activite pour voir la date autorisee.');
     };
 
     const formatDateFr = (isoDate) => {
-        if (!isoDate || !isoDate.includes('-')) return isoDate;
+        if (!isoDate || !isoDate.includes('-')) {
+            return isoDate;
+        }
+
         const [year, month, day] = isoDate.split('-');
         return day + '/' + month + '/' + year;
     };
@@ -237,7 +143,7 @@
         }
 
         dateHiddenInput.value = dateSelect.value;
-        hint.textContent = translate('Dates autorisées: ') + allowedDates.map(formatDateFr).join(' / ');
+        hint.textContent = translate('Dates autorisees: ') + allowedDates.map(formatDateFr).join(' / ');
     };
 
     dateSelect.addEventListener('change', () => {
@@ -247,11 +153,10 @@
     const updateAllowedDate = async () => {
         if (!urlTemplate || !activitySelect.value) {
             resetDateChoices();
-            resetCapacityState();
             return;
         }
 
-        hint.textContent = 'Chargement des informations de l activité...';
+        hint.textContent = 'Chargement des informations de l activite...';
 
         try {
             const response = await fetch(urlTemplate.replace('__ID__', encodeURIComponent(activitySelect.value)), {
@@ -260,22 +165,18 @@
 
             if (!response.ok) {
                 resetDateChoices();
-                applyCapacityState();
                 return;
             }
 
             const data = await response.json();
             if (!Array.isArray(data.dates) || data.dates.length === 0) {
                 resetDateChoices();
-                applyCapacityFromResponse(data.capacity ?? null);
                 return;
             }
 
             applyAllowedDates(data.dates);
-            applyCapacityFromResponse(data.capacity ?? null);
-        } catch (e) {
+        } catch (error) {
             resetDateChoices();
-            resetCapacityState();
         }
     };
 

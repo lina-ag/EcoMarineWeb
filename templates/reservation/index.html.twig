@@ -33,6 +33,7 @@
                 </button>
                 <a href="{{ path('app_front_calendar') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.see_calendar'|trans }}</a>
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.export_pdf'|trans }}</a>
+                <button type="button" id="reservation-ai-report-btn" class="btn btn-secondary reservation-admin-cta" data-report-url="{{ path('app_reservation_report_ai') }}">Rapport IA</button>
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'reservation.create'|trans }}</a>
             </div>
         </div>
@@ -52,6 +53,19 @@
             <div style="height: 280px;">
                 {{ render_chart(reservationActivityChart, {'controller': '@symfony/ux-chartjs/chart'}) }}
             </div>
+        </div>
+
+        <div id="reservation-ai-report-panel" style="display:none; margin: 0 0 1.1rem; padding: 1rem 1.1rem; border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.65); background: rgba(255, 255, 255, 0.88); box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);">
+            <div style="display:flex; justify-content:space-between; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:0.75rem;">
+                <div>
+                    <h3 style="margin:0; font-size:1rem; font-weight:800; color:#0f172a;">Rapport activité / réservation</h3>
+                    <p style="margin:0.25rem 0 0; color:#475569; font-size:0.9rem;">Analyse IA basée sur les filtres actifs de la liste.</p>
+                </div>
+                <span id="reservation-ai-report-status" style="display:inline-flex; align-items:center; padding:0.35rem 0.7rem; border-radius:999px; background:rgba(37, 99, 235, 0.12); color:#1d4ed8; font-weight:700; font-size:0.82rem;">Prêt</span>
+            </div>
+            <div id="reservation-ai-report-loading" style="display:none; color:#1d4ed8; font-weight:700; margin-bottom:0.75rem;">Generation du rapport en cours...</div>
+            <div id="reservation-ai-report-error" style="display:none; color:#b91c1c; font-weight:700; margin-bottom:0.75rem;"></div>
+            <div id="reservation-ai-report-result" style="display:none; white-space:pre-wrap; line-height:1.65; color:#0f172a; background:linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(248, 250, 252, 0.92)); border:1px solid rgba(191, 219, 254, 0.65); border-radius:16px; padding:1rem;"></div>
         </div>
 
         <style>
@@ -511,6 +525,8 @@
                             value="{{ search_term|default('') }}"
                             placeholder="{{ 'reservation.search_placeholder'|trans }}"
                             autocomplete="off"
+                            list="reservation-search-suggestions"
+                            data-autocomplete-source="{{ autocomplete_suggestions|default([])|json_encode|e('html_attr') }}"
                         >
                         <button type="button" id="reservation-voice-btn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
                             <svg id="reservation-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -520,6 +536,11 @@
                                 <line x1="8" y1="23" x2="16" y2="23"/>
                             </svg>
                         </button>
+                        <datalist id="reservation-search-suggestions">
+                            {% for suggestion in autocomplete_suggestions|default([]) %}
+                                <option value="{{ suggestion }}">
+                            {% endfor %}
+                        </datalist>
                     </div>
                     <button id="reservation-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'reservation.search'|trans }}" title="{{ 'reservation.search'|trans }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -531,6 +552,39 @@
                 </div>
                 <small id="reservation-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
             </div>
+            <div class="autocomplete-hint">Suggestions rapides disponibles pendant la saisie.</div>
+            <script>
+                (() => {
+                    const input = document.getElementById('reservation-search-input');
+                    const datalist = document.getElementById('reservation-search-suggestions');
+
+                    if (!input || !datalist) {
+                        return;
+                    }
+
+                    const source = JSON.parse(input.dataset.autocompleteSource || '[]');
+                    const normalize = (value) => value
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .trim();
+
+                    const renderSuggestions = (rawValue) => {
+                        const query = normalize(rawValue);
+                        const suggestions = query === ''
+                            ? source.slice(0, 8)
+                            : source.filter((item) => normalize(item).startsWith(query)).slice(0, 8);
+
+                        datalist.innerHTML = suggestions
+                            .map((item) => '<option value="' + String(item).replace(/"/g, '&quot;') + '">')
+                            .join('');
+                    };
+
+                    input.addEventListener('input', () => renderSuggestions(input.value));
+                    input.addEventListener('focus', () => renderSuggestions(input.value));
+                    renderSuggestions(input.value);
+                })();
+            </script>
 
             <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
                 <label style="font-size: 0.9rem; font-weight: 600; margin-right: 0.5rem;">{{ 'reservation.quick_filters'|trans }}</label>
@@ -811,6 +865,85 @@
                 });
             };
 
+            const initAiReport = function () {
+                const reportButton = document.getElementById('reservation-ai-report-btn');
+                const reportPanel = document.getElementById('reservation-ai-report-panel');
+                const reportStatus = document.getElementById('reservation-ai-report-status');
+                const reportLoading = document.getElementById('reservation-ai-report-loading');
+                const reportError = document.getElementById('reservation-ai-report-error');
+                const reportResult = document.getElementById('reservation-ai-report-result');
+                const searchForm = document.getElementById('reservation-search-form');
+
+                if (!reportButton || !reportPanel || !reportStatus || !reportLoading || !reportError || !reportResult) {
+                    return;
+                }
+
+                if (reportButton.dataset.bound === '1') {
+                    return;
+                }
+
+                reportButton.dataset.bound = '1';
+
+                reportButton.addEventListener('click', function () {
+                    const baseUrl = reportButton.dataset.reportUrl;
+                    if (!baseUrl) {
+                        return;
+                    }
+
+                    const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
+                    const reportUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
+
+                    reportPanel.style.display = 'block';
+                    reportLoading.style.display = 'block';
+                    reportError.style.display = 'none';
+                    reportResult.style.display = 'none';
+                    reportResult.textContent = '';
+                    reportStatus.textContent = 'Chargement';
+                    reportStatus.style.background = 'rgba(37, 99, 235, 0.12)';
+                    reportStatus.style.color = '#1d4ed8';
+                    reportButton.disabled = true;
+
+                    fetch(reportUrl, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                        .then(function (response) {
+                            return response.json().then(function (data) {
+                                if (!response.ok) {
+                                    throw new Error(data.error || 'Impossible de générer le rapport.');
+                                }
+
+                                return data;
+                            });
+                        })
+                        .then(function (data) {
+                            reportLoading.style.display = 'none';
+                            reportButton.disabled = false;
+
+                            if (!data.success || !data.report) {
+                                throw new Error(data.error || 'Impossible de générer le rapport.');
+                            }
+
+                            reportResult.textContent = data.report;
+                            reportResult.style.display = 'block';
+                            reportStatus.textContent = 'Généré';
+                            reportStatus.style.background = 'rgba(22, 163, 74, 0.12)';
+                            reportStatus.style.color = '#15803d';
+                            reportPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        })
+                        .catch(function (error) {
+                            reportLoading.style.display = 'none';
+                            reportButton.disabled = false;
+                            reportError.textContent = error.message || 'Erreur lors de la génération du rapport.';
+                            reportError.style.display = 'block';
+                            reportStatus.textContent = 'Erreur';
+                            reportStatus.style.background = 'rgba(220, 38, 38, 0.12)';
+                            reportStatus.style.color = '#b91c1c';
+                        });
+                });
+            };
+
             const initReservationLiveSearch = function () {
                 const root = document.getElementById('reservation-live-root');
 
@@ -1036,6 +1169,7 @@
 
             initReservationLiveSearch();
             initReservationCsvExport();
+            initAiReport();
             initReservationFlashToasts();
             animateCounter();
         })();

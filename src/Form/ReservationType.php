@@ -54,6 +54,10 @@ class ReservationType extends AbstractType
                 'label' => 'Activité écologique',
                 'placeholder' => '-- Choisissez une activité --',
                 'autocomplete' => true,
+                'attr' => [
+                    'class' => 'form-input capacity-select reservation-activity-autocomplete',
+                    'data-autocomplete-theme' => 'marine',
+                ],
                 'choice_attr' => function (?ActiviteEcologique $activite): array {
                     if (!$activite || !$activite->getDate_activite()) {
                         return [];

@@ -45,12 +45,12 @@
             {{ form_label(form.email, 'Email *', {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.email, {'attr': {
                 'class': 'form-input',
-                'placeholder': 'exemple@gmail.com',
-                'pattern': '.*@gmail\\.com$',
-                'title': 'L\'email doit être une adresse Gmail'
+                'placeholder': 'exemple@outlook.com',
+                'pattern': '.*@(outlook|hotmail)\\.com$',
+                'title': 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)'
             }}) }}
             {{ form_errors(form.email) }}
-            <small class="form-text text-muted">Doit être une adresse Gmail (@gmail.com)</small>
+            <small class="form-text text-muted">Doit être une adresse Outlook (@outlook.com ou @hotmail.com)</small>
         </div>
         
         <div class="form-group-settings">
@@ -293,14 +293,14 @@
     // Validation en temps réel
     document.addEventListener('DOMContentLoaded', function() {
         
-        // Validation email Gmail
+        // Validation email Outlook
         const emailInput = document.querySelector('input[name="utilisateur[email]"]');
         if (emailInput) {
             emailInput.addEventListener('input', function() {
                 const email = this.value;
-                const isValid = /.*@gmail\.com$/.test(email);
+                const isValid = /.*@(outlook|hotmail)\.com$/.test(email);
                 if (!isValid && email.length > 0) {
-                    this.setCustomValidity('L\'email doit être une adresse @gmail.com');
+                    this.setCustomValidity('L\'email doit être une adresse @outlook.com ou @hotmail.com');
                     this.classList.add('is-invalid');
                 } else {
                     this.setCustomValidity('');

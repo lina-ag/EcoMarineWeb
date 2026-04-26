@@ -67,10 +67,10 @@ final class UtilisateurController extends AbstractController
                 ]);
             }
             
-            // 🔥 Vérifier que l'email est Gmail
+            // 🔥 Vérifier que l'email est Outlook
             $email = $utilisateur->getEmail();
-            if (!preg_match('/@gmail\.com$/', $email)) {
-                $this->addFlash('error', 'L\'email doit être une adresse Gmail (@gmail.com)');
+            if (!preg_match('/@(outlook|hotmail)\.com$/', $email)) {
+                $this->addFlash('error', 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)');
                 return $this->render('utilisateur/new.html.twig', [
                     'utilisateur' => $utilisateur,
                     'form' => $form,
@@ -163,10 +163,10 @@ final class UtilisateurController extends AbstractController
                 ]);
             }
             
-            // 🔥 Vérifier que l'email est Gmail
+            // 🔥 Vérifier que l'email est Outlook
             $email = $utilisateur->getEmail();
-            if (!preg_match('/@gmail\.com$/', $email)) {
-                $this->addFlash('error', 'L\'email doit être une adresse Gmail (@gmail.com)');
+            if (!preg_match('/@(outlook|hotmail)\.com$/', $email)) {
+                $this->addFlash('error', 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)');
                 return $this->render('utilisateur/edit.html.twig', [
                     'utilisateur' => $utilisateur,
                     'form' => $form,

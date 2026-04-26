@@ -11,16 +11,16 @@
                 }
             }
         },
-        "@symfony/ux-leaflet-map": {
-            "map": {
-                "enabled": true,
-                "fetch": "lazy"
-            }
-        },
         "@symfony/ux-chartjs": {
             "chart": {
                 "enabled": true,
                 "fetch": "eager"
+            }
+        },
+        "@symfony/ux-leaflet-map": {
+            "map": {
+                "enabled": true,
+                "fetch": "lazy"
             }
         },
         "@symfony/ux-live-component": {

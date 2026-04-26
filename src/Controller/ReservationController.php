@@ -6,6 +6,8 @@ use App\Entity\Reservation;
 use App\Form\ReservationType;
 use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
+use App\Service\GroqMailService;
+use App\Service\GroqReportService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -160,7 +162,7 @@ final class ReservationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, GroqMailService $groqMailService): Response
     {
         $reservation = new Reservation();
         $form = $this->createForm(ReservationType::class, $reservation);
@@ -171,6 +173,17 @@ final class ReservationController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
+
+            try {
+                $groqMailService->sendReservationConfirmation(
+                    (string) $reservation->getEmail(),
+                    (string) $reservation->getNom(),
+                    (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
+                    $reservation->getDate_reservation()?->format('d/m/Y') ?? ''
+                );
+            } catch (\Throwable) {
+                $this->addFlash('error', 'La réservation a été enregistrée, mais l\'email de confirmation n\'a pas pu être envoyé.');
+            }
 
             if ($request->query->get('source') === 'front') {
                 return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
@@ -188,7 +201,7 @@ final class ReservationController extends AbstractController
     }
 
 #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient, GroqMailService $groqMailService): Response
 {
     $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
     $questions = [];
@@ -263,6 +276,20 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
             default => 'bronze',
         };
 
+        try {
+            $groqMailService->sendQuizConfirmation(
+                (string) $reservation->getEmail(),
+                (string) $reservation->getNom(),
+                (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
+                $reservation->getDate_reservation()?->format('d/m/Y') ?? '',
+                $correctCount,
+                count($questions),
+                $badge
+            );
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Le résultat du quiz a été calculé, mais l\'email n\'a pas pu être envoyé.');
+        }
+
         return $this->render('reservation/quiz_result.html.twig', [
             'reservation' => $reservation,
             'questions' => $questions,
@@ -279,7 +306,7 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
     ]);
 }
     #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
-    public function exportAllPdf(ReservationRepository $reservationRepository): Response
+    public function exportAllPdf(ReservationRepository $reservationRepository, GroqReportService $groqReportService): Response
     {
         $reservations = $reservationRepository
             ->createQueryBuilder('r')
@@ -289,9 +316,18 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
             ->getQuery()
             ->getResult();
 
+        $report = null;
+        try {
+            $reportPayload = $this->buildReservationReportPayload($reservations);
+            $report = $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']);
+        } catch (\Throwable $exception) {
+            $report = 'Rapport IA indisponible pour cet export PDF.';
+        }
+
         $html = $this->renderView('reservation/pdf_list.html.twig', [
             'reservations' => $reservations,
             'generatedAt' => new \DateTimeImmutable(),
+            'report' => $report,
         ]);
 
         $options = new Options();
@@ -311,6 +347,97 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
                 'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
             ]
         );
+    }
+
+    #[Route('/report/ai', name: 'app_reservation_report_ai', methods: ['GET'])]
+    public function reportAi(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        GroqReportService $groqReportService
+    ): JsonResponse {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $statusFilter = (string) $request->query->get('status', 'all');
+        $personnesFilter = (string) $request->query->get('personnes', 'all');
+        $dateFrom = trim((string) $request->query->get('date_from', ''));
+        $dateTo = trim((string) $request->query->get('date_to', ''));
+        $sort = (string) $request->query->get('sort', 'id_desc');
+
+        $queryBuilder = $this->buildFilteredReservationQueryBuilder(
+            $reservationRepository,
+            $searchTerm,
+            $searchField,
+            $statusFilter,
+            $personnesFilter,
+            $dateFrom,
+            $dateTo
+        );
+        $this->applyReservationSort($queryBuilder, $sort);
+
+        /** @var array<int, Reservation> $reservations */
+        $reservations = $queryBuilder->getQuery()->getResult();
+
+        $reportPayload = $this->buildReservationReportPayload($reservations);
+
+        try {
+            return $this->json([
+                'success' => true,
+                'report' => $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']),
+            ]);
+        } catch (\Throwable $exception) {
+            return $this->json([
+                'success' => false,
+                'error' => $this->normalizeGroqErrorMessage($exception->getMessage()),
+            ], Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    /**
+     * @param array<int, Reservation> $reservations
+     * @return array{activities: array<int, array{nom: string, date: string, capacite: int, booked: int, reservations: int}>, reservations: array<int, array{nom: string, activite: string, date: string, nombrePersonnes: int, statut: string}>}
+     */
+    private function buildReservationReportPayload(array $reservations): array
+    {
+        $activities = [];
+        foreach ($reservations as $reservation) {
+            if (!$reservation instanceof Reservation) {
+                continue;
+            }
+
+            $activity = $reservation->getActiviteEcologique();
+            if ($activity === null) {
+                continue;
+            }
+
+            $activityId = $activity->getIdActivite() ?? spl_object_id($activity);
+            if (!isset($activities[$activityId])) {
+                $activities[$activityId] = [
+                    'nom' => (string) ($activity->getNomActivite() ?? 'Activite inconnue'),
+                    'date' => $activity->getDateActivite()?->format('Y-m-d') ?? 'Non planifiee',
+                    'capacite' => (int) ($activity->getCapacite() ?? 0),
+                    'booked' => 0,
+                    'reservations' => 0,
+                ];
+            }
+
+            $activities[$activityId]['booked'] += (int) ($reservation->getNombrePersonnes() ?? 0);
+            $activities[$activityId]['reservations'] += 1;
+        }
+
+        $reservationRows = array_map(function (Reservation $reservation): array {
+            return [
+                'nom' => (string) ($reservation->getNom() ?? 'Sans nom'),
+                'activite' => (string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? 'Sans activité'),
+                'date' => $reservation->getDateReservation()?->format('Y-m-d') ?? 'Sans date',
+                'nombrePersonnes' => (int) ($reservation->getNombrePersonnes() ?? 0),
+                'statut' => $this->getReservationStatus($reservation),
+            ];
+        }, $reservations);
+
+        return [
+            'activities' => array_values($activities),
+            'reservations' => $reservationRows,
+        ];
     }
 
     #[Route('/{id_reservation}', name: 'app_reservation_show', methods: ['GET'])]
@@ -742,6 +869,29 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
         }
 
         return $dateReservation->format('Y-m-d') > (new \DateTimeImmutable('today'))->format('Y-m-d') ? 'pending' : 'confirmed';
+    }
+
+    private function normalizeGroqErrorMessage(string $message): string
+    {
+        $normalized = trim($message);
+
+        if ($normalized === '') {
+            return 'Le rapport IA est indisponible pour le moment.';
+        }
+
+        if (str_contains($normalized, 'Invalid API Key')) {
+            return 'La clé Groq du rapport IA est invalide.';
+        }
+
+        if (str_contains($normalized, 'rate_limit') || str_contains($normalized, 'Rate limit')) {
+            return 'Le quota Groq est atteint temporairement. Réessayez dans un instant.';
+        }
+
+        if (str_contains($normalized, 'model')) {
+            return 'Le modèle Groq du rapport IA est indisponible ou non autorisé.';
+        }
+
+        return $normalized;
     }
 
     private function normalizeSearchValue(string $value): string

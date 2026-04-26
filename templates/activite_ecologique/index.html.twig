@@ -535,6 +535,8 @@
                             value="{{ search_term|default('') }}"
                             placeholder="{{ 'activite.search_placeholder'|trans }}"
                             autocomplete="on"
+                            list="activite-search-suggestions"
+                            data-autocomplete-source="{{ autocomplete_suggestions|default([])|json_encode|e('html_attr') }}"
                         >
                         <button type="button" id="activite-voice-btn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
                             <svg id="activite-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -544,6 +546,11 @@
                                 <line x1="8" y1="23" x2="16" y2="23"/>
                             </svg>
                         </button>
+                        <datalist id="activite-search-suggestions">
+                            {% for suggestion in autocomplete_suggestions|default([]) %}
+                                <option value="{{ suggestion }}">
+                            {% endfor %}
+                        </datalist>
                     </div>
                     <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'activite.search'|trans }}" title="{{ 'activite.search'|trans }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -555,6 +562,39 @@
                 </div>
                 <small id="activite-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
             </div>
+            <div class="autocomplete-hint">Suggestions rapides disponibles pendant la saisie.</div>
+            <script>
+                (() => {
+                    const input = document.getElementById('activite-search-input');
+                    const datalist = document.getElementById('activite-search-suggestions');
+
+                    if (!input || !datalist) {
+                        return;
+                    }
+
+                    const source = JSON.parse(input.dataset.autocompleteSource || '[]');
+                    const normalize = (value) => value
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .trim();
+
+                    const renderSuggestions = (rawValue) => {
+                        const query = normalize(rawValue);
+                        const suggestions = query === ''
+                            ? source.slice(0, 8)
+                            : source.filter((item) => normalize(item).startsWith(query)).slice(0, 8);
+
+                        datalist.innerHTML = suggestions
+                            .map((item) => '<option value="' + String(item).replace(/"/g, '&quot;') + '">')
+                            .join('');
+                    };
+
+                    input.addEventListener('input', () => renderSuggestions(input.value));
+                    input.addEventListener('focus', () => renderSuggestions(input.value));
+                    renderSuggestions(input.value);
+                })();
+            </script>
 
             <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">{{ 'activite.all'|trans }}</a>

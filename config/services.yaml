@@ -22,7 +22,19 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    
+
     App\Service\GroqAnalyzer:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
+
+    App\Service\GroqMailService:
+        arguments:
+            $httpClient: '@http_client'
+
+    App\Service\GroqReportService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
+    App\Admin\ActiviteEcologiqueAdmin:
+        tags:
+            - { name: sonata.admin, model_class: App\Entity\ActiviteEcologique, manager_type: orm, label: 'Activités écologiques' }
