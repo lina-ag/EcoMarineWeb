@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Zonep;
@@ -8,59 +9,77 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
+use Knp\Component\Pager\PaginatorInterface;
 use Knp\Snappy\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Knp\Component\Pager\PaginatorInterface;
-
+use Symfony\UX\Map\Bridge\Leaflet\LeafletOptions;
+use Symfony\UX\Map\Bridge\Leaflet\Option\AttributionControlOptions;
+use Symfony\UX\Map\Bridge\Leaflet\Option\ControlPosition;
+use Symfony\UX\Map\Bridge\Leaflet\Option\TileLayer;
+use Symfony\UX\Map\Bridge\Leaflet\Option\ZoomControlOptions;
 use Symfony\UX\Map\Map;
-use Symfony\UX\Map\Marker;
 use Symfony\UX\Map\Point;
-use Symfony\UX\Map\InfoWindow;
-
 
 #[Route('/zonep')]
 final class ZonepController extends AbstractController
 {
     #[Route('', name: 'app_zonep_index', methods: ['GET'])]
     public function index(
-    Request $request,
-    ZonepRepository $zonepRepository,
-    PaginatorInterface $paginator
-): Response {
-    $sortBy = $request->query->get('tri', 'idZone');
-    $order  = $request->query->get('sens', 'ASC');
-    $search = trim((string) $request->query->get('search', ''));
-    $status = trim((string) $request->query->get('status', ''));
+        Request $request,
+        ZonepRepository $zonepRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $sortBy = $request->query->get('tri', 'idZone');
+        $order = $request->query->get('sens', 'ASC');
+        $search = trim((string) $request->query->get('search', ''));
+        $status = trim((string) $request->query->get('status', ''));
 
-    $query = $zonepRepository->findFiltered($search, $status, $sortBy, $order);
+        $query = $zonepRepository->findFiltered($search, $status, $sortBy, $order);
 
-    $zoneps = $paginator->paginate(
-        $query->getQuery(),
-        $request->query->getInt('page', 1),
-        10
-    );
-    // Crée la carte centrée sur la Tunisie (coordonnées par défaut)
-         $map = (new Map())
-        ->center(new Point(36.8, 10.18))
-        ->zoom(7);
+        $zoneps = $paginator->paginate(
+            $query->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
 
-    if ($request->isXmlHttpRequest()) {
-        return $this->render('zonep/_results.html.twig', [
-            'zoneps'  => $zoneps,
+        $leafletOptions = (new LeafletOptions())
+            ->tileLayer(new TileLayer(
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                options: [
+                    'maxZoom' => 19,
+                ]
+            ))
+            ->attributionControlOptions(new AttributionControlOptions(ControlPosition::BOTTOM_RIGHT))
+            ->zoomControlOptions(new ZoomControlOptions(ControlPosition::TOP_RIGHT));
+
+        $map = (new Map())
+            ->center(new Point(36.8, 10.18))
+            ->zoom(7)
+            ->options($leafletOptions);
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('zonep/_results.html.twig', [
+                'zoneps' => $zoneps,
+            ]);
+        }
+
+        return $this->render('zonep/index.html.twig', [
+            'zoneps' => $zoneps,
+            'sortBy' => $sortBy,
+            'order' => $order,
+            'search' => $search,
+            'status' => $status,
+            'map' => $map,
         ]);
-    }
-
-    return $this->render('zonep/index.html.twig', [
-        'zoneps'  => $zoneps,
-        'sortBy'  => $sortBy,
-        'order'   => $order,
-        'search'  => $search,
-        'status'  => $status,
-        'map'     => $map,
-    ]);
     }
 
     #[Route('/new', name: 'app_zonep_new', methods: ['GET', 'POST'])]
@@ -73,6 +92,7 @@ final class ZonepController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($zonep);
             $entityManager->flush();
+
             return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -90,11 +110,9 @@ final class ZonepController extends AbstractController
         if (!$zonep) {
             throw $this->createNotFoundException('Zone introuvable.');
         }
-        
 
         return $this->render('zonep/show.html.twig', [
             'zonep' => $zonep,
-            
         ]);
     }
 
@@ -112,6 +130,7 @@ final class ZonepController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+
             return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -154,6 +173,56 @@ final class ZonepController extends AbstractController
         } catch (\Throwable $exception) {
             return $this->renderWithDompdf($html, 'zones_'.date('Y-m-d').'.pdf');
         }
+    }
+
+    #[Route('/export/excel', name: 'app_zonep_export_excel', methods: ['GET'])]
+    public function exportExcel(ZonepRepository $zonepRepository): StreamedResponse
+    {
+        $zoneps = $zonepRepository->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Zones');
+
+        $sheet->setCellValue('A1', 'Rapport des zones de protection marine');
+        $sheet->setCellValue('A2', 'Genere le');
+        $sheet->setCellValue('B2', (new \DateTimeImmutable())->format('d/m/Y H:i'));
+        $sheet->setCellValue('A4', 'ID');
+        $sheet->setCellValue('B4', 'Nom de la zone');
+        $sheet->setCellValue('C4', 'Categorie');
+        $sheet->setCellValue('D4', 'Statut');
+        $sheet->setCellValue('E4', 'Nb surveillances');
+
+        $headerRange = 'A4:E4';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFDFF6FF');
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        $rowIndex = 5;
+
+        foreach ($zoneps as $zonep) {
+            $sheet->setCellValue("A{$rowIndex}", $zonep->getIdZone());
+            $sheet->setCellValue("B{$rowIndex}", $zonep->getNomZone());
+            $sheet->setCellValue("C{$rowIndex}", $zonep->getCategorieZone());
+            $sheet->setCellValue("D{$rowIndex}", $zonep->getStatus());
+            $sheet->setCellValue("E{$rowIndex}", $zonep->getSurvzones()->count());
+            $sheet->getStyle("A{$rowIndex}:E{$rowIndex}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $rowIndex++;
+        }
+
+        foreach (range('A', 'E') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $writer = new XlsxWriter($spreadsheet);
+
+        return new StreamedResponse(function () use ($writer): void {
+            $writer->save('php://output');
+        }, Response::HTTP_OK, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => sprintf('attachment; filename="zones_%s.xlsx"', (new \DateTimeImmutable())->format('Y-m-d')),
+            'Cache-Control' => 'max-age=0, must-revalidate, no-cache, no-store, private',
+        ]);
     }
 
     private function renderWithDompdf(string $html, string $filename): Response

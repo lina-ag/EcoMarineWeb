@@ -9,6 +9,8 @@ use App\Repository\ReservationRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -185,56 +187,97 @@ final class ReservationController extends AbstractController
         ]);
     }
 
-    #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-    public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
-    {
-        $apiKey = $_ENV['8ARNMqo7uXgU5NTweEmWn46Hvewjcp1PtqfXTKDZTj29'] ?? '';
+#[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
+{
+    $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
+    $questions = [];
+
+    try {
+        $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
+            'headers' => ['X-Api-Key' => $apiKey],
+            'query' => ['category' => 'nature', 'limit' => 3],
+        ]);
+        $data = $response->toArray();
+        if (!empty($data) && isset($data[0]['question'])) {
+            $questions = $data;
+        }
+    } catch (\Throwable) {
         $questions = [];
+    }
 
-        try {
-            $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
-                'headers' => ['X-Api-Key' => $apiKey],
-                'query' => ['category' => 'nature', 'limit' => 3],
-            ]);
-            $questions = $response->toArray();
-        } catch (\Throwable) {
-            $questions = [];
+    if (empty($questions)) {
+        $questions = [
+            [
+                'question' => 'Quel est le plus grand océan du monde ?',
+                'answer' => 'Pacifique',
+                'wrong' => ['Atlantique', 'Indien', 'Arctique'],
+            ],
+            [
+                'question' => 'Quel animal marin est connu pour changer de couleur ?',
+                'answer' => 'Poulpe',
+                'wrong' => ['Requin', 'Dauphin', 'Baleine'],
+            ],
+            [
+                'question' => 'Combien de pourcentage de la Terre est recouvert d\'eau ?',
+                'answer' => '71%',
+                'wrong' => ['55%', '63%', '85%'],
+            ],
+        ];
+    }
+
+    // Génère les choix QCM pour chaque question
+    foreach ($questions as $index => &$question) {
+        $correct = $question['answer'];
+
+        // Si des fausses réponses spécifiques existent on les utilise
+        if (isset($question['wrong'])) {
+            $wrong = $question['wrong'];
+        } else {
+            // Pour les questions de l'API : on génère des fausses réponses génériques cohérentes
+            $wrong = ['Inconnu', 'Aucune de ces réponses', 'Non applicable'];
         }
 
-        if ($request->isMethod('POST')) {
-            $answers = $request->request->all('answers');
-            $correctCount = 0;
+        $choices = array_slice($wrong, 0, 3);
+        $choices[] = $correct;
+        shuffle($choices);
+        $question['choices'] = $choices;
+    }
+    unset($question);
 
-            foreach ($questions as $index => $question) {
-                $userAnswer = strtolower(trim($answers[$index] ?? ''));
-                $correct = strtolower(trim($question['answer'] ?? ''));
-                if ($userAnswer === $correct) {
-                    $correctCount++;
-                }
+    if ($request->isMethod('POST')) {
+        $answers = $request->request->all('answers');
+        $correctCount = 0;
+
+        foreach ($questions as $index => $question) {
+            $userAnswer = strtolower(trim($answers[$index] ?? ''));
+            $correct = strtolower(trim($question['answer'] ?? ''));
+            if ($userAnswer === $correct) {
+                $correctCount++;
             }
-
-            $badge = match(true) {
-                $correctCount === count($questions) => 'gold',
-                $correctCount >= 2 => 'silver',
-                default => 'bronze',
-            };
-
-            return $this->render('reservation/quiz_result.html.twig', [
-                'reservation' => $reservation,
-                'questions' => $questions,
-                'answers' => $answers,
-                'correct_count' => $correctCount,
-                'total' => count($questions),
-                'badge' => $badge,
-            ]);
         }
 
-        return $this->render('reservation/quiz.html.twig', [
+        $badge = match(true) {
+            $correctCount === count($questions) => 'gold',
+            $correctCount >= 2 => 'silver',
+            default => 'bronze',
+        };
+
+        return $this->render('reservation/quiz_result.html.twig', [
             'reservation' => $reservation,
             'questions' => $questions,
+            'answers' => $answers,
+            'correct_count' => $correctCount,
+            'total' => count($questions),
+            'badge' => $badge,
         ]);
     }
 
+    return $this->render('reservation/quiz.html.twig', [
+        'reservation' => $reservation,
+        'questions' => $questions,
+    ]);
+}
     #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
     public function exportAllPdf(ReservationRepository $reservationRepository): Response
     {
@@ -253,6 +296,7 @@ final class ReservationController extends AbstractController
 
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -282,6 +326,7 @@ final class ReservationController extends AbstractController
     {
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $html = $this->renderView('reservation/pdf.html.twig', [
@@ -413,6 +458,143 @@ final class ReservationController extends AbstractController
         ]);
 
         return $chart;
+    }
+
+    private function buildFilteredReservationQueryBuilder(
+        ReservationRepository $reservationRepository,
+        string $searchTerm,
+        string $searchField,
+        string $statusFilter,
+        string $personnesFilter,
+        string $dateFrom,
+        string $dateTo
+    ): QueryBuilder {
+        $queryBuilder = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a');
+
+        $this->applyReservationSearchFilter($queryBuilder, $searchTerm, $searchField);
+        $this->applyReservationStatusFilter($queryBuilder, $statusFilter);
+        $this->applyReservationPersonnesFilter($queryBuilder, $personnesFilter);
+        $this->applyReservationDateRangeFilter($queryBuilder, $dateFrom, $dateTo);
+
+        return $queryBuilder;
+    }
+
+    private function applyReservationSearchFilter(QueryBuilder $queryBuilder, string $searchTerm, string $searchField): void
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return;
+        }
+
+        if ($searchField === 'all') {
+            foreach ($tokens as $index => $token) {
+                $parameter = sprintf('search_token_%d', $index);
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.id_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.nom)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(COALESCE(a.nom_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.date_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.email)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.nombre_personnes, \'\'))', ':' . $parameter)
+                        )
+                    )
+                    ->setParameter($parameter, '%' . $token . '%');
+            }
+
+            return;
+        }
+
+        $fieldExpression = match ($searchField) {
+            'id' => 'LOWER(CONCAT(r.id_reservation, \'\'))',
+            'nom' => 'LOWER(r.nom)',
+            'activite' => 'LOWER(COALESCE(a.nom_activite, \'\'))',
+            'date' => 'LOWER(CONCAT(r.date_reservation, \'\'))',
+            'email' => 'LOWER(r.email)',
+            'nombre' => 'LOWER(CONCAT(r.nombre_personnes, \'\'))',
+            default => null,
+        };
+
+        if ($fieldExpression === null) {
+            return;
+        }
+
+        foreach ($tokens as $index => $token) {
+            $parameter = sprintf('search_field_token_%d', $index);
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->like($fieldExpression, ':' . $parameter))
+                ->setParameter($parameter, '%' . $token . '%');
+        }
+    }
+
+    private function applyReservationStatusFilter(QueryBuilder $queryBuilder, string $statusFilter): void
+    {
+        if ($statusFilter === 'all') {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        match ($statusFilter) {
+            'cancelled' => $queryBuilder->andWhere('r.activiteEcologique IS NULL'),
+            'pending' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation > :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            'confirmed' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation <= :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            default => null,
+        };
+    }
+
+    private function applyReservationPersonnesFilter(QueryBuilder $queryBuilder, string $personnesFilter): void
+    {
+        if ($personnesFilter === 'all') {
+            return;
+        }
+
+        match ($personnesFilter) {
+            '1-5' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 1 AND 5'),
+            '6-10' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 6 AND 10'),
+            '11-50' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 11 AND 50'),
+            '50+' => $queryBuilder->andWhere('r.nombre_personnes > 50'),
+            default => null,
+        };
+    }
+
+    private function applyReservationDateRangeFilter(QueryBuilder $queryBuilder, string $dateFrom, string $dateTo): void
+    {
+        if ($dateFrom !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation >= :reservationDateFrom')
+                ->setParameter('reservationDateFrom', new \DateTimeImmutable($dateFrom));
+        }
+
+        if ($dateTo !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation <= :reservationDateTo')
+                ->setParameter('reservationDateTo', new \DateTimeImmutable($dateTo));
+        }
+    }
+
+    private function applyReservationSort(QueryBuilder $queryBuilder, string $sort): void
+    {
+        match ($sort) {
+            'id_asc' => $queryBuilder->orderBy('r.id_reservation', 'ASC'),
+            'id_desc' => $queryBuilder->orderBy('r.id_reservation', 'DESC'),
+            'nom_asc' => $queryBuilder->orderBy('r.nom', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nom_desc' => $queryBuilder->orderBy('r.nom', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            'date_asc' => $queryBuilder->orderBy('r.date_reservation', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_asc' => $queryBuilder->orderBy('r.nombre_personnes', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_desc' => $queryBuilder->orderBy('r.nombre_personnes', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            default => $queryBuilder->orderBy('r.date_reservation', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+        };
     }
 
     private function matchesReservationSearch(Reservation $reservation, string $searchTerm, string $searchField): bool

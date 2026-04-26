@@ -106,7 +106,68 @@
                 flex-wrap: wrap;
             }
 
+            .admin-live-form {
+                margin-bottom: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.1rem;
+                padding: 1.1rem;
+                border-radius: 20px;
+                border: 1px solid rgba(191, 219, 254, 0.55);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-live-form-row {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form-row--split {
+                padding-top: 0.5rem;
+                border-top: 1px solid rgba(203, 213, 225, 0.3);
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .admin-field-select {
+                max-width: 170px;
+                min-width: 170px;
+            }
+
+            .admin-inline-select {
+                max-width: 170px;
+            }
+
+            .admin-sort-select {
+                max-width: 190px;
+                margin-left: auto;
+            }
+
+            .admin-result-count {
+                opacity: 0.82;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #334155;
+            }
+
+            .admin-filter-label {
+                font-size: 0.9rem;
+                font-weight: 600;
+                margin-right: 0.5rem;
+            }
+
             .search-box {
+                position: relative;
                 display: flex;
                 align-items: center;
                 gap: 0.95rem;
@@ -140,7 +201,7 @@
             .search-box .search-input {
                 min-width: 0;
                 width: 100%;
-                padding: 0.4rem 0;
+                padding: 0.4rem 3rem 0.4rem 0;
                 border: 0;
                 background: transparent;
                 color: #0f172a;
@@ -194,6 +255,85 @@
             .search-icon-btn:focus-visible {
                 outline: 3px solid rgba(96, 165, 250, 0.35);
                 outline-offset: 2px;
+            }
+
+            .voice-btn {
+                position: absolute;
+                right: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                color: #94a3b8;
+                cursor: pointer;
+                transition: color 0.2s, background 0.2s;
+                flex-shrink: 0;
+            }
+
+            .voice-btn:hover {
+                background: rgba(56, 189, 248, 0.1);
+                color: #38bdf8;
+            }
+
+            .voice-btn--active {
+                color: #f87171;
+                background: rgba(248, 113, 113, 0.12);
+                animation: voice-pulse 1.2s ease-in-out infinite;
+            }
+
+            .voice-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .voice-toast {
+                position: fixed;
+                left: 50%;
+                bottom: 24px;
+                transform: translateX(-50%) translateY(20px);
+                padding: 0.85rem 1.1rem;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, 0.92);
+                color: #fff;
+                font-size: 0.92rem;
+                font-weight: 600;
+                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.24s ease, transform 0.24s ease;
+                z-index: 1300;
+            }
+
+            .voice-toast--visible {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .voice-toast--success {
+                background: rgba(5, 150, 105, 0.95);
+            }
+
+            .voice-toast--error {
+                background: rgba(220, 38, 38, 0.95);
+            }
+
+            .voice-toast--info {
+                background: rgba(15, 23, 42, 0.92);
+            }
+
+            @keyframes voice-pulse {
+                0%, 100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.24);
+                }
+                50% {
+                    transform: scale(1.04);
+                    box-shadow: 0 0 0 8px rgba(248, 113, 113, 0);
+                }
             }
 
             .quick-filter-btn {
@@ -406,9 +546,9 @@
         </style>
 
         <div id="reservation-live-root">
-        <form id="reservation-search-form" method="get" action="{{ path('app_reservation_index') }}" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; padding: 1.1rem; background: linear-gradient(135deg, rgba(251, 253, 254, 0.64), rgba(239, 246, 255, 0.42)); border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.55); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+        <form id="reservation-search-form" method="get" action="{{ path('app_reservation_index') }}" class="admin-live-form">
             <div class="reservation-search-row">
-                <select id="reservation-search-field" name="field" class="search-input" style="max-width: 150px; min-height: 3.25rem; padding: 0 0.95rem; border-radius: 18px; border: 1px solid rgba(191, 219, 254, 0.9); background: rgba(255, 255, 255, 0.92); color: #0f172a; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); font-weight: 600;">
+                <select id="reservation-search-field" name="field" class="search-input admin-field-select">
                     <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>{{ 'reservation.search_all'|trans }}</option>
                     <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>{{ 'reservation.search_id'|trans }}</option>
                     <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'reservation.name'|trans }}</option>
@@ -417,7 +557,7 @@
                     <option value="email" {{ search_field|default('all') == 'email' ? 'selected' : '' }}>{{ 'reservation.search_email'|trans }}</option>
                     <option value="nombre" {{ search_field|default('all') == 'nombre' ? 'selected' : '' }}>{{ 'reservation.search_number'|trans }}</option>
                 </select>
-                <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 260px;">
+                <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -432,6 +572,14 @@
                             placeholder="{{ 'reservation.search_placeholder'|trans }}"
                             autocomplete="off"
                         >
+                        <button type="button" id="reservation-voice-btn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
+                            <svg id="reservation-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </button>
                     </div>
                     <button id="reservation-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'reservation.search'|trans }}" title="{{ 'reservation.search'|trans }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -441,28 +589,28 @@
                         <span>{{ 'reservation.search'|trans }}</span>
                     </button>
                 </div>
-                <small id="reservation-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
+                <small id="reservation-result-count" class="admin-result-count">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
             </div>
 
-            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
-                <label style="font-size: 0.9rem; font-weight: 600; margin-right: 0.5rem;">{{ 'reservation.quick_filters'|trans }}</label>
+            <div class="admin-live-form-row admin-live-form-row--split">
+                <label class="admin-filter-label">{{ 'reservation.quick_filters'|trans }}</label>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': 'all', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == 'all' ? 'active' : '' }}" title="{{ 'reservation.all_groups'|trans }}">{{ 'reservation.all_groups'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '1-5', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '1-5' ? 'active' : '' }}" title="{{ 'reservation.filter_1_5'|trans }}">{{ 'reservation.filter_1_5'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '6-10', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '6-10' ? 'active' : '' }}" title="{{ 'reservation.filter_6_10'|trans }}">{{ 'reservation.filter_6_10'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '11-50', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '11-50' ? 'active' : '' }}" title="{{ 'reservation.filter_11_50'|trans }}">{{ 'reservation.filter_11_50'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '50+', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '50+' ? 'active' : '' }}" title="{{ 'reservation.filter_50_plus'|trans }}">{{ 'reservation.filter_50_plus'|trans }}</a>
-                <select id="reservation-filter-status" name="status" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.status'|trans }}">
+                <select id="reservation-filter-status" name="status" class="search-input combo-input admin-inline-select" title="{{ 'reservation.status'|trans }}">
                     <option value="all" {{ status_filter|default('all') == 'all' ? 'selected' : '' }}>{{ 'reservation.all_status'|trans }}</option>
                     <option value="confirmed" {{ status_filter|default('all') == 'confirmed' ? 'selected' : '' }}>{{ 'reservation.status_confirmed'|trans }}</option>
                     <option value="pending" {{ status_filter|default('all') == 'pending' ? 'selected' : '' }}>{{ 'reservation.status_pending'|trans }}</option>
                     <option value="cancelled" {{ status_filter|default('all') == 'cancelled' ? 'selected' : '' }}>{{ 'reservation.status_cancelled'|trans }}</option>
                 </select>
-                <input id="reservation-date-from" name="date_from" type="date" value="{{ date_from|default('') }}" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.date_start'|trans }}" />
-                <input id="reservation-date-to" name="date_to" type="date" value="{{ date_to|default('') }}" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.date_end'|trans }}" />
+                <input id="reservation-date-from" name="date_from" type="date" value="{{ date_from|default('') }}" class="search-input combo-input admin-inline-select" title="{{ 'reservation.date_start'|trans }}" />
+                <input id="reservation-date-to" name="date_to" type="date" value="{{ date_to|default('') }}" class="search-input combo-input admin-inline-select" title="{{ 'reservation.date_end'|trans }}" />
                 <button id="reservation-export-csv" type="button" class="btn btn-secondary search-icon-btn" title="{{ 'reservation.export_filtered'|trans }}">
                     <span>{{ 'reservation.export_csv'|trans }}</span>
                 </button>
-                <select id="reservation-sort-by" name="sort" class="search-input combo-input" style="max-width: 170px; margin-left: auto;" onchange="this.form.submit();">
+                <select id="reservation-sort-by" name="sort" class="search-input combo-input admin-sort-select" onchange="this.form.submit();">
                     <option value="id_desc" {{ sort_by|default('id_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'reservation.sort_latest'|trans }}</option>
                     <option value="id_asc" {{ sort_by|default('id_desc') == 'id_asc' ? 'selected' : '' }}>{{ 'reservation.sort_oldest'|trans }}</option>
                     <option value="date_desc" {{ sort_by|default('id_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'reservation.sort_date_recent'|trans }}</option>
@@ -474,6 +622,8 @@
                 </select>
             </div>
         </form>
+
+        <div id="reservation-voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
 
         <div id="reservation-empty-message" class="ux-empty-message" style="display: none;">{{ 'reservation.empty_message'|trans }}</div>
 
@@ -728,14 +878,114 @@
                     return;
                 }
 
-                // Use full page requests for reliability: avoids stale swapped DOM states.
-                return;
-
                 const form = root.querySelector('#reservation-search-form');
 
                 if (!form) {
                     return;
                 }
+
+                const voiceBtn = form.querySelector('#reservation-voice-btn');
+                const voiceInput = form.querySelector('input[name="q"]');
+                const voiceToast = document.getElementById('reservation-voice-toast');
+                const SpeechRecognition =
+                    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+                if (voiceBtn && voiceInput && voiceToast) {
+                    if (!SpeechRecognition) {
+                        voiceBtn.style.display = 'none';
+                    } else {
+                        const recognition = new SpeechRecognition();
+                        recognition.lang = 'fr-FR';
+                        recognition.continuous = false;
+                        recognition.interimResults = true;
+                        recognition.maxAlternatives = 1;
+
+                        let isListening = false;
+                        let toastTimer = null;
+
+                        const micSVG = `<svg id="reservation-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>`;
+
+                        const stopSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="4" y="4" width="16" height="16" rx="3"/>
+                            </svg>`;
+
+                        const showToast = function (message, type) {
+                            window.clearTimeout(toastTimer);
+                            voiceToast.textContent = message;
+                            voiceToast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
+                            toastTimer = window.setTimeout(function () {
+                                voiceToast.classList.remove('voice-toast--visible');
+                            }, 2800);
+                        };
+
+                        const startListening = function () {
+                            isListening = true;
+                            voiceBtn.classList.add('voice-btn--active');
+                            voiceBtn.innerHTML = stopSVG;
+                            voiceBtn.setAttribute('aria-label', 'Arrêter la recherche vocale');
+                            showToast('🎙 Parlez maintenant…', 'info');
+                            recognition.start();
+                        };
+
+                        const stopListening = function () {
+                            isListening = false;
+                            voiceBtn.classList.remove('voice-btn--active');
+                            voiceBtn.innerHTML = micSVG;
+                            voiceBtn.setAttribute('aria-label', 'Démarrer la recherche vocale');
+                            recognition.stop();
+                        };
+
+                        voiceBtn.addEventListener('click', function () {
+                            if (isListening) {
+                                stopListening();
+                            } else {
+                                startListening();
+                            }
+                        });
+
+                        recognition.addEventListener('result', function (event) {
+                            const transcript = Array.from(event.results)
+                                .map(function (result) {
+                                    return result[0].transcript;
+                                })
+                                .join('');
+
+                            voiceInput.value = transcript;
+
+                            if (event.results[0].isFinal) {
+                                showToast('Recherche : « ' + transcript + ' »', 'success');
+                                form.requestSubmit();
+                            }
+                        });
+
+                        recognition.addEventListener('end', function () {
+                            if (isListening) {
+                                stopListening();
+                            }
+                        });
+
+                        recognition.addEventListener('error', function (event) {
+                            stopListening();
+
+                            const messages = {
+                                'not-allowed': 'Microphone non autorisé. Vérifiez les permissions.',
+                                'no-speech': 'Aucune voix détectée. Réessayez.',
+                                'audio-capture': 'Impossible d\'accéder au microphone.',
+                                'network': 'Erreur réseau lors de la reconnaissance vocale.'
+                            };
+
+                            showToast(messages[event.error] || 'Erreur vocale : ' + event.error, 'error');
+                        });
+                    }
+                }
+
+                // Use full page requests for reliability: avoids stale swapped DOM states.
+                return;
 
                 const queryInput = form.querySelector('input[name="q"]');
                 const trackedFields = [

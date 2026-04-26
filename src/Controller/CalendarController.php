@@ -44,10 +44,10 @@ final class CalendarController extends AbstractController
         try {
             $pdfContent = $snappyPdf->getOutputFromHtml($html, [
                 'enable-local-file-access' => true,
-                'margin-top' => 8,
-                'margin-right' => 8,
-                'margin-bottom' => 8,
-                'margin-left' => 8,
+                'margin-top' => 18,
+                'margin-right' => 12,
+                'margin-bottom' => 18,
+                'margin-left' => 12,
             ]);
         } catch (\Throwable $throwable) {
             $options = new Options();

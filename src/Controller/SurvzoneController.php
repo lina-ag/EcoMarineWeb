@@ -11,11 +11,16 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\ElasticaBundle\Finder\FinderInterface;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\GroqAnalyzer;
@@ -172,6 +177,54 @@ final class SurvzoneController extends AbstractController
         } catch (\Throwable $exception) {
             return $this->renderWithDompdf($html, 'surveillances_'.date('Y-m-d').'.pdf');
         }
+    }
+
+    #[Route('/export/excel', name: 'app_survzone_export_excel', methods: ['GET'])]
+    public function exportExcel(SurvzoneRepository $survzoneRepository): StreamedResponse
+    {
+        $survzones = $survzoneRepository->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Surveillances');
+
+        $sheet->setCellValue('A1', 'Historique des surveillances de zones');
+        $sheet->setCellValue('A2', 'Genere le');
+        $sheet->setCellValue('B2', (new \DateTimeImmutable())->format('d/m/Y H:i'));
+        $sheet->setCellValue('A4', 'ID');
+        $sheet->setCellValue('B4', 'Date');
+        $sheet->setCellValue('C4', 'Zone');
+        $sheet->setCellValue('D4', 'Observation');
+
+        $headerRange = 'A4:D4';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFDFF6FF');
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        $rowIndex = 5;
+
+        foreach ($survzones as $survzone) {
+            $sheet->setCellValue("A{$rowIndex}", $survzone->getIdSurv());
+            $sheet->setCellValue("B{$rowIndex}", $survzone->getDateSurv()?->format('Y-m-d') ?? '');
+            $sheet->setCellValue("C{$rowIndex}", $survzone->getZone()?->getNomZone() ?? '');
+            $sheet->setCellValue("D{$rowIndex}", (string) ($survzone->getObservation() ?? ''));
+            $sheet->getStyle("A{$rowIndex}:D{$rowIndex}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $rowIndex++;
+        }
+
+        foreach (range('A', 'D') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $writer = new XlsxWriter($spreadsheet);
+
+        return new StreamedResponse(function () use ($writer): void {
+            $writer->save('php://output');
+        }, Response::HTTP_OK, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => sprintf('attachment; filename="surveillances_%s.xlsx"', (new \DateTimeImmutable())->format('Y-m-d')),
+            'Cache-Control' => 'max-age=0, must-revalidate, no-cache, no-store, private',
+        ]);
     }
 
     private function renderWithDompdf(string $html, string $filename): Response
