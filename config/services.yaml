@@ -22,3 +22,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    
+    App\Service\GroqAnalyzer:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
