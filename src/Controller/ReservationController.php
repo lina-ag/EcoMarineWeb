@@ -4,9 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Reservation;
 use App\Form\ReservationType;
+use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,12 +18,232 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
 {
-    #[Route(name: 'app_reservation_index', methods: ['GET'])]
-    public function index(ReservationRepository $reservationRepository): Response
+    #[Route('/activity-date/{id_activite}', name: 'app_reservation_activity_date', methods: ['GET'])]
+    public function activityDate(int $id_activite, ActiviteEcologiqueRepository $activiteEcologiqueRepository): JsonResponse
     {
+        $activite = $activiteEcologiqueRepository->find($id_activite);
+
+        if (!$activite || !$activite->getDate_activite()) {
+            return $this->json(['dates' => []], Response::HTTP_NOT_FOUND);
+        }
+
+        $dates = $activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
+        if (count($dates) === 0) {
+            $dates = [$activite->getDate_activite()->format('Y-m-d')];
+        }
+
+        return $this->json(['dates' => $dates]);
+    }
+
+    #[Route(name: 'app_reservation_index', methods: ['GET'])]
+    public function index(Request $request, ReservationRepository $reservationRepository): Response
+    {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $statusFilter = (string) $request->query->get('status', 'all');
+        $personnesFilter = (string) $request->query->get('personnes', 'all');
+        $dateFrom = trim((string) $request->query->get('date_from', ''));
+        $dateTo = trim((string) $request->query->get('date_to', ''));
+        $sort = (string) $request->query->get('sort', 'date_desc');
+
+        $reservations = $reservationRepository
+            ->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->getQuery()
+            ->getResult();
+
+        $reservations = array_values(array_filter($reservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
+            return $this->matchesReservationSearch($reservation, $searchTerm, $searchField)
+                && $this->matchesReservationStatus($reservation, $statusFilter)
+                && $this->matchesReservationPersonnes($reservation, $personnesFilter)
+                && $this->matchesReservationDateRange($reservation, $dateFrom, $dateTo);
+        }));
+
+        usort($reservations, function (Reservation $left, Reservation $right) use ($sort): int {
+            return $this->compareReservations($left, $right, $sort);
+        });
+
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
+        $totalItems = count($reservations);
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $currentPage = min($page, $totalPages);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedReservations = array_slice($reservations, $offset, $perPage);
+        $pageStart = $totalItems > 0 ? $offset + 1 : 0;
+        $pageEnd = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
+
         return $this->render('reservation/index.html.twig', [
-            'reservations' => $reservationRepository->findAll(),
+            'reservations' => $paginatedReservations,
+            'search_term' => $searchTerm,
+            'search_field' => $searchField,
+            'status_filter' => $statusFilter,
+            'personnes_filter' => $personnesFilter,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'sort_by' => $sort,
+            'result_count' => $totalItems,
+            'page' => $currentPage,
+            'total_pages' => $totalPages,
+            'page_start' => $pageStart,
+            'page_end' => $pageEnd,
         ]);
+    }
+
+    private function matchesReservationSearch(Reservation $reservation, string $searchTerm, string $searchField): bool
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return true;
+        }
+
+        $searchableParts = [];
+
+        if ($searchField === 'all') {
+            $searchableParts = array_filter([
+                $this->normalizeSearchValue((string) $reservation->getIdReservation()),
+                $this->normalizeSearchValue((string) $reservation->getNom()),
+                $this->normalizeSearchValue((string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? '')),
+                $this->normalizeSearchValue($reservation->getDateReservation()?->format('Y-m-d') ?? ''),
+                $this->normalizeSearchValue((string) $reservation->getEmail()),
+                $this->normalizeSearchValue((string) $reservation->getNombrePersonnes()),
+            ]);
+        } else {
+            $fieldValue = match ($searchField) {
+                'id' => (string) $reservation->getIdReservation(),
+                'nom' => (string) $reservation->getNom(),
+                'activite' => (string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? ''),
+                'date' => $reservation->getDateReservation()?->format('Y-m-d') ?? '',
+                'email' => (string) $reservation->getEmail(),
+                'nombre' => (string) $reservation->getNombrePersonnes(),
+                default => '',
+            };
+
+            $searchableParts = $fieldValue === '' ? [] : [$this->normalizeSearchValue($fieldValue)];
+        }
+
+        foreach ($tokens as $token) {
+            $matched = false;
+
+            foreach ($searchableParts as $part) {
+                if ($part !== '' && str_starts_with($part, $token)) {
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function matchesReservationStatus(Reservation $reservation, string $statusFilter): bool
+    {
+        if ($statusFilter === 'all') {
+            return true;
+        }
+
+        return $this->getReservationStatus($reservation) === $statusFilter;
+    }
+
+    private function matchesReservationPersonnes(Reservation $reservation, string $personnesFilter): bool
+    {
+        if ($personnesFilter === 'all') {
+            return true;
+        }
+
+        $count = (int) $reservation->getNombrePersonnes();
+
+        return match ($personnesFilter) {
+            '1-5' => $count >= 1 && $count <= 5,
+            '6-10' => $count >= 6 && $count <= 10,
+            '11-50' => $count >= 11 && $count <= 50,
+            '50+' => $count > 50,
+            default => true,
+        };
+    }
+
+    private function matchesReservationDateRange(Reservation $reservation, string $dateFrom, string $dateTo): bool
+    {
+        $reservationDate = $reservation->getDateReservation();
+
+        if (!$reservationDate) {
+            return false;
+        }
+
+        $reservationDateValue = $reservationDate->format('Y-m-d');
+
+        if ($dateFrom !== '' && $reservationDateValue < $dateFrom) {
+            return false;
+        }
+
+        if ($dateTo !== '' && $reservationDateValue > $dateTo) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function compareReservations(Reservation $left, Reservation $right, string $sort): int
+    {
+        return match ($sort) {
+            'id_asc' => ($left->getIdReservation() ?? 0) <=> ($right->getIdReservation() ?? 0),
+            'id_desc' => ($right->getIdReservation() ?? 0) <=> ($left->getIdReservation() ?? 0),
+            'nom_asc' => strcmp($this->normalizeSearchValue((string) $left->getNom()), $this->normalizeSearchValue((string) $right->getNom())),
+            'nom_desc' => strcmp($this->normalizeSearchValue((string) $right->getNom()), $this->normalizeSearchValue((string) $left->getNom())),
+            'date_asc' => $this->compareReservationDates($left, $right),
+            'nombre_asc' => ($left->getNombrePersonnes() ?? 0) <=> ($right->getNombrePersonnes() ?? 0),
+            'nombre_desc' => ($right->getNombrePersonnes() ?? 0) <=> ($left->getNombrePersonnes() ?? 0),
+            default => $this->compareReservationDates($right, $left),
+        };
+    }
+
+    private function compareReservationDates(Reservation $left, Reservation $right): int
+    {
+        $leftDate = $left->getDateReservation();
+        $rightDate = $right->getDateReservation();
+
+        if (!$leftDate && !$rightDate) {
+            return 0;
+        }
+
+        if (!$leftDate) {
+            return -1;
+        }
+
+        if (!$rightDate) {
+            return 1;
+        }
+
+        return $leftDate <=> $rightDate;
+    }
+
+    private function getReservationStatus(Reservation $reservation): string
+    {
+        if (!$reservation->getActiviteEcologique()) {
+            return 'cancelled';
+        }
+
+        $dateReservation = $reservation->getDateReservation();
+
+        if (!$dateReservation) {
+            return 'cancelled';
+        }
+
+        return $dateReservation->format('Y-m-d') > (new \DateTimeImmutable('today'))->format('Y-m-d') ? 'pending' : 'confirmed';
+    }
+
+    private function normalizeSearchValue(string $value): string
+    {
+        $normalized = mb_strtolower(trim($value));
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
+
+        return $ascii !== false ? $ascii : $normalized;
     }
 
     #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
@@ -33,7 +257,14 @@ final class ReservationController extends AbstractController
             $entityManager->persist($reservation);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
+
+            if ($request->query->get('source') === 'front') {
+                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
+            }
+
             return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+
         }
 
         return $this->render('reservation/new.html.twig', [
@@ -48,6 +279,68 @@ final class ReservationController extends AbstractController
         return $this->render('reservation/show.html.twig', [
             'reservation' => $reservation,
         ]);
+    }
+
+    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
+    public function exportPdf(Reservation $reservation): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $html = $this->renderView('reservation/pdf.html.twig', [
+            'reservation' => $reservation,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
+    }
+
+    #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
+    public function exportAllPdf(ReservationRepository $reservationRepository): Response
+    {
+        $reservations = $reservationRepository
+            ->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->orderBy('r.date_reservation', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $html = $this->renderView('reservation/pdf_list.html.twig', [
+            'reservations' => $reservations,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
+            ]
+        );
     }
 
     #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]

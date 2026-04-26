@@ -13,6 +13,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Omines\AntiSpamBundle\Form\Extension\AntiSpamFormExtension;
+use Omines\AntiSpamBundle\Form\Type\HoneypotType;
 
 class SignUpType extends AbstractType
 {
@@ -90,9 +92,10 @@ class SignUpType extends AbstractType
     }
 
     public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([
-            'data_class' => Utilisateur::class,
-        ]);
-    }
+{
+    $resolver->setDefaults([
+        'data_class'       => Utilisateur::class,
+        'antispam_profile' => 'default',
+    ]);
+}
 }

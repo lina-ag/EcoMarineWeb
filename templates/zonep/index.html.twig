@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Zonep index{% endblock %}
-
 {% block body %}
     <section class="glass-card">
         <div class="card-header">
@@ -9,27 +7,59 @@
                 <h2 class="card-title">Zones</h2>
                 <p class="card-subtitle">Liste des zones et leur statut actuel.</p>
             </div>
-            <a href="{{ path('app_zonep_new') }}" class="btn btn-primary">Create new</a>
+            <div style="display:flex; gap:10px;">
+                <a href="{{ path('app_zonep_export_pdf') }}" class="btn btn-secondary">Export PDF</a>
+                <a href="{{ path('app_zonep_new') }}" class="btn btn-primary">Create new</a>
+            </div>
         </div>
+
+        <form method="GET" action="{{ path('app_zonep_index') }}" class="toolbar" id="filterForm">
+            <input type="hidden" name="tri" id="triInput" value="{{ sortBy }}">
+            <input type="hidden" name="sens" id="sensInput" value="{{ order }}">
+            <input type="hidden" name="status" id="statusInput" value="{{ status }}">
+            <div class="search-box">
+                <input type="text" name="search" id="searchInput" value="{{ search }}" placeholder="Rechercher par nom ou catégorie..." class="search-input" autocomplete="off">
+            </div>
+            <div class="filter-btns">
+                <button type="button" class="filter-btn {{ status == '' ? 'active' : '' }}" data-status="">Tous</button>
+                <button type="button" class="filter-btn {{ status == 'Actif' ? 'active' : '' }}" data-status="Actif">🟢 Actif</button>
+                <button type="button" class="filter-btn {{ status == 'En surveillance' ? 'active' : '' }}" data-status="En surveillance">🟡 En surveillance</button>
+                <button type="button" class="filter-btn {{ status == 'En maintenance' ? 'active' : '' }}" data-status="En maintenance">🔵 En maintenance</button>
+                <button type="button" class="filter-btn {{ status == 'Inactif' ? 'active' : '' }}" data-status="Inactif">🔴 Inactif</button>
+            </div>
+            {% if search or status %}
+                <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">Réinitialiser</a>
+            {% endif %}
+        </form>
 
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Id</th>
-                        <th>Nom zone</th>
-                        <th>Categorie</th>
-                        <th>Status</th>
+                        <th><a href="{{ path('app_zonep_index', {'tri': 'idZone', 'sens': sortBy == 'idZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Id {{ sortBy == 'idZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
+                        <th><a href="{{ path('app_zonep_index', {'tri': 'nomZone', 'sens': sortBy == 'nomZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Nom zone {{ sortBy == 'nomZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
+                        <th><a href="{{ path('app_zonep_index', {'tri': 'categorieZone', 'sens': sortBy == 'categorieZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Categorie {{ sortBy == 'categorieZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
+                        <th><a href="{{ path('app_zonep_index', {'tri': 'status', 'sens': sortBy == 'status' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Status {{ sortBy == 'status' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBody">
                 {% for zonep in zoneps %}
                     <tr>
                         <td>{{ zonep.idZone }}</td>
                         <td>{{ zonep.nomZone }}</td>
                         <td>{{ zonep.categorieZone }}</td>
-                        <td>{{ zonep.status }}</td>
+                        <td>
+                            {% if zonep.status == 'Actif' %}
+                                <span class="badge badge-actif">● Actif</span>
+                            {% elseif zonep.status == 'En surveillance' %}
+                                <span class="badge badge-surveillance">● En surveillance</span>
+                            {% elseif zonep.status == 'En maintenance' %}
+                                <span class="badge badge-maintenance">● En maintenance</span>
+                            {% else %}
+                                <span class="badge badge-inactif">● Inactif</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <a href="{{ path('app_zonep_show', {'idZone': zonep.idZone}) }}" class="btn btn-secondary">show</a>
                             <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">edit</a>
@@ -43,5 +73,111 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="pagination" id="paginationBox">
+            {{ knp_pagination_render(zoneps) }}
+        </div>
     </section>
+
+    <script>
+        let searchTimer;
+
+        function doFetch() {
+            const search = document.getElementById('searchInput').value;
+            const status = document.getElementById('statusInput').value;
+            const tri    = document.getElementById('triInput').value;
+            const sens   = document.getElementById('sensInput').value;
+
+            const url = new URL(window.location.origin + '{{ path('app_zonep_index') }}');
+            url.searchParams.set('search', search);
+            url.searchParams.set('status', status);
+            url.searchParams.set('tri', tri);
+            url.searchParams.set('sens', sens);
+            url.searchParams.set('page', '1');
+
+            fetch(url.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                document.getElementById('tableBody').innerHTML = doc.getElementById('tableBody').innerHTML;
+                document.getElementById('paginationBox').innerHTML = doc.getElementById('paginationBox').innerHTML;
+                window.history.pushState({}, '', url.toString());
+            });
+        }
+
+        // Recherche en temps réel
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(doFetch, 300);
+        });
+
+        // Filtres statut
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Mettre à jour le champ caché status
+                document.getElementById('statusInput').value = this.dataset.status;
+
+                // Mettre à jour les boutons actifs
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                doFetch();
+            });
+        });
+    </script>
+
+    <style>
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0 16px 0;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border, #e0e0e0);
+            background: var(--glass-bg, #fff);
+            color: var(--text-primary, #222);
+            font-size: 15px;
+            min-width: 260px;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--emerald-light, #38bdf8);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+        }
+        .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary, #94a3b8);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary, #f1f5f9); }
+        .filter-btn.active {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--emerald-light, #38bdf8);
+            border-color: rgba(56, 189, 248, 0.3);
+            font-weight: 600;
+        }
+        thead a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+        thead a:hover { color: var(--emerald-light, #38bdf8); }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-actif { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+        .badge-surveillance { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .badge-maintenance { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.3); }
+        .badge-inactif { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+    </style>
 {% endblock %}

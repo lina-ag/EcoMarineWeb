@@ -6,9 +6,6 @@ use App\Entity\Zonep;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Zonep>
- */
 class ZonepRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,28 @@ class ZonepRepository extends ServiceEntityRepository
         parent::__construct($registry, Zonep::class);
     }
 
-    //    /**
-    //     * @return Zonep[] Returns an array of Zonep objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('z')
-    //            ->andWhere('z.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('z.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findFiltered(string $search = '', string $status = '', string $sortBy = 'idZone', string $order = 'ASC'): \Doctrine\ORM\QueryBuilder
+    {
+        $allowedSort = ['idZone', 'nomZone', 'categorieZone', 'status'];
+        $allowedOrder = ['ASC', 'DESC'];
 
-    //    public function findOneBySomeField($value): ?Zonep
-    //    {
-    //        return $this->createQueryBuilder('z')
-    //            ->andWhere('z.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $sortBy = in_array($sortBy, $allowedSort) ? $sortBy : 'idZone';
+        $order = in_array(strtoupper($order), $allowedOrder) ? strtoupper($order) : 'ASC';
+
+        $qb = $this->createQueryBuilder('z')
+            ->select('z')
+            ->orderBy('z.' . $sortBy, $order);
+
+        if (!empty($search)) {
+            $qb->andWhere('z.nomZone LIKE :search OR z.categorieZone LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if (!empty($status)) {
+            $qb->andWhere('z.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        return $qb;
+    }
 }

@@ -40,6 +40,30 @@
             max-width: 980px;
             margin: 0 auto 1rem auto;
         }
+        .utilisateurs-compact .btn-success {
+    background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+    border: none;
+    color: #fff;
+
+    /* 🔽 taille carrée */
+    width: 70px;
+    height: 50px;
+    padding: 0;
+
+    /* 🔽 centrer contenu (icône ou texte) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* 🔽 espace entre boutons */
+    margin-right: 0.3cm;
+
+    /* 🔽 optionnel : joli */
+    border-radius: 8px;
+}
+.utilisateurs-compact .btn-success {
+    font-size: 10px; /* 🔽 réduit la taille du texte */
+}
 
         .utilisateurs-compact .btn-primary {
             background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
@@ -182,6 +206,48 @@
             background-color: #6c757d;
             color: white;
         }
+        /* Pagination KnpPaginator */
+.pagination {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination span.current {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background-color: #495057 !important;
+    color: #fff !important;
+    font-weight: 600;
+    border: 1px solid #495057;
+}
+
+.pagination span.page a,
+.pagination span.next a,
+.pagination span.last a,
+.pagination span.previous a,
+.pagination span.first a {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #495057 !important;
+    background-color: #fff !important;
+    border: 1px solid #495057 !important;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.pagination span.page a:hover,
+.pagination span.next a:hover,
+.pagination span.last a:hover,
+.pagination span.previous a:hover,
+.pagination span.first a:hover {
+    background-color: #495057 !important;
+    color: #fff !important;
+}
     </style>
 {% endblock %}
 
@@ -202,7 +268,10 @@
     {% endfor %}
 
     <section class="glass-card utilisateurs-compact">
-        <div class="card-header" style="display: flex; justify-content: flex-end; padding: 1rem;">
+        <div class="card-header">
+        <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">
+        📥Excel
+    </a>
             <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
         </div>
 
@@ -285,6 +354,10 @@
                 </tbody>
             </table>
         </div>
+        {# Pagination #}
+       <div style="display:flex; justify-content:center; margin-top:50px;">
+    {{ knp_pagination_render(utilisateurs) }}
+</div>
     </section>
 
     <script>

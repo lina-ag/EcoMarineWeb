@@ -13,4 +13,9 @@ return [
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
+    Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
+    EWZ\Bundle\RecaptchaBundle\EWZRecaptchaBundle::class => ['all' => true],
+    Omines\AntiSpamBundle\AntiSpamBundle::class => ['all' => true],
+    Sonata\Exporter\Bridge\Symfony\SonataExporterBundle::class => ['all' => true],
+    App\Bundle\ForgotPasswordBundle\ForgotPasswordBundle::class => ['all' => true],
 ];

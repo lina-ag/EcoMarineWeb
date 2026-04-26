@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des activités écologiques</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 12px;
+            color: #0f172a;
+            margin: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            color: #1e3a8a;
+        }
+
+        .meta {
+            margin: 0 0 16px;
+            color: #475569;
+            font-size: 11px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Liste des activités écologiques</h1>
+    <p class="meta">Généré le {{ generatedAt|date('d/m/Y H:i') }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom activité</th>
+                <th>Date activité</th>
+                <th>Capacité</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activite in activite_ecologiques %}
+                <tr>
+                    <td>{{ activite.idActivite }}</td>
+                    <td>{{ activite.nomActivite }}</td>
+                    <td>{{ activite.dateActivite ? activite.dateActivite|date('Y-m-d') : '' }}</td>
+                    <td>{{ activite.capacite }}</td>
+                    <td>{{ activite.description|default('') }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5">Aucune activité enregistrée.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

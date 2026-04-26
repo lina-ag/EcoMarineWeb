@@ -1,4 +1,7 @@
-{{ form_start(form, {'attr': {'class': 'activity-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+{% set isRecurringChecked = form.is_recurring.vars.checked ? true : false %}
+
+{{ form_start(form, {'attr': {'class': 'activity-form reservation-form', 'novalidate': 'novalidate'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+    {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nom_activite, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -8,7 +11,7 @@
 
         <div class="form-group-settings">
             {{ form_label(form.date_activite, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_activite, {'attr': {'class': 'form-input'}}) }}
+            {{ form_widget(form.date_activite, {'attr': {'class': 'form-input', 'type': 'date'}}) }}
             {{ form_errors(form.date_activite) }}
         </div>
 
@@ -23,15 +26,127 @@
             {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité'}}) }}
             {{ form_errors(form.description) }}
         </div>
+
+        <div class="form-group-settings full-width">
+            <label class="checkbox-label activity-recurring-toggle">
+                {{ form_widget(form.is_recurring, {
+                    'attr': {
+                        'onchange': "(function(el){var box=document.getElementById('" ~ form.is_recurring.vars.id ~ "_recurrence_box');if(!box){return;}var on=!!el.checked;box.style.display=on?'block':'none';box.setAttribute('aria-hidden',on?'false':'true');var checks=box.querySelectorAll('input[type=checkbox]');checks.forEach(function(i){i.disabled=!on;});var end=document.getElementById('" ~ form.recurrence_end_date.vars.id ~ "');if(end){end.disabled=!on;}})(this)",
+                        'oninput': "this.onchange && this.onchange()",
+                        'onclick': "this.onchange && this.onchange()"
+                    }
+                }) }}
+                <span>{{ form.is_recurring.vars.label }}</span>
+            </label>
+            {{ form_errors(form.is_recurring) }}
+        </div>
+
+        <div id="{{ form.is_recurring.vars.id }}_recurrence_box" class="form-group-settings full-width activity-recurrence-shell{% if isRecurringChecked %} is-open{% endif %}" aria-hidden="{{ isRecurringChecked ? 'false' : 'true' }}" style="{% if not isRecurringChecked %}display:none;{% endif %}">
+            <label class="form-label" style="margin-bottom:10px;">{{ form.recurrence_days.vars.label }}</label>
+            <div class="activity-recurrence-days">
+                {% for dayField in form.recurrence_days %}
+                    <label class="activity-recurrence-chip">
+                        {{ form_widget(dayField) }}
+                        <span>{{ dayField.vars.label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.recurrence_days) }}
+
+            <div class="form-group-settings activity-recurrence-end-date">
+                {{ form_label(form.recurrence_end_date, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.recurrence_end_date, {'attr': {'class': 'form-input', 'type': 'date'}}) }}
+                {{ form_errors(form.recurrence_end_date) }}
+            </div>
+
+            <small id="{{ form.is_recurring.vars.id }}_recurrence_preview" class="activity-recurrence-preview">Aucun jour sélectionné</small>
+        </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
-        {% if show_back_button|default(true) %}
-            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        <button class="btn btn-primary reservation-admin-cta">{{ button_label|default('Enregistrer') }}</button>
+        {% if show_back_button is not defined or show_back_button %}
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary reservation-admin-action-btn">Retour à la liste</a>
         {% endif %}
     </div>
 
     {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<script>
+(() => {
+    const recurringToggle = document.getElementById('{{ form.is_recurring.vars.id }}');
+    const recurrenceBox = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_box');
+    const preview = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_preview');
+    const startDateInput = document.getElementById('{{ form.date_activite.vars.id }}');
+    const endDateInput = document.getElementById('{{ form.recurrence_end_date.vars.id }}');
+    const dayInputs = recurrenceBox ? recurrenceBox.querySelectorAll('input[type="checkbox"]') : [];
+
+    if (!recurringToggle || !recurrenceBox || !preview) {
+        return;
+    }
+
+    const setupDatePicker = (input) => {
+        if (!input) {
+            return;
+        }
+
+        input.setAttribute('type', 'date');
+
+        const tryOpenPicker = () => {
+            if (typeof input.showPicker === 'function' && !input.disabled) {
+                try {
+                    input.showPicker();
+                } catch (e) {
+                    // Ignore browsers that deny programmatic picker opening.
+                }
+            }
+        };
+
+        input.addEventListener('focus', tryOpenPicker);
+        input.addEventListener('click', tryOpenPicker);
+    };
+
+    const updatePreview = () => {
+        const labels = [];
+        dayInputs.forEach((input) => {
+            if (input.checked && input.parentElement) {
+                const text = input.parentElement.textContent ? input.parentElement.textContent.trim() : '';
+                if (text) {
+                    labels.push(text);
+                }
+            }
+        });
+
+        preview.textContent = labels.length > 0
+            ? 'Jours sélectionnés: ' + labels.join(', ')
+            : 'Aucun jour sélectionné';
+    };
+
+    const syncVisibility = () => {
+        const enabled = Boolean(recurringToggle.checked);
+        recurrenceBox.style.display = enabled ? '' : 'none';
+        recurrenceBox.classList.toggle('is-open', enabled);
+        recurrenceBox.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+
+        dayInputs.forEach((input) => {
+            input.disabled = !enabled;
+        });
+
+        if (endDateInput) {
+            endDateInput.disabled = !enabled;
+        }
+    };
+
+    dayInputs.forEach((input) => input.addEventListener('change', updatePreview));
+    recurringToggle.addEventListener('change', syncVisibility);
+    recurringToggle.addEventListener('input', syncVisibility);
+    recurringToggle.addEventListener('click', () => requestAnimationFrame(syncVisibility));
+    setupDatePicker(startDateInput);
+    setupDatePicker(endDateInput);
+
+    syncVisibility();
+    updatePreview();
+})();
+</script>
 

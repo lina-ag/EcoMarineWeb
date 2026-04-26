@@ -40,6 +40,24 @@ class UtilisateurRepository extends ServiceEntityRepository
                   ->getQuery()
                   ->getResult();
     }
+    public function searchUsersQuery(?string $search = null, ?string $role = null): \Doctrine\ORM\Query
+{
+    $qb = $this->createQueryBuilder('u');
+
+    if ($role && $role !== 'all') {
+        $qb->join('u.role', 'r')
+            ->andWhere('r.nomRole = :role')
+            ->setParameter('role', $role);
+    }
+
+    if ($search && !empty($search)) {
+        $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
+    }
+
+    return $qb->orderBy('u.id_utilisateur', 'DESC')
+              ->getQuery();
+}
     
     /**
      * Récupérer tous les rôles distincts
