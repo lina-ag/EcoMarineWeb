@@ -151,4 +151,47 @@ class WeatherService
             return null;
         }
     }
+
+    public function getWeatherForCity(string $city): ?array
+{
+    if (empty($this->apiKey) || $this->apiKey === 'votre_cle_api_ici') {
+        $this->logger->warning('Clé API OpenWeather non configurée, utilisation des données de fallback.');
+        return $this->getFallbackWeatherData();
+    }
+
+    try {
+        $response = $this->httpClient->request('GET', $this->baseUrl . '/weather', [
+            'query' => [
+                'q'     => $city,
+                'appid' => $this->apiKey,
+                'units' => 'metric',
+                'lang'  => 'fr',
+            ]
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            $data = $response->toArray();
+            return [
+                'temperature'    => $data['main']['temp'] ?? null,
+                'humidity'       => $data['main']['humidity'] ?? null,
+                'wind_speed'     => $data['wind']['speed'] ?? null,
+                'wind_direction' => $data['wind']['deg'] ?? null,
+                'description'    => $data['weather'][0]['description'] ?? null,
+                'main'           => $data['weather'][0]['main'] ?? null,
+                'pressure'       => $data['main']['pressure'] ?? null,
+                'visibility'     => $data['visibility'] ?? null,
+                'clouds'         => $data['clouds']['all'] ?? null,
+                'location'       => $data['name'] ?? null,
+                'country'        => $data['sys']['country'] ?? null,
+            ];
+        }
+
+        $this->logger->error('Erreur API météo: ' . $response->getStatusCode());
+        return $this->getFallbackWeatherData();
+
+    } catch (\Exception $e) {
+        $this->logger->error('Erreur météo ville: ' . $e->getMessage());
+        return $this->getFallbackWeatherData();
+    }
+  }
 }

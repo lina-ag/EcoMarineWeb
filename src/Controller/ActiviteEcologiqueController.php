@@ -66,6 +66,7 @@ final class ActiviteEcologiqueController extends AbstractController
             'total_pages' => $totalPages,
             'page_start' => $pageStart,
             'page_end' => $pageEnd,
+            'autocomplete_suggestions' => $this->buildActivityAutocompleteSuggestions($activites),
         ]);
     }
 
@@ -376,6 +377,38 @@ final class ActiviteEcologiqueController extends AbstractController
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
+    }
+
+    /**
+     * @param ActiviteEcologique[] $activities
+     *
+     * @return string[]
+     */
+    private function buildActivityAutocompleteSuggestions(array $activities): array
+    {
+        $suggestions = [];
+
+        foreach ($activities as $activity) {
+            if (!$activity instanceof ActiviteEcologique) {
+                continue;
+            }
+
+            $name = trim((string) $activity->getNomActivite());
+            if ($name !== '') {
+                $suggestions[] = $name;
+            }
+
+            $date = $activity->getDateActivite();
+            if ($date instanceof \DateTimeInterface) {
+                $suggestions[] = $date->format('Y-m-d');
+                $suggestions[] = $date->format('d/m/Y');
+            }
+        }
+
+        $suggestions = array_values(array_unique($suggestions));
+        sort($suggestions, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return array_slice($suggestions, 0, 12);
     }
 
     #[Route('/new', name: 'app_activite_ecologique_new', methods: ['GET', 'POST'])]
