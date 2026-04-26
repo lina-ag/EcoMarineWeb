@@ -9,6 +9,8 @@ use App\Repository\ReservationRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -456,6 +458,143 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
         ]);
 
         return $chart;
+    }
+
+    private function buildFilteredReservationQueryBuilder(
+        ReservationRepository $reservationRepository,
+        string $searchTerm,
+        string $searchField,
+        string $statusFilter,
+        string $personnesFilter,
+        string $dateFrom,
+        string $dateTo
+    ): QueryBuilder {
+        $queryBuilder = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a');
+
+        $this->applyReservationSearchFilter($queryBuilder, $searchTerm, $searchField);
+        $this->applyReservationStatusFilter($queryBuilder, $statusFilter);
+        $this->applyReservationPersonnesFilter($queryBuilder, $personnesFilter);
+        $this->applyReservationDateRangeFilter($queryBuilder, $dateFrom, $dateTo);
+
+        return $queryBuilder;
+    }
+
+    private function applyReservationSearchFilter(QueryBuilder $queryBuilder, string $searchTerm, string $searchField): void
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return;
+        }
+
+        if ($searchField === 'all') {
+            foreach ($tokens as $index => $token) {
+                $parameter = sprintf('search_token_%d', $index);
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.id_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.nom)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(COALESCE(a.nom_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.date_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.email)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.nombre_personnes, \'\'))', ':' . $parameter)
+                        )
+                    )
+                    ->setParameter($parameter, '%' . $token . '%');
+            }
+
+            return;
+        }
+
+        $fieldExpression = match ($searchField) {
+            'id' => 'LOWER(CONCAT(r.id_reservation, \'\'))',
+            'nom' => 'LOWER(r.nom)',
+            'activite' => 'LOWER(COALESCE(a.nom_activite, \'\'))',
+            'date' => 'LOWER(CONCAT(r.date_reservation, \'\'))',
+            'email' => 'LOWER(r.email)',
+            'nombre' => 'LOWER(CONCAT(r.nombre_personnes, \'\'))',
+            default => null,
+        };
+
+        if ($fieldExpression === null) {
+            return;
+        }
+
+        foreach ($tokens as $index => $token) {
+            $parameter = sprintf('search_field_token_%d', $index);
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->like($fieldExpression, ':' . $parameter))
+                ->setParameter($parameter, '%' . $token . '%');
+        }
+    }
+
+    private function applyReservationStatusFilter(QueryBuilder $queryBuilder, string $statusFilter): void
+    {
+        if ($statusFilter === 'all') {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        match ($statusFilter) {
+            'cancelled' => $queryBuilder->andWhere('r.activiteEcologique IS NULL'),
+            'pending' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation > :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            'confirmed' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation <= :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            default => null,
+        };
+    }
+
+    private function applyReservationPersonnesFilter(QueryBuilder $queryBuilder, string $personnesFilter): void
+    {
+        if ($personnesFilter === 'all') {
+            return;
+        }
+
+        match ($personnesFilter) {
+            '1-5' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 1 AND 5'),
+            '6-10' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 6 AND 10'),
+            '11-50' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 11 AND 50'),
+            '50+' => $queryBuilder->andWhere('r.nombre_personnes > 50'),
+            default => null,
+        };
+    }
+
+    private function applyReservationDateRangeFilter(QueryBuilder $queryBuilder, string $dateFrom, string $dateTo): void
+    {
+        if ($dateFrom !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation >= :reservationDateFrom')
+                ->setParameter('reservationDateFrom', new \DateTimeImmutable($dateFrom));
+        }
+
+        if ($dateTo !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation <= :reservationDateTo')
+                ->setParameter('reservationDateTo', new \DateTimeImmutable($dateTo));
+        }
+    }
+
+    private function applyReservationSort(QueryBuilder $queryBuilder, string $sort): void
+    {
+        match ($sort) {
+            'id_asc' => $queryBuilder->orderBy('r.id_reservation', 'ASC'),
+            'id_desc' => $queryBuilder->orderBy('r.id_reservation', 'DESC'),
+            'nom_asc' => $queryBuilder->orderBy('r.nom', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nom_desc' => $queryBuilder->orderBy('r.nom', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            'date_asc' => $queryBuilder->orderBy('r.date_reservation', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_asc' => $queryBuilder->orderBy('r.nombre_personnes', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_desc' => $queryBuilder->orderBy('r.nombre_personnes', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            default => $queryBuilder->orderBy('r.date_reservation', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+        };
     }
 
     private function matchesReservationSearch(Reservation $reservation, string $searchTerm, string $searchField): bool
