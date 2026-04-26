@@ -1,4 +1,5 @@
-{% set reservation_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}} %}
+
+{% set reservation_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate', 'data-turbo': 'false'}} %}
 {% if form_action is defined and form_action %}
     {% set reservation_form_options = reservation_form_options|merge({'action': form_action}) %}
 {% endif %}
@@ -51,9 +52,6 @@
             {{ form_label(form.activiteEcologique, null, {'label_attr': {'class': 'form-label'}}) }}
             <div class="capacity-select-shell">
                 {{ form_widget(form.activiteEcologique, {'attr': {'class': 'form-input capacity-select'}}) }}
-                <div style="margin-top: 0.5rem;">
-                    <span class="reservation-rating" data-rating="0" data-editable-rating="reservation" style="display:inline-block;"></span>
-                </div>
                 <div id="activity-capacity-status" class="capacity-status capacity-status-default">
                     <div class="capacity-status-topline">
                         <div class="capacity-status-copy">
@@ -116,26 +114,18 @@
         return;
     }
 
-    // Keep one visible option per activity name (recurrence occurrences share the same name).
     const dedupeActivityOptions = () => {
         const seen = new Set();
         const currentValue = activitySelect.value;
 
         Array.from(activitySelect.options).forEach((option) => {
-            if (!option.value) {
-                return;
-            }
-
+            if (!option.value) return;
             const key = option.textContent ? option.textContent.trim().toLowerCase() : '';
-            if (!key) {
-                return;
-            }
-
+            if (!key) return;
             if (seen.has(key) && option.value !== currentValue) {
                 option.remove();
                 return;
             }
-
             seen.add(key);
         });
     };
@@ -164,7 +154,6 @@
 
     const applyCapacityState = () => {
         const selectedOption = activitySelect.options[activitySelect.selectedIndex];
-
         if (!selectedOption || !selectedOption.value) {
             resetCapacityState();
             return;
@@ -180,18 +169,15 @@
 
         activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
         activitySelect.classList.add('capacity-select-' + state);
-
         capacityStatus.className = 'capacity-status capacity-status-' + state;
         capacityStatus.classList.remove('is-updating');
         void capacityStatus.offsetWidth;
         capacityStatus.classList.add('is-updating');
-
         capacityPill.textContent = state === 'full' ? 'Complet' : state === 'warning' ? 'Alerte' : 'Disponible';
         capacityUsed.textContent = used;
         capacityRemaining.textContent = remaining;
         capacityTotal.textContent = total;
         capacityFill.style.width = percent + '%';
-
         capacityText.textContent = used + '/' + total + ' utilisées • ' + remaining + ' restantes';
     };
 
@@ -211,12 +197,10 @@
 
         activitySelect.classList.remove('capacity-select-available', 'capacity-select-warning', 'capacity-select-full');
         activitySelect.classList.add('capacity-select-' + state);
-
         capacityStatus.className = 'capacity-status capacity-status-' + state;
         capacityStatus.classList.remove('is-updating');
         void capacityStatus.offsetWidth;
         capacityStatus.classList.add('is-updating');
-
         capacityPill.textContent = state === 'full' ? 'Complet' : state === 'warning' ? 'Alerte' : 'Disponible';
         capacityUsed.textContent = used;
         capacityRemaining.textContent = remaining;
@@ -226,19 +210,14 @@
     };
 
     const formatDateFr = (isoDate) => {
-        if (!isoDate || !isoDate.includes('-')) {
-            return isoDate;
-        }
-
+        if (!isoDate || !isoDate.includes('-')) return isoDate;
         const [year, month, day] = isoDate.split('-');
         return day + '/' + month + '/' + year;
     };
 
     const applyAllowedDates = (allowedDates) => {
         const previousValue = dateSelect.value;
-
         dateSelect.innerHTML = '';
-
         const placeholder = document.createElement('option');
         placeholder.value = '';
         placeholder.textContent = '-- Choisissez une date --';
@@ -258,7 +237,6 @@
         }
 
         dateHiddenInput.value = dateSelect.value;
-
         hint.textContent = translate('Dates autorisées: ') + allowedDates.map(formatDateFr).join(' / ');
     };
 
@@ -277,9 +255,7 @@
 
         try {
             const response = await fetch(urlTemplate.replace('__ID__', encodeURIComponent(activitySelect.value)), {
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
             if (!response.ok) {
@@ -300,7 +276,6 @@
         } catch (e) {
             resetDateChoices();
             resetCapacityState();
-            return;
         }
     };
 

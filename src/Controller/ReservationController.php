@@ -185,56 +185,97 @@ final class ReservationController extends AbstractController
         ]);
     }
 
-    #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-    public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
-    {
-        $apiKey = $_ENV['8ARNMqo7uXgU5NTweEmWn46Hvewjcp1PtqfXTKDZTj29'] ?? '';
+#[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
+{
+    $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
+    $questions = [];
+
+    try {
+        $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
+            'headers' => ['X-Api-Key' => $apiKey],
+            'query' => ['category' => 'nature', 'limit' => 3],
+        ]);
+        $data = $response->toArray();
+        if (!empty($data) && isset($data[0]['question'])) {
+            $questions = $data;
+        }
+    } catch (\Throwable) {
         $questions = [];
+    }
 
-        try {
-            $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
-                'headers' => ['X-Api-Key' => $apiKey],
-                'query' => ['category' => 'nature', 'limit' => 3],
-            ]);
-            $questions = $response->toArray();
-        } catch (\Throwable) {
-            $questions = [];
+    if (empty($questions)) {
+        $questions = [
+            [
+                'question' => 'Quel est le plus grand océan du monde ?',
+                'answer' => 'Pacifique',
+                'wrong' => ['Atlantique', 'Indien', 'Arctique'],
+            ],
+            [
+                'question' => 'Quel animal marin est connu pour changer de couleur ?',
+                'answer' => 'Poulpe',
+                'wrong' => ['Requin', 'Dauphin', 'Baleine'],
+            ],
+            [
+                'question' => 'Combien de pourcentage de la Terre est recouvert d\'eau ?',
+                'answer' => '71%',
+                'wrong' => ['55%', '63%', '85%'],
+            ],
+        ];
+    }
+
+    // Génère les choix QCM pour chaque question
+    foreach ($questions as $index => &$question) {
+        $correct = $question['answer'];
+
+        // Si des fausses réponses spécifiques existent on les utilise
+        if (isset($question['wrong'])) {
+            $wrong = $question['wrong'];
+        } else {
+            // Pour les questions de l'API : on génère des fausses réponses génériques cohérentes
+            $wrong = ['Inconnu', 'Aucune de ces réponses', 'Non applicable'];
         }
 
-        if ($request->isMethod('POST')) {
-            $answers = $request->request->all('answers');
-            $correctCount = 0;
+        $choices = array_slice($wrong, 0, 3);
+        $choices[] = $correct;
+        shuffle($choices);
+        $question['choices'] = $choices;
+    }
+    unset($question);
 
-            foreach ($questions as $index => $question) {
-                $userAnswer = strtolower(trim($answers[$index] ?? ''));
-                $correct = strtolower(trim($question['answer'] ?? ''));
-                if ($userAnswer === $correct) {
-                    $correctCount++;
-                }
+    if ($request->isMethod('POST')) {
+        $answers = $request->request->all('answers');
+        $correctCount = 0;
+
+        foreach ($questions as $index => $question) {
+            $userAnswer = strtolower(trim($answers[$index] ?? ''));
+            $correct = strtolower(trim($question['answer'] ?? ''));
+            if ($userAnswer === $correct) {
+                $correctCount++;
             }
-
-            $badge = match(true) {
-                $correctCount === count($questions) => 'gold',
-                $correctCount >= 2 => 'silver',
-                default => 'bronze',
-            };
-
-            return $this->render('reservation/quiz_result.html.twig', [
-                'reservation' => $reservation,
-                'questions' => $questions,
-                'answers' => $answers,
-                'correct_count' => $correctCount,
-                'total' => count($questions),
-                'badge' => $badge,
-            ]);
         }
 
-        return $this->render('reservation/quiz.html.twig', [
+        $badge = match(true) {
+            $correctCount === count($questions) => 'gold',
+            $correctCount >= 2 => 'silver',
+            default => 'bronze',
+        };
+
+        return $this->render('reservation/quiz_result.html.twig', [
             'reservation' => $reservation,
             'questions' => $questions,
+            'answers' => $answers,
+            'correct_count' => $correctCount,
+            'total' => count($questions),
+            'badge' => $badge,
         ]);
     }
 
+    return $this->render('reservation/quiz.html.twig', [
+        'reservation' => $reservation,
+        'questions' => $questions,
+    ]);
+}
     #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
     public function exportAllPdf(ReservationRepository $reservationRepository): Response
     {

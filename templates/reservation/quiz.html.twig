@@ -33,27 +33,35 @@
                 </a>
             </div>
         {% else %}
-            <form method="POST" action="{{ path('app_reservation_quiz', {'id_reservation': reservation.idReservation}) }}">
+            <form method="POST" action="{{ path('app_reservation_quiz', {'id_reservation': reservation.idReservation}) }}" data-turbo="false">
                 {% for i, question in questions %}
                     <div style="background: rgba(255,255,255,0.88); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid rgba(148,163,184,0.3); box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                        <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem;">
                             <span style="background: linear-gradient(135deg, #1d4ed8, #0f766e); color: white; border-radius: 50%; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 2px;">{{ i + 1 }}</span>
                             <p style="margin: 0; font-weight: 600; color: #0f172a; font-size: 1rem; line-height: 1.5;">{{ question.question }}</p>
                         </div>
-                        <input
-                            type="text"
-                            name="answers[{{ i }}]"
-                            required
-                            placeholder="Votre réponse..."
-                            style="width: 100%; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid rgba(191,219,254,0.9); background: rgba(255,255,255,0.95); font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;"
-                            onfocus="this.style.borderColor='rgba(37,99,235,0.5)'"
-                            onblur="this.style.borderColor='rgba(191,219,254,0.9)'"
-                        >
+
+                        <div style="display: flex; flex-direction: column; gap: 0.65rem; padding-left: 0.5rem;">
+                            {% for choice in question.choices %}
+                                <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid rgba(191,219,254,0.7); background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.borderColor='rgba(37,99,235,0.5)'; this.style.background='rgba(239,246,255,0.95)'"
+                                    onmouseout="this.style.borderColor='rgba(191,219,254,0.7)'; this.style.background='rgba(255,255,255,0.9)'">
+                                    <input
+                                        type="radio"
+                                        name="answers[{{ i }}]"
+                                        value="{{ choice }}"
+                                        required
+                                        style="width: 1.1rem; height: 1.1rem; accent-color: #1d4ed8; flex-shrink: 0;"
+                                    >
+                                    <span style="font-size: 0.95rem; color: #0f172a; font-weight: 500;">{{ choice }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
                     </div>
                 {% endfor %}
 
                 <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); border: none; cursor: pointer;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); border: none; cursor: pointer; font-weight: 700;">
                         🏆 Valider mes réponses
                     </button>
                     <a href="{{ path('app_reservation_index') }}" style="display: block; margin-top: 1rem; color: #64748b; font-size: 0.88rem; text-decoration: none;">
