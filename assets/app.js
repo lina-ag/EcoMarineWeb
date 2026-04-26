@@ -1,3 +1,12 @@
+
+import '@hotwired/turbo';
+import { startStimulusApp } from '@symfony/stimulus-bundle';
+import ZonepMapController from './controllers/zonep_map_controller.js';
+
+const app = startStimulusApp();
+
+app.register('zonep-map', ZonepMapController);
+
 import './bootstrap.js';
 import { trans } from './translator.js';
 
@@ -115,3 +124,4 @@ window.ecomarineRenderRatings = renderAllRatings;
 
 document.addEventListener('DOMContentLoaded', renderAllRatings);
 document.addEventListener('turbo:load', renderAllRatings);
+

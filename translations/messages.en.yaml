@@ -1,3 +1,81 @@
+zonep:
+    title: 'Marine Zones Management'
+    created: 'Zone created successfully!'
+    updated: 'Zone updated successfully!'
+    deleted: 'Zone deleted successfully!'
+    not_found: 'Zone not found.'
+    confirm_delete: 'Do you really want to delete the zone "{name}"?'
+    no_records: 'No zones found.'
+    search_placeholder: 'Search by name or category...'
+    new_title: 'Create a zone'
+    new_subtitle: 'Add a new zone to the system.'
+    edit_title: 'Edit a zone'
+    edit_subtitle: 'Update the name, category and status.'
+    show_title: 'Zone #%id%'
+    show_subtitle: 'Zone details.'
+    fields:
+        name: 'Zone name'
+        category: 'Category'
+        status: 'Status'
+    placeholders:
+        name: 'Ex: North Kuriat Zone'
+        category: 'Ex: Protection, Tourism, Surveillance'
+        status: 'Choose a status'
+    map:
+        title: 'Map view'
+        subtitle: 'Choose a style to explore zones with the right level of detail.'
+        styles:
+            night: 'Night mode'
+            minimal: 'Minimal'
+            satellite: 'Satellite'
+
+survzone:
+    title: 'Zone Surveillance'
+    created: 'Surveillance added successfully!'
+    updated: 'Surveillance updated successfully!'
+    deleted: 'Surveillance deleted successfully!'
+    confirm_delete: 'Do you really want to delete this surveillance from "{date}"?'
+    no_records: 'No surveillance found.'
+    new_title: 'Create surveillance'
+    new_subtitle: 'Add a new zone follow-up.'
+    edit_title: 'Edit surveillance'
+    edit_subtitle: 'Update the date, observation and zone.'
+    show_title: 'Surveillance #%id%'
+    show_subtitle: 'Recorded observation details.'
+    search_placeholder: 'Search by zone name...'
+    fields:
+        date: 'Date'
+        observation: 'Observation'
+        zone: 'Zone'
+        zone_id: 'Zone id'
+    placeholders:
+        observation: 'Enter your observations here...'
+        zone: 'Choose a zone'
+
+status:
+    actif: 'Active'
+    inactif: 'Inactive'
+    en_surveillance: 'Under surveillance'
+    en_maintenance: 'Under maintenance'
+
+common:
+    create: 'Create'
+    edit: 'Edit'
+    update: 'Update'
+    save: 'Save'
+    show: 'Show'
+    delete: 'Delete'
+    back_to_list: 'Back to list'
+    reset: 'Reset'
+    search: 'Search'
+    export_pdf: 'Export PDF'
+    id: 'Id'
+    actions: 'Actions'
+    date: 'Date'
+    switch_language: 'Switch language'
+    language_fr: 'Français'
+    language_en: 'English'
+
 reservation:
   title: 'Reservations'
   subtitle: 'Track registered reservations'
@@ -157,11 +235,5 @@ calendar:
   button_day: 'Day'
   button_list: 'List'
 
-common:
-  switch_language: 'Switch language'
-  language_fr: 'Français'
-  language_en: 'English'
-
 demo:
   hello: 'Hello from UX Translator'
-

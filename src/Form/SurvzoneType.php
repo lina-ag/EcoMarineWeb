@@ -18,23 +18,26 @@ class SurvzoneType extends AbstractType
         $builder
             ->add('dateSurv', DateType::class, [
                 'widget' => 'single_text',
-                'label' => 'Date de surveillance',
+                'label' => 'survzone.fields.date',
+                'translation_domain' => 'messages',
                 'required' => false,
             ])
             ->add('observation', TextareaType::class, [
                 'required' => false,
-                'label' => 'Observation',
+                'label' => 'survzone.fields.observation',
+                'translation_domain' => 'messages',
                 'attr' => [
                     'rows' => 4,
-                    'placeholder' => 'Entrez vos observations ici...',
+                    'placeholder' => 'survzone.placeholders.observation',
                     'maxlength' => 1000,
                 ],
             ])
             ->add('zone', EntityType::class, [
                 'class' => Zonep::class,
                 'choice_label' => 'nomZone',
-                'placeholder' => 'Choisir une zone',
-                'label' => 'Zone',
+                'placeholder' => 'survzone.placeholders.zone',
+                'label' => 'survzone.fields.zone',
+                'translation_domain' => 'messages',
                 'required' => false,
             ])
         ;

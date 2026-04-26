@@ -5,14 +5,18 @@ namespace App\Controller;
 use App\Entity\Survzone;
 use App\Form\SurvzoneType;
 use App\Repository\SurvzoneRepository;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
 #[Route('/survzone')]
 final class SurvzoneController extends AbstractController
@@ -25,19 +29,35 @@ final class SurvzoneController extends AbstractController
     ): Response {
         $sortBy = $request->query->get('tri', 'idSurv');
         $order  = $request->query->get('sens', 'ASC');
+        $search = trim((string) $request->query->get('search', ''));
 
-        $query = $survzoneRepository->findAllSorted($sortBy, $order);
+        if ('' !== $search) {
+            $query = $survzoneRepository->findBySearchSorted($search, $sortBy, $order);
+            $survzones = $paginator->paginate($query->getQuery(), $request->query->getInt('page', 1), 10);
+        } else {
+            $query = $survzoneRepository->findAllSorted($sortBy, $order);
 
-        $survzones = $paginator->paginate(
-            $query->getQuery(),
-            $request->query->getInt('page', 1),
-            10
-        );
+            $survzones = $paginator->paginate(
+                $query->getQuery(),
+                $request->query->getInt('page', 1),
+                10
+            );
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('survzone/_results.html.twig', [
+                'survzones' => $survzones,
+                'sortBy' => $sortBy,
+                'order' => $order,
+                'search' => $search,
+            ]);
+        }
 
         return $this->render('survzone/index.html.twig', [
             'survzones' => $survzones,
             'sortBy'    => $sortBy,
             'order'     => $order,
+            'search'    => $search,
         ]);
     }
 
@@ -113,31 +133,113 @@ final class SurvzoneController extends AbstractController
         return $this->redirectToRoute('app_survzone_index', [], Response::HTTP_SEE_OTHER);
     }
 
+    #[Route('/autocomplete/search', name: 'app_survzone_search_autocomplete', methods: ['GET'])]
+    public function autocompleteSearch(Request $request, SurvzoneRepository $survzoneRepository): JsonResponse
+    {
+        $query = trim((string) $request->query->get('query', ''));
+
+        return $this->json([
+            'results' => $survzoneRepository->findAutocompleteSuggestions($query),
+        ]);
+    }
+
     #[Route('/export/pdf', name: 'app_survzone_export_pdf', methods: ['GET'])]
-public function exportPdf(SurvzoneRepository $survzoneRepository): Response
-{
-    $survzones = $survzoneRepository->findAll();
+    public function exportPdf(SurvzoneRepository $survzoneRepository, Pdf $pdf): Response
+    {
+        $survzones = $survzoneRepository->findAll();
 
-    $html = $this->renderView('survzone/pdf.html.twig', [
-        'survzones' => $survzones,
-    ]);
+        $html = $this->renderView('survzone/pdf.html.twig', [
+            'survzones' => $survzones,
+        ]);
 
-    $options = new Options();
-    $options->set('defaultFont', 'Arial');
-    $options->set('isHtml5ParserEnabled', true);
+        try {
+            return new PdfResponse(
+                $pdf->getOutputFromHtml($html, [
+                    'orientation' => 'Landscape',
+                    'encoding' => 'utf-8',
+                ]),
+                'surveillances_'.date('Y-m-d').'.pdf'
+            );
+        } catch (\Throwable $exception) {
+            return $this->renderWithDompdf($html, 'surveillances_'.date('Y-m-d').'.pdf');
+        }
+    }
 
-    $dompdf = new Dompdf($options);
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'landscape');
-    $dompdf->render();
+    private function renderWithDompdf(string $html, string $filename): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', true);
 
-    return new Response(
-        $dompdf->output(),
-        200,
-        [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="surveillances_' . date('Y-m-d') . '.pdf"',
-        ]
-    );
-  }
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]
+        );
+    }
+
+    private function buildSearchQuery(string $search): array
+    {
+        $should = [
+            [
+                'multi_match' => [
+                    'query' => $search,
+                    'fields' => ['zone.nomZone^4', 'observation^3'],
+                    'type' => 'best_fields',
+                    'fuzziness' => 'AUTO',
+                ],
+            ],
+        ];
+
+        if (\preg_match('/^\d{4}-\d{2}-\d{2}$/', $search)) {
+            $should[] = [
+                'term' => [
+                    'dateSurv' => $search,
+                ],
+            ];
+        }
+
+        return [
+            'query' => [
+                'bool' => [
+                    'should' => $should,
+                    'minimum_should_match' => 1,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param Survzone[] $survzones
+     */
+    private function sortSurvzones(array &$survzones, string $sortBy, string $order): void
+    {
+        $allowedSort = ['idSurv', 'dateSurv', 'observation'];
+        $sortBy = \in_array($sortBy, $allowedSort, true) ? $sortBy : 'idSurv';
+        $direction = 'DESC' === strtoupper($order) ? -1 : 1;
+
+        usort($survzones, static function (Survzone $left, Survzone $right) use ($sortBy, $direction): int {
+            $leftValue = match ($sortBy) {
+                'dateSurv' => $left->getDateSurv()?->format('Y-m-d') ?? '',
+                'observation' => mb_strtolower($left->getObservation() ?? ''),
+                default => $left->getIdSurv() ?? 0,
+            };
+
+            $rightValue = match ($sortBy) {
+                'dateSurv' => $right->getDateSurv()?->format('Y-m-d') ?? '',
+                'observation' => mb_strtolower($right->getObservation() ?? ''),
+                default => $right->getIdSurv() ?? 0,
+            };
+
+            return ($leftValue <=> $rightValue) * $direction;
+        });
+    }
 }

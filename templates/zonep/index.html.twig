@@ -1,183 +1,496 @@
 {% extends 'base.html.twig' %}
-{% block title %}Zonep index{% endblock %}
+
+{% block title %}{{ 'zonep.title'|trans }}{% endblock %}
+
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
+<section class="glass-card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">{{ 'zonep.title'|trans }}</h2>
+            <p class="card-subtitle">{{ 'zonep.no_records'|trans }}</p>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <a href="{{ path('app_zonep_export_pdf') }}" class="btn btn-secondary">
+                {{ 'common.export_pdf'|trans }}
+            </a>
+            <a href="{{ path('app_zonep_new') }}" class="btn btn-primary">
+                + {{ 'common.create'|trans }}
+            </a>
+        </div>
+    </div>
+
+    <form method="GET" action="{{ path('app_zonep_index') }}" class="toolbar" id="filterForm">
+        <input type="hidden" name="tri" id="triInput" value="{{ sortBy }}">
+        <input type="hidden" name="sens" id="sensInput" value="{{ order }}">
+        <input type="hidden" name="status" id="statusInput" value="{{ status }}">
+
+        <div class="search-box">
+            <input
+                type="text"
+                name="search"
+                id="searchInput"
+                value="{{ search }}"
+                placeholder="{{ 'zonep.search_placeholder'|trans }}"
+                class="search-input"
+                autocomplete="off"
+            >
+            <button type="button" id="voiceBtn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
+                <svg id="voiceIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="filter-btns">
+            <button type="button" class="filter-btn {{ status == '' ? 'active' : '' }}" data-status="">
+                Tous
+            </button>
+            <button type="button" class="filter-btn {{ status == 'Actif' ? 'active' : '' }}" data-status="Actif">
+                {{ 'status.actif'|trans }}
+            </button>
+            <button type="button" class="filter-btn {{ status == 'En surveillance' ? 'active' : '' }}" data-status="En surveillance">
+                {{ 'status.en_surveillance'|trans }}
+            </button>
+            <button type="button" class="filter-btn {{ status == 'En maintenance' ? 'active' : '' }}" data-status="En maintenance">
+                {{ 'status.en_maintenance'|trans }}
+            </button>
+            <button type="button" class="filter-btn {{ status == 'Inactif' ? 'active' : '' }}" data-status="Inactif">
+                {{ 'status.inactif'|trans }}
+            </button>
+        </div>
+
+        {% if search or status %}
+            <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">
+                {{ 'common.reset'|trans }}
+            </a>
+        {% endif %}
+    </form>
+
+    {{ include('zonep/_results.html.twig') }}
+
+    <div
+        class="zonep-map-panel"
+        data-controller="zonep-map"
+        data-zonep-map-default-style-value="night"
+        data-action="ux:map:connect->zonep-map#registerMap"
+    >
+        <div class="zonep-map-toolbar">
             <div>
-                <h2 class="card-title">Zones</h2>
-                <p class="card-subtitle">Liste des zones et leur statut actuel.</p>
+                <h3 class="zonep-map-title">{{ 'zonep.map.title'|trans }}</h3>
+                <p class="zonep-map-subtitle">{{ 'zonep.map.subtitle'|trans }}</p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <a href="{{ path('app_zonep_export_pdf') }}" class="btn btn-secondary">Export PDF</a>
-                <a href="{{ path('app_zonep_new') }}" class="btn btn-primary">Create new</a>
+
+            <div class="zonep-map-switch" role="group" aria-label="{{ 'zonep.map.title'|trans }}">
+                <button
+                    type="button"
+                    class="zonep-map-style-btn is-active"
+                    data-zonep-map-target="button"
+                    data-style-name="night"
+                    data-action="zonep-map#switchStyle"
+                    data-zonep-map-style-param="night"
+                >
+                    {{ 'zonep.map.styles.night'|trans }}
+                </button>
+                <button
+                    type="button"
+                    class="zonep-map-style-btn"
+                    data-zonep-map-target="button"
+                    data-style-name="minimal"
+                    data-action="zonep-map#switchStyle"
+                    data-zonep-map-style-param="minimal"
+                >
+                    {{ 'zonep.map.styles.minimal'|trans }}
+                </button>
+                <button
+                    type="button"
+                    class="zonep-map-style-btn"
+                    data-zonep-map-target="button"
+                    data-style-name="satellite"
+                    data-action="zonep-map#switchStyle"
+                    data-zonep-map-style-param="satellite"
+                >
+                    {{ 'zonep.map.styles.satellite'|trans }}
+                </button>
             </div>
         </div>
 
-        <form method="GET" action="{{ path('app_zonep_index') }}" class="toolbar" id="filterForm">
-            <input type="hidden" name="tri" id="triInput" value="{{ sortBy }}">
-            <input type="hidden" name="sens" id="sensInput" value="{{ order }}">
-            <input type="hidden" name="status" id="statusInput" value="{{ status }}">
-            <div class="search-box">
-                <input type="text" name="search" id="searchInput" value="{{ search }}" placeholder="Rechercher par nom ou catégorie..." class="search-input" autocomplete="off">
-            </div>
-            <div class="filter-btns">
-                <button type="button" class="filter-btn {{ status == '' ? 'active' : '' }}" data-status="">Tous</button>
-                <button type="button" class="filter-btn {{ status == 'Actif' ? 'active' : '' }}" data-status="Actif">🟢 Actif</button>
-                <button type="button" class="filter-btn {{ status == 'En surveillance' ? 'active' : '' }}" data-status="En surveillance">🟡 En surveillance</button>
-                <button type="button" class="filter-btn {{ status == 'En maintenance' ? 'active' : '' }}" data-status="En maintenance">🔵 En maintenance</button>
-                <button type="button" class="filter-btn {{ status == 'Inactif' ? 'active' : '' }}" data-status="Inactif">🔴 Inactif</button>
-            </div>
-            {% if search or status %}
-                <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">Réinitialiser</a>
-            {% endif %}
-        </form>
-
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th><a href="{{ path('app_zonep_index', {'tri': 'idZone', 'sens': sortBy == 'idZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Id {{ sortBy == 'idZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
-                        <th><a href="{{ path('app_zonep_index', {'tri': 'nomZone', 'sens': sortBy == 'nomZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Nom zone {{ sortBy == 'nomZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
-                        <th><a href="{{ path('app_zonep_index', {'tri': 'categorieZone', 'sens': sortBy == 'categorieZone' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Categorie {{ sortBy == 'categorieZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
-                        <th><a href="{{ path('app_zonep_index', {'tri': 'status', 'sens': sortBy == 'status' and order == 'ASC' ? 'DESC' : 'ASC', 'page': 1, 'search': search, 'status': status}) }}">Status {{ sortBy == 'status' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}</a></th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                {% for zonep in zoneps %}
-                    <tr>
-                        <td>{{ zonep.idZone }}</td>
-                        <td>{{ zonep.nomZone }}</td>
-                        <td>{{ zonep.categorieZone }}</td>
-                        <td>
-                            {% if zonep.status == 'Actif' %}
-                                <span class="badge badge-actif">● Actif</span>
-                            {% elseif zonep.status == 'En surveillance' %}
-                                <span class="badge badge-surveillance">● En surveillance</span>
-                            {% elseif zonep.status == 'En maintenance' %}
-                                <span class="badge badge-maintenance">● En maintenance</span>
-                            {% else %}
-                                <span class="badge badge-inactif">● Inactif</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('app_zonep_show', {'idZone': zonep.idZone}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div id="map-container" class="zonep-map-canvas">
+            {{ render_map(map, {'style': 'height: 400px; width: 100%;'}) }}
         </div>
+    </div>
+</section>
 
-        <div class="pagination" id="paginationBox">
-            {{ knp_pagination_render(zoneps) }}
-        </div>
-    </section>
+{# Toast notification pour la recherche vocale #}
+<div id="voiceToast" class="voice-toast" role="status" aria-live="polite"></div>
 
-    <script>
-        let searchTimer;
+<script>
+    // ── Recherche / filtres ──────────────────────────────────────────────
+    let searchTimer;
 
-        function doFetch() {
-            const search = document.getElementById('searchInput').value;
-            const status = document.getElementById('statusInput').value;
-            const tri    = document.getElementById('triInput').value;
-            const sens   = document.getElementById('sensInput').value;
+    function doFetch() {
+        const search = document.getElementById('searchInput').value;
+        const status = document.getElementById('statusInput').value;
+        const tri    = document.getElementById('triInput').value;
+        const sens   = document.getElementById('sensInput').value;
 
-            const url = new URL(window.location.origin + '{{ path('app_zonep_index') }}');
-            url.searchParams.set('search', search);
-            url.searchParams.set('status', status);
-            url.searchParams.set('tri', tri);
-            url.searchParams.set('sens', sens);
-            url.searchParams.set('page', '1');
+        const url = new URL(window.location.origin + '{{ path('app_zonep_index') }}');
+        url.searchParams.set('search', search);
+        url.searchParams.set('status', status);
+        url.searchParams.set('tri', tri);
+        url.searchParams.set('sens', sens);
+        url.searchParams.set('page', '1');
 
-            fetch(url.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                document.getElementById('tableBody').innerHTML = doc.getElementById('tableBody').innerHTML;
-                document.getElementById('paginationBox').innerHTML = doc.getElementById('paginationBox').innerHTML;
-                window.history.pushState({}, '', url.toString());
-            });
+        fetch(url.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const nextResults = doc.getElementById('zonepResults');
+            if (nextResults) {
+                document.getElementById('zonepResults').innerHTML = nextResults.innerHTML;
+            }
+            window.history.pushState({}, '', url.toString());
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(doFetch, 300);
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.getElementById('statusInput').value = this.dataset.status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            doFetch();
+        });
+    });
+
+    // ── Recherche vocale ─────────────────────────────────────────────────
+    (function () {
+        const voiceBtn   = document.getElementById('voiceBtn');
+        const voiceIcon  = document.getElementById('voiceIcon');
+        const searchInput = document.getElementById('searchInput');
+        const toast      = document.getElementById('voiceToast');
+
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // Masquer le bouton si l'API n'est pas supportée
+        if (!SpeechRecognition) {
+            voiceBtn.style.display = 'none';
+            return;
         }
 
-        // Recherche en temps réel
-        document.getElementById('searchInput').addEventListener('input', function() {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(doFetch, 300);
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        let isListening = false;
+        let toastTimer;
+
+        function showToast(msg, type) {
+            clearTimeout(toastTimer);
+            toast.textContent = msg;
+            toast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('voice-toast--visible');
+            }, 2800);
+        }
+
+        // Icône micro animée (ondes)
+        const micSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>`;
+
+        const stopSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="4" width="16" height="16" rx="3"/>
+        </svg>`;
+
+        function startListening() {
+            isListening = true;
+            voiceBtn.classList.add('voice-btn--active');
+            voiceBtn.innerHTML = stopSVG;
+            voiceBtn.setAttribute('aria-label', 'Arrêter la recherche vocale');
+            showToast('🎙 Parlez maintenant…', 'info');
+            recognition.start();
+        }
+
+        function stopListening() {
+            isListening = false;
+            voiceBtn.classList.remove('voice-btn--active');
+            voiceBtn.innerHTML = micSVG;
+            voiceBtn.setAttribute('aria-label', 'Démarrer la recherche vocale');
+            recognition.stop();
+        }
+
+        voiceBtn.addEventListener('click', function () {
+            if (isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
         });
 
-        // Filtres statut
-        document.querySelectorAll('.filter-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                // Mettre à jour le champ caché status
-                document.getElementById('statusInput').value = this.dataset.status;
+        recognition.addEventListener('result', function (e) {
+            const transcript = Array.from(e.results)
+                .map(r => r[0].transcript)
+                .join('');
 
-                // Mettre à jour les boutons actifs
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+            searchInput.value = transcript;
 
+            if (e.results[0].isFinal) {
+                showToast('Recherche : « ' + transcript + ' »', 'success');
+                clearTimeout(searchTimer);
                 doFetch();
-            });
+            }
         });
-    </script>
 
-    <style>
-        .toolbar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 24px 0 16px 0;
-            flex-wrap: wrap;
-        }
-        .search-input {
-            padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border, #e0e0e0);
-            background: var(--glass-bg, #fff);
-            color: var(--text-primary, #222);
-            font-size: 15px;
-            min-width: 260px;
-            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .search-input:focus {
-            border-color: var(--emerald-light, #38bdf8);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
-        }
-        .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-            color: var(--text-secondary, #94a3b8);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .filter-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary, #f1f5f9); }
-        .filter-btn.active {
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--emerald-light, #38bdf8);
-            border-color: rgba(56, 189, 248, 0.3);
-            font-weight: 600;
-        }
-        thead a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 4px; }
-        thead a:hover { color: var(--emerald-light, #38bdf8); }
-        .pagination { margin-top: 20px; display: flex; justify-content: center; }
-        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .badge-actif { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
-        .badge-surveillance { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
-        .badge-maintenance { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.3); }
-        .badge-inactif { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
-    </style>
+        recognition.addEventListener('end', function () {
+            if (isListening) {
+                stopListening();
+            }
+        });
+
+        recognition.addEventListener('error', function (e) {
+            stopListening();
+            const msgs = {
+                'not-allowed'     : 'Microphone non autorisé. Vérifiez les permissions.',
+                'no-speech'       : 'Aucune voix détectée. Réessayez.',
+                'audio-capture'   : 'Impossible d\'accéder au microphone.',
+                'network'         : 'Erreur réseau lors de la reconnaissance vocale.',
+            };
+            showToast(msgs[e.error] || 'Erreur vocale : ' + e.error, 'error');
+        });
+    })();
+</script>
+
+<style>
+    /* ── Toolbar & filtres ─────────────────────────────────── */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0 16px 0;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 12px 48px 12px 18px;
+        border-radius: 12px;
+        border: 1px solid var(--glass-border, #e0e0e0);
+        background: var(--glass-bg, #fff);
+        color: var(--text-primary, #222);
+        font-size: 15px;
+        min-width: 260px;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+        border-color: var(--emerald-light, #38bdf8);
+        box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
+    /* ── Bouton microphone ─────────────────────────────────── */
+    .voice-btn {
+        position: absolute;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary, #94a3b8);
+        cursor: pointer;
+        transition: color 0.2s, background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .voice-btn:hover {
+        background: rgba(56, 189, 248, 0.1);
+        color: var(--emerald-light, #38bdf8);
+    }
+
+    .voice-btn--active {
+        color: #f87171;
+        background: rgba(248, 113, 113, 0.12);
+        animation: voice-pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes voice-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
+        50%       { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); }
+    }
+
+    /* ── Toast notification ────────────────────────────────── */
+    .voice-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 9999;
+        white-space: nowrap;
+        max-width: 90vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .voice-toast--visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .voice-toast--info {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .voice-toast--success {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .voice-toast--error {
+        background: rgba(248, 113, 113, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    /* ── Filtres ───────────────────────────────────────────── */
+    .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        color: var(--text-secondary, #94a3b8);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary, #f1f5f9); }
+
+    .filter-btn.active {
+        background: rgba(56, 189, 248, 0.15);
+        color: var(--emerald-light, #38bdf8);
+        border-color: rgba(56, 189, 248, 0.3);
+        font-weight: 600;
+    }
+
+    thead a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    thead a:hover { color: var(--emerald-light, #38bdf8); }
+
+    .pagination { margin-top: 20px; display: flex; justify-content: center; }
+
+    /* ── Badges statut ─────────────────────────────────────── */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-actif        { background: rgba(52,211,153,0.15);  color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .badge-surveillance { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .badge-maintenance  { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.3); }
+    .badge-inactif      { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+    /* ── Carte carte ───────────────────────────────────────── */
+    .zonep-map-panel {
+        margin-top: 24px;
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.45);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+    }
+
+    .zonep-map-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .zonep-map-title   { margin: 0; font-size: 18px; color: var(--text-primary, #f8fafc); }
+    .zonep-map-subtitle { margin: 6px 0 0; color: var(--text-secondary, #94a3b8); font-size: 14px; }
+
+    .zonep-map-switch {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 6px;
+        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .zonep-map-style-btn {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: #cbd5e1;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .zonep-map-style-btn:hover { background: rgba(148, 163, 184, 0.12); color: #f8fafc; }
+
+    .zonep-map-style-btn.is-active {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(14, 165, 233, 0.18));
+        color: #f8fafc;
+        box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.3);
+    }
+
+    .zonep-map-canvas {
+        height: 400px;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .zonep-map-canvas > div { height: 100%; width: 100%; }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+        .zonep-map-panel  { padding: 14px; }
+        .zonep-map-switch { width: 100%; }
+        .zonep-map-style-btn { flex: 1 1 120px; text-align: center; }
+        .voice-toast { bottom: 16px; font-size: 13px; }
+    }
+</style>
 {% endblock %}

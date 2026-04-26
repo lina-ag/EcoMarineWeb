@@ -11,6 +11,12 @@
                 }
             }
         },
+
+        "@symfony/ux-leaflet-map": {
+            "map": {
+                "enabled": true,
+                "fetch": "lazy"
+
         "@symfony/ux-chartjs": {
             "chart": {
                 "enabled": true,
@@ -30,6 +36,7 @@
             "react": {
                 "enabled": true,
                 "fetch": "eager"
+
             }
         },
         "@symfony/ux-turbo": {

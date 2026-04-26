@@ -1,30 +1,43 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Zonep{% endblock %}
+{% block title %}{{ 'zonep.show_title'|trans({'%id%': zonep.idZone}) }}{% endblock %}
 
 {% block body %}
     <section class="glass-card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Zone #{{ zonep.idZone }}</h2>
-                <p class="card-subtitle">Details de la zone.</p>
+                <h2 class="card-title">{{ 'zonep.show_title'|trans({'%id%': zonep.idZone}) }}</h2>
+                <p class="card-subtitle">{{ 'zonep.show_subtitle'|trans }}</p>
             </div>
         </div>
 
         <div class="table-wrapper">
             <table class="data-table">
                 <tbody>
-                    <tr><th>Id</th><td>{{ zonep.idZone }}</td></tr>
-                    <tr><th>Nom zone</th><td>{{ zonep.nomZone }}</td></tr>
-                    <tr><th>Categorie</th><td>{{ zonep.categorieZone }}</td></tr>
-                    <tr><th>Status</th><td>{{ zonep.status }}</td></tr>
+                    <tr><th>{{ 'common.id'|trans }}</th><td>{{ zonep.idZone }}</td></tr>
+                    <tr><th>{{ 'zonep.fields.name'|trans }}</th><td>{{ zonep.nomZone }}</td></tr>
+                    <tr><th>{{ 'zonep.fields.category'|trans }}</th><td>{{ zonep.categorieZone }}</td></tr>
+                    <tr>
+                        <th>{{ 'zonep.fields.status'|trans }}</th>
+                        <td>
+                            {% if zonep.status == 'Actif' %}
+                                {{ 'status.actif'|trans }}
+                            {% elseif zonep.status == 'En surveillance' %}
+                                {{ 'status.en_surveillance'|trans }}
+                            {% elseif zonep.status == 'En maintenance' %}
+                                {{ 'status.en_maintenance'|trans }}
+                            {% else %}
+                                {{ 'status.inactif'|trans }}
+                            {% endif %}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="btn-group">
-            <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">back to list</a>
-            <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">edit</a>
+            <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">{{ 'common.back_to_list'|trans }}</a>
+            <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">{{ 'common.edit'|trans }}</a>
             {{ include('zonep/_delete_form.html.twig') }}
         </div>
     </section>
