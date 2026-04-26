@@ -4,49 +4,254 @@
     <meta charset="UTF-8">
     <title>Réservation {{ reservation.idReservation }}</title>
     <style>
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            color: #0f172a;
-            font-size: 14px;
-            margin: 24px;
+        @page {
+            margin: 150px 36px 90px 36px;
         }
 
-        h1 {
-            font-size: 22px;
-            margin-bottom: 6px;
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #0f172a;
+            font-size: 12px;
+            margin: 0;
+            background: #f8fafc;
+        }
+
+        .report-header {
+            position: fixed;
+            top: -120px;
+            left: 0;
+            right: 0;
+            height: 110px;
+            padding: 20px 36px 14px;
+            background: linear-gradient(135deg, #0f766e, #1d4ed8);
+            color: #ffffff;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header-inner,
+        .footer-inner {
+            display: table;
+            width: 100%;
+        }
+
+        .header-brand,
+        .header-meta,
+        .footer-left,
+        .footer-right {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .header-brand {
+            width: 65%;
+        }
+
+        .brand-row {
+            display: table;
+            width: 100%;
+        }
+
+        .brand-logo,
+        .brand-copy {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .brand-logo img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            margin-right: 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px;
+        }
+
+        .brand-kicker {
+            margin: 0 0 4px;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.1;
+        }
+
+        .brand-subtitle {
+            margin: 6px 0 0;
+            font-size: 11px;
+            opacity: 0.92;
+        }
+
+        .header-meta {
+            text-align: right;
+        }
+
+        .header-meta-box {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .header-meta-label {
+            margin: 0 0 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.78;
+        }
+
+        .header-meta-value {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .report-footer {
+            position: fixed;
+            bottom: -66px;
+            left: 0;
+            right: 0;
+            height: 54px;
+            padding: 14px 36px 0;
+            border-top: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 9px;
+            background: #ffffff;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .page-number::after {
+            content: "Page " counter(page) " / " counter(pages);
+            font-weight: 700;
             color: #1e3a8a;
         }
 
-        .meta {
-            margin-bottom: 16px;
-            color: #334155;
-            font-size: 12px;
+        .content {
+            padding-top: 0;
         }
 
-        table {
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(226, 239, 255, 0.84));
+            border: 1px solid #dbeafe;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+        }
+
+        .hero-top {
+            display: table;
             width: 100%;
-            border-collapse: collapse;
         }
 
-        th,
-        td {
-            border: 1px solid #cbd5e1;
-            padding: 10px;
-            text-align: left;
+        .hero-title,
+        .hero-badge {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .hero-title h1 {
+            margin: 0;
+            font-size: 21px;
+            color: #0f172a;
+        }
+
+        .hero-title p {
+            margin: 6px 0 0;
+            color: #475569;
+            font-size: 10px;
+        }
+
+        .hero-badge {
+            text-align: right;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 14px;
+        }
+
+        .grid-col {
+            display: table-cell;
+            width: 50%;
             vertical-align: top;
         }
 
-        th {
-            width: 34%;
-            background: #e2e8f0;
+        .card {
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: 16px;
+            padding: 14px 16px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #0f172a;
+        }
+
+        .card p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .details {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .details th,
+        .details td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 9px 0;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        .details th {
+            width: 42%;
+            color: #475569;
             font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .details td {
+            color: #0f172a;
+            font-weight: 600;
         }
 
         .status {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 4px 10px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 700;
         }
 
@@ -64,53 +269,129 @@
             background: #fee2e2;
             color: #b91c1c;
         }
+
+        .note {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-left: 4px solid #1d4ed8;
+            background: #eff6ff;
+            color: #1e3a8a;
+            border-radius: 10px;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     {% set reservationStatus = reservation.activiteEcologique ? (reservation.dateReservation and reservation.dateReservation|date('Y-m-d') > "now"|date('Y-m-d') ? 'pending' : 'confirmed') : 'cancelled' %}
 
-    <h1>Fiche Réservation #{{ reservation.idReservation }}</h1>
-    <div class="meta">Généré le {{ generatedAt|date('Y-m-d H:i') }}</div>
+    <div class="report-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="brand-row">
+                    <div class="brand-logo">
+                        <img src="{{ absolute_url(asset('assets/images/logoEco.png')) }}" alt="EcoMarine">
+                    </div>
+                    <div class="brand-copy">
+                        <p class="brand-kicker">EcoMarine</p>
+                        <h2 class="brand-title">Fiche réservation</h2>
+                        <p class="brand-subtitle">Document détaillé généré depuis la plateforme EcoMarine.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="header-meta-box">
+                    <p class="header-meta-label">Généré le</p>
+                    <p class="header-meta-value">{{ generatedAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <table>
-        <tbody>
-            <tr>
-                <th>ID réservation</th>
-                <td>{{ reservation.idReservation }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ reservation.nom }}</td>
-            </tr>
-            <tr>
-                <th>Activité</th>
-                <td>{{ reservation.activiteEcologique ? reservation.activiteEcologique.nomActivite : 'Annulée' }}</td>
-            </tr>
-            <tr>
-                <th>Date réservation</th>
-                <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ reservation.email }}</td>
-            </tr>
-            <tr>
-                <th>Nombre de personnes</th>
-                <td>{{ reservation.nombrePersonnes }}</td>
-            </tr>
-            <tr>
-                <th>Statut</th>
-                <td>
+    <div class="report-footer">
+        <div class="footer-inner">
+            <div class="footer-left">EcoMarine - Écotourisme et recherche marine à Kuriat, Monastir</div>
+            <div class="footer-right"><span class="page-number"></span></div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="hero">
+            <div class="hero-top">
+                <div class="hero-title">
+                    <h1>Réservation #{{ reservation.idReservation }}</h1>
+                    <p>Vue synthétique avec les informations principales, le statut et les coordonnées liées.</p>
+                </div>
+                <div class="hero-badge">
                     {% if reservationStatus == 'confirmed' %}
-                        <span class="status status-confirmed">Confirmée</span>
+                        <span class="badge status status-confirmed">Confirmée</span>
                     {% elseif reservationStatus == 'pending' %}
-                        <span class="status status-pending">En attente</span>
+                        <span class="badge status status-pending">En attente</span>
                     {% else %}
-                        <span class="status status-cancelled">Annulée</span>
+                        <span class="badge status status-cancelled">Annulée</span>
                     {% endif %}
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="grid-col">
+                <div class="card">
+                    <h2>Informations de réservation</h2>
+                    <table class="details">
+                        <tbody>
+                            <tr>
+                                <th>ID réservation</th>
+                                <td>{{ reservation.idReservation }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ reservation.nom }}</td>
+                            </tr>
+                            <tr>
+                                <th>Activité</th>
+                                <td>{{ reservation.activiteEcologique ? reservation.activiteEcologique.nomActivite : 'Annulée' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date réservation</th>
+                                <td>{{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y') : '' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="grid-col" style="padding-left: 10px;">
+                <div class="card">
+                    <h2>Contact et capacité</h2>
+                    <table class="details">
+                        <tbody>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ reservation.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre de personnes</th>
+                                <td>{{ reservation.nombrePersonnes }}</td>
+                            </tr>
+                            <tr>
+                                <th>Statut</th>
+                                <td>
+                                    {% if reservationStatus == 'confirmed' %}
+                                        <span class="status status-confirmed">Confirmée</span>
+                                    {% elseif reservationStatus == 'pending' %}
+                                        <span class="status status-pending">En attente</span>
+                                    {% else %}
+                                        <span class="status status-cancelled">Annulée</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="note">
+                        Réservation générée automatiquement par EcoMarine pour archivage et partage.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

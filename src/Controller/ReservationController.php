@@ -294,6 +294,7 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
 
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -323,6 +324,7 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
     {
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $html = $this->renderView('reservation/pdf.html.twig', [

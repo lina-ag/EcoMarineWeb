@@ -78,6 +78,7 @@ final class ActiviteEcologiqueController extends AbstractController
 
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
