@@ -5,7 +5,13 @@ namespace App\Controller;
 use App\Entity\ActiviteEcologique;
 use App\Form\ActiviteEcologiqueType;
 use App\Repository\ActiviteEcologiqueRepository;
+use App\Repository\ReservationRepository;
+use App\Service\WeatherService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,11 +21,361 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
-    public function index(ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
+    public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository, WeatherService $weatherService): Response
     {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $periodeFilter = (string) $request->query->get('periode', 'all');
+        $capaciteFilter = (string) $request->query->get('capacite', 'all');
+        $sort = (string) $request->query->get('sort', 'date_desc');
+
+        $activites = $activiteEcologiqueRepository->findAll();
+
+        $activites = array_values(array_filter($activites, function (ActiviteEcologique $activite) use ($searchTerm, $searchField, $periodeFilter, $capaciteFilter): bool {
+            return $this->matchesActivitySearch($activite, $searchTerm, $searchField)
+                && $this->matchesActivityCapacity($activite, $capaciteFilter)
+                && $this->matchesActivityPeriod($activite, $periodeFilter);
+        }));
+
+        usort($activites, function (ActiviteEcologique $left, ActiviteEcologique $right) use ($sort): int {
+            return $this->compareActivities($left, $right, $sort);
+        });
+
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = 10;
+        $totalItems = count($activites);
+        $totalPages = max(1, (int) ceil($totalItems / $perPage));
+        $currentPage = min($page, $totalPages);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedActivities = array_slice($activites, $offset, $perPage);
+        $pageStart = $totalItems > 0 ? $offset + 1 : 0;
+        $pageEnd = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
+
+        $weather = $weatherService->getWeatherForCity('Monastir');
+
         return $this->render('activite_ecologique/index.html.twig', [
-            'activite_ecologiques' => $activiteEcologiqueRepository->findAll(),
+            'activite_ecologiques' => $paginatedActivities,
+            'weather' => $weather,
+            'search_term' => $searchTerm,
+            'search_field' => $searchField,
+            'periode_filter' => $periodeFilter,
+            'capacite_filter' => $capaciteFilter,
+            'sort_by' => $sort,
+            'result_count' => $totalItems,
+            'page' => $currentPage,
+            'total_pages' => $totalPages,
+            'page_start' => $pageStart,
+            'page_end' => $pageEnd,
         ]);
+    }
+
+    #[Route('/export-all/pdf', name: 'app_activite_ecologique_export_pdf', methods: ['GET'])]
+    public function exportAllPdf(ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
+    {
+        $activites = $activiteEcologiqueRepository->findAll();
+
+        $html = $this->renderView('activite_ecologique/pdf.html.twig', [
+            'activite_ecologiques' => $activites,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="activites_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
+            ]
+        );
+    }
+
+    private function matchesActivitySearch(ActiviteEcologique $activite, string $searchTerm, string $searchField): bool
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return true;
+        }
+
+        $searchableParts = [];
+
+        if ($searchField === 'all') {
+            $searchableParts = array_filter([
+                $this->normalizeSearchValue((string) $activite->getIdActivite()),
+                $this->normalizeSearchValue((string) $activite->getNomActivite()),
+                $this->normalizeSearchValue($activite->getDateActivite()?->format('Y-m-d') ?? ''),
+                $this->normalizeSearchValue((string) $activite->getCapacite()),
+                $this->normalizeSearchValue((string) ($activite->getDescription() ?? '')),
+            ]);
+        } else {
+            $fieldValue = match ($searchField) {
+                'id' => (string) $activite->getIdActivite(),
+                'nom' => (string) $activite->getNomActivite(),
+                'date' => $activite->getDateActivite()?->format('Y-m-d') ?? '',
+                'capacite' => (string) $activite->getCapacite(),
+                'description' => (string) ($activite->getDescription() ?? ''),
+                default => '',
+            };
+
+            $searchableParts = $fieldValue === '' ? [] : [$this->normalizeSearchValue($fieldValue)];
+        }
+
+        foreach ($tokens as $token) {
+            $matched = false;
+
+            foreach ($searchableParts as $part) {
+                if ($part !== '' && str_starts_with($part, $token)) {
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function matchesActivityCapacity(ActiviteEcologique $activite, string $capaciteFilter): bool
+    {
+        if ($capaciteFilter === 'all') {
+            return true;
+        }
+
+        $capacity = (int) $activite->getCapacite();
+
+        return match ($capaciteFilter) {
+            'small' => $capacity <= 20,
+            'medium' => $capacity >= 21 && $capacity <= 50,
+            'large' => $capacity >= 51,
+            'medium-large' => $capacity >= 10,
+            default => true,
+        };
+    }
+
+    private function matchesActivityPeriod(ActiviteEcologique $activite, string $periodeFilter): bool
+    {
+        if ($periodeFilter === 'all') {
+            return true;
+        }
+
+        $dateActivite = $activite->getDateActivite();
+
+        if (!$dateActivite) {
+            return false;
+        }
+
+        $rowDate = \DateTimeImmutable::createFromInterface($dateActivite);
+        $today = new \DateTimeImmutable('today');
+
+        return match ($periodeFilter) {
+            'today' => $rowDate->format('Y-m-d') === $today->format('Y-m-d'),
+            'week' => $rowDate >= $today->modify('last sunday')->setTime(0, 0) && $rowDate <= $today->modify('next saturday')->setTime(23, 59, 59),
+            'current' => $rowDate->format('Y-m') === $today->format('Y-m'),
+            default => false,
+        };
+    }
+
+    private function compareActivities(ActiviteEcologique $left, ActiviteEcologique $right, string $sort): int
+    {
+        return match ($sort) {
+            'id_asc' => ($left->getIdActivite() ?? 0) <=> ($right->getIdActivite() ?? 0),
+            'id_desc' => ($right->getIdActivite() ?? 0) <=> ($left->getIdActivite() ?? 0),
+            'nom_asc' => strcmp($this->normalizeSearchValue((string) $left->getNomActivite()), $this->normalizeSearchValue((string) $right->getNomActivite())),
+            'nom_desc' => strcmp($this->normalizeSearchValue((string) $right->getNomActivite()), $this->normalizeSearchValue((string) $left->getNomActivite())),
+            'date_asc' => $this->compareActivityDates($left, $right),
+            'capacite_asc' => ($left->getCapacite() ?? 0) <=> ($right->getCapacite() ?? 0),
+            'capacite_desc' => ($right->getCapacite() ?? 0) <=> ($left->getCapacite() ?? 0),
+            default => $this->compareActivityDates($right, $left),
+        };
+    }
+
+    private function compareActivityDates(ActiviteEcologique $left, ActiviteEcologique $right): int
+    {
+        $leftDate = $left->getDateActivite();
+        $rightDate = $right->getDateActivite();
+
+        if (!$leftDate && !$rightDate) {
+            return 0;
+        }
+
+        if (!$leftDate) {
+            return -1;
+        }
+
+        if (!$rightDate) {
+            return 1;
+        }
+
+        return $leftDate <=> $rightDate;
+    }
+
+    private function buildFilteredActivityQueryBuilder(
+        ActiviteEcologiqueRepository $activiteEcologiqueRepository,
+        string $searchTerm,
+        string $searchField,
+        string $periodeFilter,
+        string $capaciteFilter
+    ): QueryBuilder {
+        $queryBuilder = $activiteEcologiqueRepository->createQueryBuilder('a');
+
+        $this->applyActivitySearchFilter($queryBuilder, $searchTerm, $searchField);
+        $this->applyActivityCapacityFilter($queryBuilder, $capaciteFilter);
+        $this->applyActivityPeriodFilter($queryBuilder, $periodeFilter);
+
+        return $queryBuilder;
+    }
+
+    private function applyActivitySearchFilter(QueryBuilder $queryBuilder, string $searchTerm, string $searchField): void
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return;
+        }
+
+        if ($searchField === 'all') {
+            foreach ($tokens as $index => $token) {
+                $parameter = sprintf('activity_search_token_%d', $index);
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.id_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(a.nom_activite)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.date_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.capacite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(COALESCE(a.description, \'\'))', ':' . $parameter)
+                        )
+                    )
+                    ->setParameter($parameter, '%' . $token . '%');
+            }
+
+            return;
+        }
+
+        $fieldExpression = match ($searchField) {
+            'id' => 'LOWER(CONCAT(a.id_activite, \'\'))',
+            'nom' => 'LOWER(a.nom_activite)',
+            'date' => 'LOWER(CONCAT(a.date_activite, \'\'))',
+            'capacite' => 'LOWER(CONCAT(a.capacite, \'\'))',
+            'description' => 'LOWER(COALESCE(a.description, \'\'))',
+            default => null,
+        };
+
+        if ($fieldExpression === null) {
+            return;
+        }
+
+        foreach ($tokens as $index => $token) {
+            $parameter = sprintf('activity_search_field_token_%d', $index);
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->like($fieldExpression, ':' . $parameter))
+                ->setParameter($parameter, '%' . $token . '%');
+        }
+    }
+
+    private function applyActivityCapacityFilter(QueryBuilder $queryBuilder, string $capaciteFilter): void
+    {
+        if ($capaciteFilter === 'all') {
+            return;
+        }
+
+        match ($capaciteFilter) {
+            'small' => $queryBuilder->andWhere('a.capacite <= 20'),
+            'medium' => $queryBuilder->andWhere('a.capacite BETWEEN 21 AND 50'),
+            'large' => $queryBuilder->andWhere('a.capacite >= 51'),
+            'medium-large' => $queryBuilder->andWhere('a.capacite >= 10'),
+            default => null,
+        };
+    }
+
+    private function applyActivityPeriodFilter(QueryBuilder $queryBuilder, string $periodeFilter): void
+    {
+        if ($periodeFilter === 'all') {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        match ($periodeFilter) {
+            'today' => $queryBuilder->andWhere('a.date_activite = :activityToday')->setParameter('activityToday', $today),
+            'week' => $queryBuilder
+                ->andWhere('a.date_activite BETWEEN :activityWeekStart AND :activityWeekEnd')
+                ->setParameter('activityWeekStart', (clone $today)->modify('last sunday')->setTime(0, 0))
+                ->setParameter('activityWeekEnd', (clone $today)->modify('next saturday')->setTime(23, 59, 59)),
+            'current' => $queryBuilder
+                ->andWhere('a.date_activite BETWEEN :activityMonthStart AND :activityMonthEnd')
+                ->setParameter('activityMonthStart', $today->modify('first day of this month')->setTime(0, 0))
+                ->setParameter('activityMonthEnd', $today->modify('last day of this month')->setTime(23, 59, 59)),
+            default => null,
+        };
+    }
+
+    private function applyActivitySort(QueryBuilder $queryBuilder, string $sort): void
+    {
+        match ($sort) {
+            'id_asc' => $queryBuilder->orderBy('a.id_activite', 'ASC'),
+            'id_desc' => $queryBuilder->orderBy('a.id_activite', 'DESC'),
+            'nom_asc' => $queryBuilder->orderBy('a.nom_activite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'nom_desc' => $queryBuilder->orderBy('a.nom_activite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+            'date_asc' => $queryBuilder->orderBy('a.date_activite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'capacite_asc' => $queryBuilder->orderBy('a.capacite', 'ASC')->addOrderBy('a.id_activite', 'DESC'),
+            'capacite_desc' => $queryBuilder->orderBy('a.capacite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+            default => $queryBuilder->orderBy('a.date_activite', 'DESC')->addOrderBy('a.id_activite', 'DESC'),
+        };
+    }
+
+    /**
+     * @param ActiviteEcologique[] $activities
+     */
+    private function loadBookedPeopleByActivity(ReservationRepository $reservationRepository, array $activities): array
+    {
+        $activityIds = [];
+
+        foreach ($activities as $activity) {
+            if ($activity instanceof ActiviteEcologique && $activity->getIdActivite() !== null) {
+                $activityIds[] = $activity->getIdActivite();
+            }
+        }
+
+        if ($activityIds === []) {
+            return [];
+        }
+
+        $rows = $reservationRepository->createQueryBuilder('r')
+            ->select('IDENTITY(r.activiteEcologique) AS activity_id, COALESCE(SUM(r.nombre_personnes), 0) AS booked_people')
+            ->andWhere('r.activiteEcologique IN (:activityIds)')
+            ->setParameter('activityIds', $activityIds)
+            ->groupBy('activity_id')
+            ->getQuery()
+            ->getArrayResult();
+
+        $bookedPeopleByActivity = [];
+        foreach ($rows as $row) {
+            $activityId = (int) ($row['activity_id'] ?? 0);
+            $bookedPeopleByActivity[$activityId] = (int) ($row['booked_people'] ?? 0);
+        }
+
+        return $bookedPeopleByActivity;
+    }
+
+    private function normalizeSearchValue(string $value): string
+    {
+        $normalized = mb_strtolower(trim($value));
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
+
+        return $ascii !== false ? $ascii : $normalized;
     }
 
     #[Route('/new', name: 'app_activite_ecologique_new', methods: ['GET', 'POST'])]

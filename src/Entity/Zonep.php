@@ -17,6 +17,14 @@ class Zonep
     #[ORM\Column(name: 'idZone', type: 'integer')]
     private ?int $idZone = null;
 
+    #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Survzone::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $survzones;
+
+    public function __construct()
+    {
+        $this->survzones = new ArrayCollection();
+    }
+
     public function getIdZone(): ?int
     {
         return $this->idZone;
@@ -94,6 +102,30 @@ class Zonep
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getSurvzones(): Collection
+    {
+        return $this->survzones;
+    }
+
+    public function addSurvzone(Survzone $survzone): self
+    {
+        if (!$this->survzones->contains($survzone)) {
+            $this->survzones->add($survzone);
+            $survzone->setZone($this);
+        }
+        return $this;
+    }
+
+    public function removeSurvzone(Survzone $survzone): self
+    {
+        if ($this->survzones->removeElement($survzone)) {
+            if ($survzone->getZone() === $this) {
+                $survzone->setZone(null);
+            }
+        }
         return $this;
     }
 }

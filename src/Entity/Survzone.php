@@ -77,8 +77,8 @@ class Survzone
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Zonep::class)]
-    #[ORM\JoinColumn(name: "idZone", referencedColumnName: "idZone", nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Zonep::class, inversedBy: 'survzones')]
+    #[ORM\JoinColumn(name: "idZone", referencedColumnName: "idZone", nullable: false, onDelete: "CASCADE")]
     #[Assert\NotNull(message: 'La zone est obligatoire.')]
     private ?Zonep $zone = null;
 

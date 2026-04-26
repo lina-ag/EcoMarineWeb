@@ -1,6 +1,6 @@
 {% set isRecurringChecked = form.is_recurring.vars.checked ? true : false %}
 
-{{ form_start(form, {'attr': {'class': 'activity-form reservation-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+{{ form_start(form, {'attr': {'class': 'activity-form reservation-form', 'novalidate': 'novalidate'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
     {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
@@ -23,8 +23,12 @@
 
         <div class="form-group-settings full-width">
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité', 'id': 'description-field'}}) }}
             {{ form_errors(form.description) }}
+            <div style="margin-top:0.5em;">
+                <label for="activity-rating-stars">Note (étoiles) :</label>
+                <span class="reservation-rating" id="activity-rating-stars" data-rating="0" data-editable-rating="activity-description"></span>
+            </div>
         </div>
 
         <div class="form-group-settings full-width">
@@ -149,4 +153,3 @@
     updatePreview();
 })();
 </script>
-

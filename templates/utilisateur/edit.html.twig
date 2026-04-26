@@ -1,20 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Utilisateur{% endblock %}
+{% block title %}Modifier Utilisateur{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Edit Utilisateur</h2>
-                <p class="card-subtitle">Modifier les informations du compte utilisateur.</p>
-            </div>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning text-white">
+            <h1 class="card-title mb-0">Modifier l'utilisateur</h1>
         </div>
-
-        {{ include('utilisateur/_form.html.twig', {'button_label': 'Update'}) }}
-
-        <div class="btn-group">
-            <a>{{ include('utilisateur/_delete_form.html.twig') }}</a>
+        <div class="card-body">
+            {{ include('utilisateur/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
         </div>
-    </section>
+    </div>
+</div>
 {% endblock %}

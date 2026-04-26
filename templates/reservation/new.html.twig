@@ -13,5 +13,16 @@
         </div>
 
         {{ include('reservation/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+
+        {% if app.request.method == 'POST' %}
+            <div style="background:red;color:white;padding:1rem;margin-top:1rem;">
+                {{ form_errors(form) }}
+                {% for child in form %}
+                    {% if not child.vars.valid %}
+                        <p>{{ child.vars.name }}: {{ form_errors(child) }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </section>
 {% endblock %}

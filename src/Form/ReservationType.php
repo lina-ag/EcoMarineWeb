@@ -53,6 +53,7 @@ class ReservationType extends AbstractType
                 'choice_label' => 'nom_activite',
                 'label' => 'Activité écologique',
                 'placeholder' => '-- Choisissez une activité --',
+                'autocomplete' => true,
                 'choice_attr' => function (?ActiviteEcologique $activite): array {
                     if (!$activite || !$activite->getDate_activite()) {
                         return [];
@@ -127,7 +128,6 @@ class ReservationType extends AbstractType
                     $capacityState['used'],
                     $capacityState['total']
                 )));
-
                 return;
             }
 
@@ -136,16 +136,10 @@ class ReservationType extends AbstractType
                     'Il reste seulement %d place(s) sur cette activité.',
                     $capacityState['remaining']
                 )));
-
                 return;
             }
 
-            $allowedDates = $this->activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
-            if (count($allowedDates) === 0) {
-                $allowedDates = [$activite->getDate_activite()->format('Y-m-d')];
-            }
-
-            if (!is_string($selectedDate) || $selectedDate === '') {
+            if (!is_string($selectedDate) || trim($selectedDate) === '') {
                 $form->get('date_reservation_choice')->addError(new FormError('Veuillez choisir une date.'));
                 return;
             }
@@ -153,10 +147,19 @@ class ReservationType extends AbstractType
             $normalizedSelectedDate = self::normalizeDateInput(trim($selectedDate));
 
             if ($normalizedSelectedDate === null) {
-                $form->get('date_reservation_choice')->addError(new FormError('Format de date invalide. Utilisez YYYY-MM-DD ou JJ/MM/AAAA.'));
+                $form->get('date_reservation_choice')->addError(new FormError('Format de date invalide.'));
                 return;
             }
 
+            // Récupère toutes les dates autorisées pour cette activité
+            $allowedDates = $this->activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
+
+            // Fallback si aucune date trouvée
+            if (count($allowedDates) === 0) {
+                $allowedDates = [$activite->getDate_activite()->format('Y-m-d')];
+            }
+
+            // La date choisie doit être dans les dates autorisées
             if (!in_array($normalizedSelectedDate, $allowedDates, true)) {
                 $form->get('date_reservation_choice')->addError(new FormError('Veuillez choisir une date valide de l\'activité sélectionnée.'));
                 return;
