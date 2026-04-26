@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 
 class PredictionService
 {
-    private WeatherService $weatherService;
+    private WeatherServices $weatherServices;
     private FauneMarineRepository $fauneMarineRepository;
     private ObservationRepository $observationRepository;
     private LoggerInterface $logger;
@@ -36,7 +36,7 @@ class PredictionService
         $recommendations = [];
 
         // Récupération des données météorologiques
-        $weatherData = $this->weatherService->getCurrentWeather($lat, $lon);
+        $weatherData = $this->weatherServices->getCurrentWeather($lat, $lon);
 
         if ($weatherData) {
             // Analyse de la température de l'eau (facteur important pour les mammifères marins)
@@ -56,7 +56,7 @@ class PredictionService
 
             // Analyse des conditions météorologiques
             if (isset($weatherData['main'])) {
-                $weatherCategory = $this->weatherService->mapWeatherToCategory($weatherData['main'], $weatherData['description']);
+                $weatherCategory = $this->weatherServices->mapWeatherToCategory($weatherData['main'], $weatherData['description']);
 
                 switch ($weatherCategory) {
                     case 'Tempête':
@@ -143,7 +143,7 @@ class PredictionService
                     $weatherData['location'] ?? 'Lieu inconnu',
                     $weatherData['description'] ?? 'Non disponible'
                 ),
-                'category' => $this->weatherService->mapWeatherToCategory(
+                'category' => $this->weatherServices->mapWeatherToCategory(
                     $weatherData['main'] ?? null,
                     $weatherData['description'] ?? null
                 )
@@ -195,7 +195,7 @@ class PredictionService
 
         // Conditions météo
         if (isset($analysis['weather_data']['main'])) {
-            $weatherCategory = $this->weatherService->mapWeatherToCategory(
+            $weatherCategory = $this->weatherServices->mapWeatherToCategory(
                 $analysis['weather_data']['main'],
                 $analysis['weather_data']['description']
             );
