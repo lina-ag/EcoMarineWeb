@@ -120,6 +120,66 @@
                 flex-wrap: wrap;
             }
 
+            .admin-live-form {
+                margin-bottom: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.1rem;
+                padding: 1.1rem;
+                border-radius: 20px;
+                border: 1px solid rgba(191, 219, 254, 0.55);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-live-form-row {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form-row--split {
+                padding-top: 0.5rem;
+                border-top: 1px solid rgba(203, 213, 225, 0.3);
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .admin-field-select {
+                max-width: 170px;
+                min-width: 170px;
+            }
+
+            .admin-inline-select {
+                max-width: 170px;
+            }
+
+            .admin-sort-select {
+                max-width: 190px;
+                margin-left: auto;
+            }
+
+            .admin-result-count {
+                opacity: 0.82;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #334155;
+            }
+
+            .admin-filter-label {
+                font-size: 0.9rem;
+                font-weight: 600;
+                margin-right: 0.5rem;
+            }
+
             .search-box {
                 position: relative;
                 display: flex;
@@ -500,9 +560,9 @@
         </style>
 
         <div id="reservation-live-root">
-        <form id="reservation-search-form" method="get" action="{{ path('app_reservation_index') }}" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; padding: 1.1rem; background: linear-gradient(135deg, rgba(251, 253, 254, 0.64), rgba(239, 246, 255, 0.42)); border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.55); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+        <form id="reservation-search-form" method="get" action="{{ path('app_reservation_index') }}" class="admin-live-form">
             <div class="reservation-search-row">
-                <select id="reservation-search-field" name="field" class="search-input" style="max-width: 150px; min-height: 3.25rem; padding: 0 0.95rem; border-radius: 18px; border: 1px solid rgba(191, 219, 254, 0.9); background: rgba(255, 255, 255, 0.92); color: #0f172a; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); font-weight: 600;">
+                <select id="reservation-search-field" name="field" class="search-input admin-field-select">
                     <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>{{ 'reservation.search_all'|trans }}</option>
                     <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>{{ 'reservation.search_id'|trans }}</option>
                     <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'reservation.name'|trans }}</option>
@@ -511,7 +571,7 @@
                     <option value="email" {{ search_field|default('all') == 'email' ? 'selected' : '' }}>{{ 'reservation.search_email'|trans }}</option>
                     <option value="nombre" {{ search_field|default('all') == 'nombre' ? 'selected' : '' }}>{{ 'reservation.search_number'|trans }}</option>
                 </select>
-                <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 260px;">
+                <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -550,7 +610,7 @@
                         <span>{{ 'reservation.search'|trans }}</span>
                     </button>
                 </div>
-                <small id="reservation-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
+                <small id="reservation-result-count" class="admin-result-count">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
             </div>
             <div class="autocomplete-hint">Suggestions rapides disponibles pendant la saisie.</div>
             <script>
@@ -586,25 +646,25 @@
                 })();
             </script>
 
-            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
-                <label style="font-size: 0.9rem; font-weight: 600; margin-right: 0.5rem;">{{ 'reservation.quick_filters'|trans }}</label>
+            <div class="admin-live-form-row admin-live-form-row--split">
+                <label class="admin-filter-label">{{ 'reservation.quick_filters'|trans }}</label>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': 'all', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == 'all' ? 'active' : '' }}" title="{{ 'reservation.all_groups'|trans }}">{{ 'reservation.all_groups'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '1-5', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '1-5' ? 'active' : '' }}" title="{{ 'reservation.filter_1_5'|trans }}">{{ 'reservation.filter_1_5'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '6-10', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '6-10' ? 'active' : '' }}" title="{{ 'reservation.filter_6_10'|trans }}">{{ 'reservation.filter_6_10'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '11-50', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '11-50' ? 'active' : '' }}" title="{{ 'reservation.filter_11_50'|trans }}">{{ 'reservation.filter_11_50'|trans }}</a>
                 <a href="{{ path('app_reservation_index', app.request.query.all|merge({'personnes': '50+', 'page': 1})) }}" class="quick-filter-btn {{ personnes_filter|default('all') == '50+' ? 'active' : '' }}" title="{{ 'reservation.filter_50_plus'|trans }}">{{ 'reservation.filter_50_plus'|trans }}</a>
-                <select id="reservation-filter-status" name="status" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.status'|trans }}">
+                <select id="reservation-filter-status" name="status" class="search-input combo-input admin-inline-select" title="{{ 'reservation.status'|trans }}">
                     <option value="all" {{ status_filter|default('all') == 'all' ? 'selected' : '' }}>{{ 'reservation.all_status'|trans }}</option>
                     <option value="confirmed" {{ status_filter|default('all') == 'confirmed' ? 'selected' : '' }}>{{ 'reservation.status_confirmed'|trans }}</option>
                     <option value="pending" {{ status_filter|default('all') == 'pending' ? 'selected' : '' }}>{{ 'reservation.status_pending'|trans }}</option>
                     <option value="cancelled" {{ status_filter|default('all') == 'cancelled' ? 'selected' : '' }}>{{ 'reservation.status_cancelled'|trans }}</option>
                 </select>
-                <input id="reservation-date-from" name="date_from" type="date" value="{{ date_from|default('') }}" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.date_start'|trans }}" />
-                <input id="reservation-date-to" name="date_to" type="date" value="{{ date_to|default('') }}" class="search-input combo-input" style="max-width: 170px;" title="{{ 'reservation.date_end'|trans }}" />
+                <input id="reservation-date-from" name="date_from" type="date" value="{{ date_from|default('') }}" class="search-input combo-input admin-inline-select" title="{{ 'reservation.date_start'|trans }}" />
+                <input id="reservation-date-to" name="date_to" type="date" value="{{ date_to|default('') }}" class="search-input combo-input admin-inline-select" title="{{ 'reservation.date_end'|trans }}" />
                 <button id="reservation-export-csv" type="button" class="btn btn-secondary search-icon-btn" title="{{ 'reservation.export_filtered'|trans }}">
                     <span>{{ 'reservation.export_csv'|trans }}</span>
                 </button>
-                <select id="reservation-sort-by" name="sort" class="search-input combo-input" style="max-width: 170px; margin-left: auto;" onchange="this.form.submit();">
+                <select id="reservation-sort-by" name="sort" class="search-input combo-input admin-sort-select" onchange="this.form.submit();">
                     <option value="id_desc" {{ sort_by|default('id_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'reservation.sort_latest'|trans }}</option>
                     <option value="id_asc" {{ sort_by|default('id_desc') == 'id_asc' ? 'selected' : '' }}>{{ 'reservation.sort_oldest'|trans }}</option>
                     <option value="date_desc" {{ sort_by|default('id_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'reservation.sort_date_recent'|trans }}</option>

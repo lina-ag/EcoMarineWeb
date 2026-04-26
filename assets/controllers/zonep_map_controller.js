@@ -3,7 +3,7 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ['button'];
     static values = {
-        defaultStyle: { type: String, default: 'night' },
+        defaultStyle: { type: String, default: 'satellite' },
     };
 
     connect() {
@@ -11,6 +11,13 @@ export default class extends Controller {
         this.leaflet = null;
         this.activeLayer = null;
         this.currentStyle = this.defaultStyleValue;
+        this.boundRegisterMap = this.registerMap.bind(this);
+
+        this.element.addEventListener('ux:map:connect', this.boundRegisterMap);
+    }
+
+    disconnect() {
+        this.element.removeEventListener('ux:map:connect', this.boundRegisterMap);
     }
 
     registerMap(event) {
@@ -18,6 +25,11 @@ export default class extends Controller {
         this.leaflet = event.detail.L;
 
         this.applyStyle(this.currentStyle);
+        window.setTimeout(() => {
+            if (this.map) {
+                this.map.invalidateSize();
+            }
+        }, 0);
     }
 
     switchStyle(event) {
@@ -51,6 +63,7 @@ export default class extends Controller {
         this.currentStyle = styleName;
         this.element.dataset.mapTheme = styleName;
         this.updateButtons();
+        this.map.invalidateSize();
     }
 
     removeExistingTileLayers() {
@@ -85,8 +98,8 @@ export default class extends Controller {
                 maxZoom: 20,
             },
             satellite: {
-                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                attribution: 'Tiles &copy; Esri',
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '&copy; OpenStreetMap contributors',
                 maxZoom: 19,
             },
         };

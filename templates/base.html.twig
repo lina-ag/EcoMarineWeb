@@ -132,7 +132,6 @@
 
         {# 🔥 CORRECTION ICI - Utiliser un fichier CSS qui existe ou commenter #}
         {# <link rel="stylesheet" href="/assets/styles/app.css"> #}
-        <link rel="stylesheet" href="/assets/css/templatemo-style.css">
 
     {% endblock %}
 
@@ -174,6 +173,8 @@
 {% block body %}{% endblock %}
 
 {% if current_route not in ['app_home', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
+
+    <link rel="stylesheet" href="/assets/styles/app.css?v=backend">
 
         </main>
     </div>
