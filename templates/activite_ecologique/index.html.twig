@@ -132,6 +132,56 @@
                 flex-wrap: wrap;
             }
 
+            .admin-live-form {
+                margin-bottom: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.1rem;
+                padding: 1.1rem;
+                border-radius: 20px;
+                border: 1px solid rgba(191, 219, 254, 0.55);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-live-form-row {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form-row--split {
+                padding-top: 0.5rem;
+                border-top: 1px solid rgba(203, 213, 225, 0.3);
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .admin-field-select {
+                max-width: 170px;
+                min-width: 170px;
+            }
+
+            .admin-sort-select {
+                max-width: 190px;
+                margin-left: auto;
+            }
+
+            .admin-result-count {
+                opacity: 0.82;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #334155;
+            }
+
             .search-box {
                 position: relative;
                 display: flex;
@@ -511,9 +561,9 @@
         </style>
 
         <div id="activite-live-root">
-        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; padding: 1.1rem; background: linear-gradient(135deg, rgba(251, 253, 254, 0.64), rgba(239, 246, 255, 0.42)); border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.55); box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);">
+        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" class="admin-live-form">
             <div class="activity-search-row">
-                <select id="activite-search-field" name="field" class="search-input" style="max-width: 150px;">
+                <select id="activite-search-field" name="field" class="search-input admin-field-select">
                     <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>Chercher par: Tous</option>
                     <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>ID</option>
                     <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'activite.name'|trans }}</option>
@@ -521,7 +571,7 @@
                     <option value="capacite" {{ search_field|default('all') == 'capacite' ? 'selected' : '' }}>{{ 'activite.capacity'|trans }}</option>
                     <option value="description" {{ search_field|default('all') == 'description' ? 'selected' : '' }}>{{ 'activite.description'|trans }}</option>
                 </select>
-                <div style="display: flex; align-items: center; gap: 0.65rem; flex: 1; min-width: 260px;">
+                <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
                         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -553,16 +603,16 @@
                         <span>{{ 'activite.search'|trans }}</span>
                     </button>
                 </div>
-                <small id="activite-result-count" style="opacity: 0.82; white-space: nowrap; font-weight: 700; color: #334155;">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
+                <small id="activite-result-count" class="admin-result-count">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
             </div>
 
-            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px solid rgba(203, 213, 225, 0.3);">
+            <div class="admin-live-form-row admin-live-form-row--split">
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">{{ 'activite.all'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'today', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'today' ? 'active' : '' }}" title="Filtrer les activités du jour">{{ 'activite.today'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'week', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'week' ? 'active' : '' }}" title="Filtrer les activités de cette semaine">{{ 'activite.this_week'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'current', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'current' ? 'active' : '' }}" title="Filtrer les activités de ce mois">{{ 'activite.this_month'|trans }}</a>
                 <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'capacite': 'medium-large', 'page': 1})) }}" class="quick-filter-btn {{ capacite_filter|default('all') == 'medium-large' ? 'active' : '' }}" title="Afficher les activités avec capacité supérieure à 10">{{ 'activite.capacity_over_10'|trans }}</a>
-                <select id="activite-sort-by" name="sort" class="search-input" style="max-width: 150px; margin-left: auto;" onchange="this.form.submit();">
+                <select id="activite-sort-by" name="sort" class="search-input admin-sort-select" onchange="this.form.submit();">
                     <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'activite.sort_date_recent'|trans }}</option>
                     <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}>{{ 'activite.sort_date_old'|trans }}</option>
                     <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'activite.sort_id_desc'|trans }}</option>
