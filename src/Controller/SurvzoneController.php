@@ -8,6 +8,7 @@ use App\Repository\SurvzoneRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use FOS\ElasticaBundle\Finder\FinderInterface;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,15 +27,22 @@ final class SurvzoneController extends AbstractController
     public function index(
         Request $request,
         SurvzoneRepository $survzoneRepository,
-        PaginatorInterface $paginator
+        PaginatorInterface $paginator,
+        #[Autowire(service: 'fos_elastica.finder.survzone')] FinderInterface $survzoneFinder
     ): Response {
         $sortBy = $request->query->get('tri', 'idSurv');
         $order  = $request->query->get('sens', 'ASC');
         $search = trim((string) $request->query->get('search', ''));
 
         if ('' !== $search) {
-            $query = $survzoneRepository->findBySearchSorted($search, $sortBy, $order);
-            $survzones = $paginator->paginate($query->getQuery(), $request->query->getInt('page', 1), 10);
+            try {
+                $results = $survzoneFinder->find($this->buildSearchQuery($search));
+                $this->sortSurvzones($results, $sortBy, $order);
+                $survzones = $paginator->paginate($results, $request->query->getInt('page', 1), 10);
+            } catch (\Throwable $exception) {
+                $query = $survzoneRepository->findBySearchSorted($search, $sortBy, $order);
+                $survzones = $paginator->paginate($query->getQuery(), $request->query->getInt('page', 1), 10);
+            }
         } else {
             $query = $survzoneRepository->findAllSorted($sortBy, $order);
 
