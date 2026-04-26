@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Service\GroqAnalyzer;
 
 #[Route('/survzone')]
 final class SurvzoneController extends AbstractController
@@ -242,4 +243,17 @@ final class SurvzoneController extends AbstractController
             return ($leftValue <=> $rightValue) * $direction;
         });
     }
+
+    #[Route('/rapport/ai', name: 'app_survzone_rapport_ai', methods: ['GET'])]
+public function rapportAi(
+    SurvzoneRepository $survzoneRepository,
+    GroqAnalyzer $groqAnalyzer
+): Response {
+    $survzones = $survzoneRepository->findAll();
+    $rapport = $groqAnalyzer->analyserSurveillances($survzones);
+
+    return $this->render('survzone/rapport_ai.html.twig', [
+        'rapport' => $rapport,
+    ]);
+}
 }
