@@ -33,6 +33,7 @@ class PredictionEchouage
     #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotBlank(message: "La date de prédiction ne peut pas être vide.")]
     #[Assert\GreaterThanOrEqual('today', message: "La date doit être aujourd'hui ou dans le futur.")]
+    #[Assert\LessThanOrEqual('+1 year', message: "La date de prédiction ne peut pas dépasser un an dans le futur.")]
     private ?\DateTimeInterface $date_prediction = null;
 
     public function getDate_prediction(): ?\DateTimeInterface
@@ -135,6 +136,38 @@ class PredictionEchouage
     public function setRecommandations(?string $recommandations): self
     {
         $this->recommandations = $recommandations;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\NotBlank(message: "La latitude ne peut pas être vide.")]
+    #[Assert\Range(min: -90, max: 90, notInRangeMessage: "La latitude doit être entre -90 et 90.")]
+    private ?float $latitude = null;
+
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): self
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\NotBlank(message: "La longitude ne peut pas être vide.")]
+    #[Assert\Range(min: -180, max: 180, notInRangeMessage: "La longitude doit être entre -180 et 180.")]
+    private ?float $longitude = null;
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): self
+    {
+        $this->longitude = $longitude;
         return $this;
     }
 
