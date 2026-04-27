@@ -22,3 +22,27 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\GroqAnalyzer:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
+
+    App\Service\GroqMailService:
+        arguments:
+            $httpClient: '@http_client'
+
+    App\Service\GroqReportService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
+    App\Service\WeatherService:
+        arguments:
+            $apiKey: '%env(API_NINJAS_KEY)%'
+    # Service météorologique
+    App\Service\WeatherServices:
+        arguments:
+            $openWeatherApiKey: '%env(OPENWEATHER_API_KEY)%'
+
+    # Service de prédiction
+    App\Service\PredictionService: ~

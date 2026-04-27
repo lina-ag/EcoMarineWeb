@@ -1,19 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Utilisateur{% endblock %}
+{% block title %}Nouvel Utilisateur{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Create new Utilisateur</h2>
-                <p class="card-subtitle">Ajouter un nouvel utilisateur a la plateforme.</p>
-            </div>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h1 class="card-title mb-0">Créer un nouvel utilisateur</h1>
         </div>
-
-        {{ include('utilisateur/_form.html.twig') }}
-    </section>
-    {% for message in app.flashes('error') %}
-    <div class="alert alert-danger">{{ message }}</div>
-{% endfor %}
+        <div class="card-body">
+            {{ include('utilisateur/_form.html.twig', {'button_label': 'Créer'}) }}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -6,14 +6,21 @@ use App\Entity\Reservation;
 use App\Form\ReservationType;
 use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
+use App\Service\GroqMailService;
+use App\Service\GroqReportService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
@@ -35,8 +42,49 @@ final class ReservationController extends AbstractController
         return $this->json(['dates' => $dates]);
     }
 
+    #[Route('/activity-data/{id_activite}', name: 'app_reservation_activity_data', methods: ['GET'])]
+    public function activityData(int $id_activite, ActiviteEcologiqueRepository $activiteEcologiqueRepository, ReservationRepository $reservationRepository): JsonResponse
+    {
+        $activite = $activiteEcologiqueRepository->find($id_activite);
+
+        if (!$activite || !$activite->getDate_activite()) {
+            return $this->json(['dates' => [], 'capacity' => null], Response::HTTP_NOT_FOUND);
+        }
+
+        $dates = $activiteEcologiqueRepository->findDatesForReservationByName((string) $activite->getNom_activite());
+        if (count($dates) === 0) {
+            $dates = [$activite->getDate_activite()->format('Y-m-d')];
+        }
+
+        $totalCapacity = max(0, (int) ($activite->getCapacite() ?? 0));
+        $usedCapacity = $reservationRepository->countReservedPeopleForActivity($activite);
+        $remainingCapacity = max(0, $totalCapacity - $usedCapacity);
+
+        if ($totalCapacity <= 0 || $remainingCapacity <= 0) {
+            $state = 'full';
+            $color = '#dc2626';
+        } elseif ($usedCapacity / $totalCapacity >= 0.5) {
+            $state = 'warning';
+            $color = '#d97706';
+        } else {
+            $state = 'available';
+            $color = '#16a34a';
+        }
+
+        return $this->json([
+            'dates' => $dates,
+            'capacity' => [
+                'state' => $state,
+                'color' => $color,
+                'used' => $usedCapacity,
+                'total' => $totalCapacity,
+                'remaining' => $remainingCapacity,
+            ],
+        ]);
+    }
+
     #[Route(name: 'app_reservation_index', methods: ['GET'])]
-    public function index(Request $request, ReservationRepository $reservationRepository): Response
+    public function index(Request $request, ReservationRepository $reservationRepository, ChartBuilderInterface $chartBuilder): Response
     {
         $searchTerm = trim((string) $request->query->get('q', ''));
         $searchField = (string) $request->query->get('field', 'all');
@@ -44,21 +92,42 @@ final class ReservationController extends AbstractController
         $personnesFilter = (string) $request->query->get('personnes', 'all');
         $dateFrom = trim((string) $request->query->get('date_from', ''));
         $dateTo = trim((string) $request->query->get('date_to', ''));
-        $sort = (string) $request->query->get('sort', 'date_desc');
+        $sort = (string) $request->query->get('sort', 'id_desc');
 
-        $reservations = $reservationRepository
+        $allReservations = $reservationRepository
             ->createQueryBuilder('r')
             ->leftJoin('r.activiteEcologique', 'a')
             ->addSelect('a')
             ->getQuery()
             ->getResult();
 
-        $reservations = array_values(array_filter($reservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
+        $reservations = array_values(array_filter($allReservations, function (Reservation $reservation) use ($searchTerm, $searchField, $statusFilter, $personnesFilter, $dateFrom, $dateTo): bool {
             return $this->matchesReservationSearch($reservation, $searchTerm, $searchField)
                 && $this->matchesReservationStatus($reservation, $statusFilter)
                 && $this->matchesReservationPersonnes($reservation, $personnesFilter)
                 && $this->matchesReservationDateRange($reservation, $dateFrom, $dateTo);
         }));
+
+        $hasActiveFilters = $searchTerm !== ''
+            || $searchField !== 'all'
+            || $statusFilter !== 'all'
+            || $personnesFilter !== 'all'
+            || $dateFrom !== ''
+            || $dateTo !== '';
+
+        if ($hasActiveFilters && count($reservations) === 0 && count($allReservations) > 0) {
+            $reservations = $allReservations;
+            $searchTerm = '';
+            $searchField = 'all';
+            $statusFilter = 'all';
+            $personnesFilter = 'all';
+            $dateFrom = '';
+            $dateTo = '';
+
+            $this->addFlash('error', 'Les filtres actifs masquaient vos réservations. La liste complète est affichée.');
+        }
+
+        $reservationActivityChart = $this->buildReservationActivityChart($reservations, $chartBuilder);
 
         usort($reservations, function (Reservation $left, Reservation $right) use ($sort): int {
             return $this->compareReservations($left, $right, $sort);
@@ -88,7 +157,571 @@ final class ReservationController extends AbstractController
             'total_pages' => $totalPages,
             'page_start' => $pageStart,
             'page_end' => $pageEnd,
+            'reservationActivityChart' => $reservationActivityChart,
         ]);
+    }
+
+    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, GroqMailService $groqMailService): Response
+    {
+        $reservation = new Reservation();
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
+
+            try {
+                $groqMailService->sendReservationConfirmation(
+                    (string) $reservation->getEmail(),
+                    (string) $reservation->getNom(),
+                    (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
+                    $reservation->getDate_reservation()?->format('d/m/Y') ?? ''
+                );
+            } catch (\Throwable) {
+                $this->addFlash('error', 'La réservation a été enregistrée, mais l\'email de confirmation n\'a pas pu être envoyé.');
+            }
+
+            if ($request->query->get('source') === 'front') {
+                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
+            }
+
+            return $this->redirectToRoute('app_reservation_quiz', [
+                'id_reservation' => $reservation->getIdReservation(),
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/new.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form,
+        ]);
+    }
+
+#[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient, GroqMailService $groqMailService): Response
+{
+    $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
+    $questions = [];
+
+    try {
+        $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
+            'headers' => ['X-Api-Key' => $apiKey],
+            'query' => ['category' => 'nature', 'limit' => 3],
+        ]);
+        $data = $response->toArray();
+        if (!empty($data) && isset($data[0]['question'])) {
+            $questions = $data;
+        }
+    } catch (\Throwable) {
+        $questions = [];
+    }
+
+    if (empty($questions)) {
+        $questions = [
+            [
+                'question' => 'Quel est le plus grand océan du monde ?',
+                'answer' => 'Pacifique',
+                'wrong' => ['Atlantique', 'Indien', 'Arctique'],
+            ],
+            [
+                'question' => 'Quel animal marin est connu pour changer de couleur ?',
+                'answer' => 'Poulpe',
+                'wrong' => ['Requin', 'Dauphin', 'Baleine'],
+            ],
+            [
+                'question' => 'Combien de pourcentage de la Terre est recouvert d\'eau ?',
+                'answer' => '71%',
+                'wrong' => ['55%', '63%', '85%'],
+            ],
+        ];
+    }
+
+    // Génère les choix QCM pour chaque question
+    foreach ($questions as $index => &$question) {
+        $correct = $question['answer'];
+
+        // Si des fausses réponses spécifiques existent on les utilise
+        if (isset($question['wrong'])) {
+            $wrong = $question['wrong'];
+        } else {
+            // Pour les questions de l'API : on génère des fausses réponses génériques cohérentes
+            $wrong = ['Inconnu', 'Aucune de ces réponses', 'Non applicable'];
+        }
+
+        $choices = array_slice($wrong, 0, 3);
+        $choices[] = $correct;
+        shuffle($choices);
+        $question['choices'] = $choices;
+    }
+    unset($question);
+
+    if ($request->isMethod('POST')) {
+        $answers = $request->request->all('answers');
+        $correctCount = 0;
+
+        foreach ($questions as $index => $question) {
+            $userAnswer = strtolower(trim($answers[$index] ?? ''));
+            $correct = strtolower(trim($question['answer'] ?? ''));
+            if ($userAnswer === $correct) {
+                $correctCount++;
+            }
+        }
+
+        $badge = match(true) {
+            $correctCount === count($questions) => 'gold',
+            $correctCount >= 2 => 'silver',
+            default => 'bronze',
+        };
+
+        try {
+            $groqMailService->sendQuizConfirmation(
+                (string) $reservation->getEmail(),
+                (string) $reservation->getNom(),
+                (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
+                $reservation->getDate_reservation()?->format('d/m/Y') ?? '',
+                $correctCount,
+                count($questions),
+                $badge
+            );
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Le résultat du quiz a été calculé, mais l\'email n\'a pas pu être envoyé.');
+        }
+
+        return $this->render('reservation/quiz_result.html.twig', [
+            'reservation' => $reservation,
+            'questions' => $questions,
+            'answers' => $answers,
+            'correct_count' => $correctCount,
+            'total' => count($questions),
+            'badge' => $badge,
+        ]);
+    }
+
+    return $this->render('reservation/quiz.html.twig', [
+        'reservation' => $reservation,
+        'questions' => $questions,
+    ]);
+}
+    #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
+    public function exportAllPdf(ReservationRepository $reservationRepository, GroqReportService $groqReportService): Response
+    {
+        $reservations = $reservationRepository
+            ->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->orderBy('r.date_reservation', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $report = null;
+        try {
+            $reportPayload = $this->buildReservationReportPayload($reservations);
+            $report = $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']);
+        } catch (\Throwable $exception) {
+            $report = 'Rapport IA indisponible pour cet export PDF.';
+        }
+
+        $html = $this->renderView('reservation/pdf_list.html.twig', [
+            'reservations' => $reservations,
+            'generatedAt' => new \DateTimeImmutable(),
+            'report' => $report,
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
+            ]
+        );
+    }
+
+    #[Route('/report/ai', name: 'app_reservation_report_ai', methods: ['GET'])]
+    public function reportAi(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        GroqReportService $groqReportService
+    ): JsonResponse {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $statusFilter = (string) $request->query->get('status', 'all');
+        $personnesFilter = (string) $request->query->get('personnes', 'all');
+        $dateFrom = trim((string) $request->query->get('date_from', ''));
+        $dateTo = trim((string) $request->query->get('date_to', ''));
+        $sort = (string) $request->query->get('sort', 'id_desc');
+
+        $queryBuilder = $this->buildFilteredReservationQueryBuilder(
+            $reservationRepository,
+            $searchTerm,
+            $searchField,
+            $statusFilter,
+            $personnesFilter,
+            $dateFrom,
+            $dateTo
+        );
+        $this->applyReservationSort($queryBuilder, $sort);
+
+        /** @var array<int, Reservation> $reservations */
+        $reservations = $queryBuilder->getQuery()->getResult();
+
+        $reportPayload = $this->buildReservationReportPayload($reservations);
+
+        try {
+            return $this->json([
+                'success' => true,
+                'report' => $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']),
+            ]);
+        } catch (\Throwable $exception) {
+            return $this->json([
+                'success' => false,
+                'error' => $this->normalizeGroqErrorMessage($exception->getMessage()),
+            ], Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    /**
+     * @param array<int, Reservation> $reservations
+     * @return array{activities: array<int, array{nom: string, date: string, capacite: int, booked: int, reservations: int}>, reservations: array<int, array{nom: string, activite: string, date: string, nombrePersonnes: int, statut: string}>}
+     */
+    private function buildReservationReportPayload(array $reservations): array
+    {
+        $activities = [];
+        foreach ($reservations as $reservation) {
+            if (!$reservation instanceof Reservation) {
+                continue;
+            }
+
+            $activity = $reservation->getActiviteEcologique();
+            if ($activity === null) {
+                continue;
+            }
+
+            $activityId = $activity->getIdActivite() ?? spl_object_id($activity);
+            if (!isset($activities[$activityId])) {
+                $activities[$activityId] = [
+                    'nom' => (string) ($activity->getNomActivite() ?? 'Activite inconnue'),
+                    'date' => $activity->getDateActivite()?->format('Y-m-d') ?? 'Non planifiee',
+                    'capacite' => (int) ($activity->getCapacite() ?? 0),
+                    'booked' => 0,
+                    'reservations' => 0,
+                ];
+            }
+
+            $activities[$activityId]['booked'] += (int) ($reservation->getNombrePersonnes() ?? 0);
+            $activities[$activityId]['reservations'] += 1;
+        }
+
+        $reservationRows = array_map(function (Reservation $reservation): array {
+            return [
+                'nom' => (string) ($reservation->getNom() ?? 'Sans nom'),
+                'activite' => (string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? 'Sans activité'),
+                'date' => $reservation->getDateReservation()?->format('Y-m-d') ?? 'Sans date',
+                'nombrePersonnes' => (int) ($reservation->getNombrePersonnes() ?? 0),
+                'statut' => $this->getReservationStatus($reservation),
+            ];
+        }, $reservations);
+
+        return [
+            'activities' => array_values($activities),
+            'reservations' => $reservationRows,
+        ];
+    }
+
+    #[Route('/{id_reservation}', name: 'app_reservation_show', methods: ['GET'])]
+    public function show(Reservation $reservation): Response
+    {
+        return $this->render('reservation/show.html.twig', [
+            'reservation' => $reservation,
+        ]);
+    }
+
+    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
+    public function exportPdf(Reservation $reservation): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $html = $this->renderView('reservation/pdf.html.twig', [
+            'reservation' => $reservation,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+            ]
+        );
+    }
+
+    #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été mise à jour avec succès.');
+
+            return $this->redirectToRoute('app_reservation_index', [
+                'q' => '',
+                'field' => 'all',
+                'status' => 'all',
+                'personnes' => 'all',
+                'date_from' => '',
+                'date_to' => '',
+                'sort' => 'id_desc',
+                'page' => 1,
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/edit.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id_reservation}', name: 'app_reservation_delete', methods: ['POST'])]
+    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($reservation);
+            $entityManager->flush();
+            $this->addFlash('success', 'La réservation a été supprimée avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide. Suppression annulée.');
+        }
+
+        return $this->redirectToRoute('app_reservation_index', [
+            'q' => '',
+            'field' => 'all',
+            'status' => 'all',
+            'personnes' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+            'sort' => 'id_desc',
+            'page' => 1,
+        ], Response::HTTP_SEE_OTHER);
+    }
+
+    private function buildReservationActivityChart(array $reservations, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $activityCounts = [];
+
+        foreach ($reservations as $reservation) {
+            if (!$reservation instanceof Reservation) {
+                continue;
+            }
+
+            $activityName = trim((string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? 'Sans activité'));
+            if ($activityName === '') {
+                $activityName = 'Sans activité';
+            }
+
+            $activityCounts[$activityName] = ($activityCounts[$activityName] ?? 0) + 1;
+        }
+
+        arsort($activityCounts);
+        $activityCounts = array_slice($activityCounts, 0, 8, true);
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $chart->setData([
+            'labels' => array_keys($activityCounts),
+            'datasets' => [[
+                'label' => 'Réservations par activité',
+                'data' => array_values($activityCounts),
+                'backgroundColor' => [
+                    '#0f766e',
+                    '#2563eb',
+                    '#7c3aed',
+                    '#f59e0b',
+                    '#14b8a6',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#22c55e',
+                ],
+                'borderColor' => '#ffffff',
+                'borderWidth' => 2,
+                'hoverOffset' => 10,
+            ]],
+        ]);
+        $chart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => [
+                        'usePointStyle' => true,
+                        'padding' => 16,
+                    ],
+                ],
+            ],
+            'cutout' => '62%',
+        ]);
+
+        return $chart;
+    }
+
+    private function buildFilteredReservationQueryBuilder(
+        ReservationRepository $reservationRepository,
+        string $searchTerm,
+        string $searchField,
+        string $statusFilter,
+        string $personnesFilter,
+        string $dateFrom,
+        string $dateTo
+    ): QueryBuilder {
+        $queryBuilder = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a');
+
+        $this->applyReservationSearchFilter($queryBuilder, $searchTerm, $searchField);
+        $this->applyReservationStatusFilter($queryBuilder, $statusFilter);
+        $this->applyReservationPersonnesFilter($queryBuilder, $personnesFilter);
+        $this->applyReservationDateRangeFilter($queryBuilder, $dateFrom, $dateTo);
+
+        return $queryBuilder;
+    }
+
+    private function applyReservationSearchFilter(QueryBuilder $queryBuilder, string $searchTerm, string $searchField): void
+    {
+        $tokens = preg_split('/\s+/', $this->normalizeSearchValue($searchTerm), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return;
+        }
+
+        if ($searchField === 'all') {
+            foreach ($tokens as $index => $token) {
+                $parameter = sprintf('search_token_%d', $index);
+                $queryBuilder
+                    ->andWhere(
+                        $queryBuilder->expr()->orX(
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.id_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.nom)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(COALESCE(a.nom_activite, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.date_reservation, \'\'))', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(r.email)', ':' . $parameter),
+                            $queryBuilder->expr()->like('LOWER(CONCAT(r.nombre_personnes, \'\'))', ':' . $parameter)
+                        )
+                    )
+                    ->setParameter($parameter, '%' . $token . '%');
+            }
+
+            return;
+        }
+
+        $fieldExpression = match ($searchField) {
+            'id' => 'LOWER(CONCAT(r.id_reservation, \'\'))',
+            'nom' => 'LOWER(r.nom)',
+            'activite' => 'LOWER(COALESCE(a.nom_activite, \'\'))',
+            'date' => 'LOWER(CONCAT(r.date_reservation, \'\'))',
+            'email' => 'LOWER(r.email)',
+            'nombre' => 'LOWER(CONCAT(r.nombre_personnes, \'\'))',
+            default => null,
+        };
+
+        if ($fieldExpression === null) {
+            return;
+        }
+
+        foreach ($tokens as $index => $token) {
+            $parameter = sprintf('search_field_token_%d', $index);
+            $queryBuilder
+                ->andWhere($queryBuilder->expr()->like($fieldExpression, ':' . $parameter))
+                ->setParameter($parameter, '%' . $token . '%');
+        }
+    }
+
+    private function applyReservationStatusFilter(QueryBuilder $queryBuilder, string $statusFilter): void
+    {
+        if ($statusFilter === 'all') {
+            return;
+        }
+
+        $today = new \DateTimeImmutable('today');
+
+        match ($statusFilter) {
+            'cancelled' => $queryBuilder->andWhere('r.activiteEcologique IS NULL'),
+            'pending' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation > :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            'confirmed' => $queryBuilder
+                ->andWhere('r.activiteEcologique IS NOT NULL')
+                ->andWhere('r.date_reservation <= :reservationStatusToday')
+                ->setParameter('reservationStatusToday', $today),
+            default => null,
+        };
+    }
+
+    private function applyReservationPersonnesFilter(QueryBuilder $queryBuilder, string $personnesFilter): void
+    {
+        if ($personnesFilter === 'all') {
+            return;
+        }
+
+        match ($personnesFilter) {
+            '1-5' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 1 AND 5'),
+            '6-10' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 6 AND 10'),
+            '11-50' => $queryBuilder->andWhere('r.nombre_personnes BETWEEN 11 AND 50'),
+            '50+' => $queryBuilder->andWhere('r.nombre_personnes > 50'),
+            default => null,
+        };
+    }
+
+    private function applyReservationDateRangeFilter(QueryBuilder $queryBuilder, string $dateFrom, string $dateTo): void
+    {
+        if ($dateFrom !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation >= :reservationDateFrom')
+                ->setParameter('reservationDateFrom', new \DateTimeImmutable($dateFrom));
+        }
+
+        if ($dateTo !== '') {
+            $queryBuilder
+                ->andWhere('r.date_reservation <= :reservationDateTo')
+                ->setParameter('reservationDateTo', new \DateTimeImmutable($dateTo));
+        }
+    }
+
+    private function applyReservationSort(QueryBuilder $queryBuilder, string $sort): void
+    {
+        match ($sort) {
+            'id_asc' => $queryBuilder->orderBy('r.id_reservation', 'ASC'),
+            'id_desc' => $queryBuilder->orderBy('r.id_reservation', 'DESC'),
+            'nom_asc' => $queryBuilder->orderBy('r.nom', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nom_desc' => $queryBuilder->orderBy('r.nom', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            'date_asc' => $queryBuilder->orderBy('r.date_reservation', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_asc' => $queryBuilder->orderBy('r.nombre_personnes', 'ASC')->addOrderBy('r.id_reservation', 'DESC'),
+            'nombre_desc' => $queryBuilder->orderBy('r.nombre_personnes', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+            default => $queryBuilder->orderBy('r.date_reservation', 'DESC')->addOrderBy('r.id_reservation', 'DESC'),
+        };
     }
 
     private function matchesReservationSearch(Reservation $reservation, string $searchTerm, string $searchField): bool
@@ -238,137 +871,34 @@ final class ReservationController extends AbstractController
         return $dateReservation->format('Y-m-d') > (new \DateTimeImmutable('today'))->format('Y-m-d') ? 'pending' : 'confirmed';
     }
 
+    private function normalizeGroqErrorMessage(string $message): string
+    {
+        $normalized = trim($message);
+
+        if ($normalized === '') {
+            return 'Le rapport IA est indisponible pour le moment.';
+        }
+
+        if (str_contains($normalized, 'Invalid API Key')) {
+            return 'La clé Groq du rapport IA est invalide.';
+        }
+
+        if (str_contains($normalized, 'rate_limit') || str_contains($normalized, 'Rate limit')) {
+            return 'Le quota Groq est atteint temporairement. Réessayez dans un instant.';
+        }
+
+        if (str_contains($normalized, 'model')) {
+            return 'Le modèle Groq du rapport IA est indisponible ou non autorisé.';
+        }
+
+        return $normalized;
+    }
+
     private function normalizeSearchValue(string $value): string
     {
         $normalized = mb_strtolower(trim($value));
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
-    }
-
-    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $reservation = new Reservation();
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($reservation);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
-
-            if ($request->query->get('source') === 'front') {
-                return $this->redirect($this->generateUrl('app_home') . '#slide08', Response::HTTP_SEE_OTHER);
-            }
-
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-
-        }
-
-        return $this->render('reservation/new.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id_reservation}', name: 'app_reservation_show', methods: ['GET'])]
-    public function show(Reservation $reservation): Response
-    {
-        return $this->render('reservation/show.html.twig', [
-            'reservation' => $reservation,
-        ]);
-    }
-
-    #[Route('/{id_reservation}/pdf', name: 'app_reservation_pdf', methods: ['GET'])]
-    public function exportPdf(Reservation $reservation): Response
-    {
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
-        $html = $this->renderView('reservation/pdf.html.twig', [
-            'reservation' => $reservation,
-            'generatedAt' => new \DateTimeImmutable(),
-        ]);
-
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        $filename = sprintf('reservation_%d.pdf', $reservation->getIdReservation() ?? 0);
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-            ]
-        );
-    }
-
-    #[Route('/export-all/pdf', name: 'app_reservation_export_pdf', methods: ['GET'])]
-    public function exportAllPdf(ReservationRepository $reservationRepository): Response
-    {
-        $reservations = $reservationRepository
-            ->createQueryBuilder('r')
-            ->leftJoin('r.activiteEcologique', 'a')
-            ->addSelect('a')
-            ->orderBy('r.date_reservation', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        $html = $this->renderView('reservation/pdf_list.html.twig', [
-            'reservations' => $reservations,
-            'generatedAt' => new \DateTimeImmutable(),
-        ]);
-
-        $options = new Options();
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->render();
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
-            ]
-        );
-    }
-
-    #[Route('/{id_reservation}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('reservation/edit.html.twig', [
-            'reservation' => $reservation,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id_reservation}', name: 'app_reservation_delete', methods: ['POST'])]
-    public function delete(Request $request, Reservation $reservation, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$reservation->getId_reservation(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($reservation);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
     }
 }

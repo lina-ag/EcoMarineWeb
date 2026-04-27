@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UtilisateurRepository;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,8 +30,8 @@ class Utilisateur
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     #[Assert\Regex(
-        pattern: "/@gmail\.com$/",
-        message: "L'email doit être une adresse Gmail (@gmail.com)"
+        pattern: "/@(outlook|hotmail)\.com$/",
+        message: "L'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)"
     )]
     private ?string $email = null;
 
@@ -47,9 +48,9 @@ class Utilisateur
     )]
     private ?string $telephone = null;
 
-    #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: "Le rôle est obligatoire")]
-    private ?string $role = null;
+    #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'utilisateurs')]
+    #[ORM\JoinColumn(name: 'id_role', referencedColumnName: 'id_role', nullable: true)]
+    private ?Role $role = null;
 
    #[ORM\Column(type: "date")]
    #[Assert\NotBlank(message: "La date de naissance est obligatoire")]
@@ -69,6 +70,7 @@ class Utilisateur
     private ?\DateTimeInterface $created_at = null;
 
     // ==================== GETTERS & SETTERS ====================
+    
 
     public function getIdUtilisateur(): ?int
     {
@@ -136,16 +138,23 @@ class Utilisateur
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRole(): ?Role
     {
         return $this->role;
     }
 
-    public function setRole(?string $role): self
+    public function setRole(?Role $role): self
     {
         $this->role = $role;
         return $this;
     }
+
+    // 🔥 Méthode pour obtenir le nom du rôle (compatible avec l'ancien code)
+    public function getRoleName(): ?string
+    {
+        return $this->role ? $this->role->getNomRole() : null;
+    }
+
 
     public function getDateNaissance(): ?\DateTimeInterface
     {

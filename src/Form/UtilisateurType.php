@@ -4,10 +4,12 @@ namespace App\Form;
 
 use App\Entity\Utilisateur;
 use Symfony\Component\Form\AbstractType;
+use App\Entity\Role;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -35,13 +37,13 @@ class UtilisateurType extends AbstractType
                 ]
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Email * (doit être @gmail.com)',
+                'label' => 'Email * (doit être @outlook.com ou @hotmail.com)',
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'exemple@gmail.com',
-                    'pattern' => '.*@gmail\.com$',
-                    'title' => 'L\'email doit être une adresse Gmail'
+                    'placeholder' => 'exemple@outlook.com',
+                    'pattern' => '.*@(outlook|hotmail)\.com$',
+                    'title' => 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)'
                 ]
             ])
             ->add('mot_de_passe', PasswordType::class, [
@@ -63,14 +65,12 @@ class UtilisateurType extends AbstractType
                     'maxlength' => 8
                 ]
             ])
-            ->add('role', ChoiceType::class, [
-                'label' => 'Rôle *',
+            ->add('role', EntityType::class, [
+                'class' => Role::class,
+                'choice_label' => 'nomRole',  // Affiche 'admin', 'chercheur', 'utilisateur'
+                'label' => 'Rôle',
                 'required' => true,
-                'choices' => [
-                    'Administrateur' => 'admin',
-                    'Chercheur' => 'chercheur',
-                    'Utilisateur' => 'utilisateur'
-                ],
+                'placeholder' => 'Choisissez un rôle',
                 'attr' => ['class' => 'form-control']
             ])
             ->add('date_naissance', DateType::class, [

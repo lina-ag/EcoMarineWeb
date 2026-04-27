@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ app.request ? app.request.locale|replace({'_':'-'}) : 'fr' }}" data-symfony-ux-translator-locale="{{ app.request ? app.request.locale : 'fr' }}">
+<html lang="fr">
 
 {% set current_route = app.request ? app.request.get('_route') : null %}
+{% set current_route_params = app.request ? app.request.attributes.get('_route_params', {}) : {} %}
+{% set current_query_params = app.request ? app.request.query.all : {} %}
 
 <head>
     <meta charset="utf-8">
@@ -15,6 +17,7 @@
         {% if current_route in ['app_home', 'app_front_calendar'] %}
             <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
             <link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.css">
+
             {% if current_route == 'app_home' %}
                 <link rel="stylesheet" type="text/css" href="/assets/css/fullpage.min.css">
                 <link rel="stylesheet" type="text/css" href="/assets/css/owl.carousel.css">
@@ -26,10 +29,106 @@
         {% else %}
             <link rel="preconnect" href="https://fonts.googleapis.com">
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
             <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
             <link rel="stylesheet" href="/assets_admin/templatemo-glass-admin-style.css">
         {% endif %}
+
+
         <link rel="stylesheet" href="/assets/styles/app.css">
+
+        <style>
+            .lang-switcher {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin: 0 0 18px auto;
+                padding: 6px;
+                border-radius: 14px;
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                background: rgba(15, 23, 42, 0.28);
+                backdrop-filter: blur(14px);
+            }
+
+            .lang-switcher a {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 72px;
+                padding: 10px 14px;
+                border-radius: 10px;
+                color: #cbd5e1;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .lang-switcher a:hover {
+                color: #f8fafc;
+                background: rgba(51, 65, 85, 0.6);
+                transform: translateY(-1px);
+            }
+
+            .lang-switcher a.active {
+                color: #082f49;
+                background: linear-gradient(135deg, #67e8f9, #38bdf8);
+                box-shadow: 0 10px 22px rgba(56, 189, 248, 0.28);
+            }
+
+            .pagination {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 24px;
+            }
+
+            .pagination a,
+            .pagination span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 40px;
+                height: 40px;
+                padding: 0 14px;
+                border-radius: 12px;
+                border: 1px solid rgba(148, 163, 184, 0.16);
+                background: rgba(15, 23, 42, 0.22);
+                color: #dbeafe;
+                font-size: 13px;
+                font-weight: 600;
+                line-height: 1;
+                text-decoration: none;
+                transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            }
+
+            .pagination a:hover {
+                background: rgba(56, 189, 248, 0.14);
+                border-color: rgba(56, 189, 248, 0.32);
+                color: #f8fafc;
+                transform: translateY(-1px);
+            }
+
+            .pagination .current,
+            .pagination span.current {
+                background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+                border-color: transparent;
+                color: #082f49;
+                box-shadow: 0 10px 22px rgba(14, 165, 233, 0.24);
+            }
+
+            .pagination .disabled,
+            .pagination span.disabled {
+                opacity: 0.45;
+                pointer-events: none;
+            }
+        </style>
+
+        {# 🔥 CORRECTION ICI - Utiliser un fichier CSS qui existe ou commenter #}
+        {# <link rel="stylesheet" href="/assets/styles/app.css"> #}
+
     {% endblock %}
 
     <title>{% block title %}EcoMarine{% endblock %}</title>
@@ -51,11 +150,27 @@
         <main class="main-content">
 
             {% include 'admin/partials/navbar_admin.html.twig' %}
+
+            {# 🌍 LANGUAGE SWITCHER GLOBAL #}
+            <div class="lang-switcher">
+                <a href="{{ path(app.request.get('_route'), current_route_params|merge(current_query_params)|merge({'_locale': 'fr'})) }}"
+                   class="{{ app.request.locale == 'fr' ? 'active' : '' }}">
+                    🇫🇷 FR
+                </a>
+
+                <a href="{{ path(app.request.get('_route'), current_route_params|merge(current_query_params)|merge({'_locale': 'en'})) }}"
+                   class="{{ app.request.locale == 'en' ? 'active' : '' }}">
+                    🇬🇧 EN
+                </a>
+            </div>
+
 {% endif %}
 
 {% block body %}{% endblock %}
 
 {% if current_route not in ['app_home', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
+
+    <link rel="stylesheet" href="/assets/styles/app.css?v=backend">
 
         </main>
     </div>
@@ -69,8 +184,12 @@
     </button>
 
     <footer class="site-footer">
-        <p>EcoMarine &copy; {{ "now"|date("Y") }} — Plateforme d'écotourisme marin, Kuriat, Monastir</p>
+        <p>
+            EcoMarine &copy; {{ "now"|date("Y") }}
+            — Plateforme d'écotourisme marin, Kuriat, Monastir
+        </p>
     </footer>
+
 {% endif %}
 
 {% block javascripts %}
@@ -86,8 +205,6 @@
     {% else %}
         <script src="/assets_admin/templatemo-glass-admin-script.js"></script>
     {% endif %}
-
-    {{ importmap('app') }}
 {% endblock %}
 
 </body>
