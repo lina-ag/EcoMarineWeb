@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Repository\ActiviteEcologiqueRepository;
-use App\Repository\ActionNettoyageRepository;
 use App\Repository\BiodiversiteRepository;
 use App\Repository\DechetRepository;
 use App\Repository\DetectionDroneRepository;
@@ -13,9 +12,11 @@ use App\Repository\MissionDroneRepository;
 use App\Repository\ObservationRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\UtilisateurRepository;
-use App\Repository\VolontaireRepository;
 use App\Repository\ZonePlageRepository;
+use App\Repository\SurvzoneRepository;
 use App\Repository\ZonepRepository;
+use App\CleaningBundle\Repository\ActionNettoyageRepository;
+use App\CleaningBundle\Repository\VolontaireRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -38,8 +39,8 @@ final class AdminController extends AbstractController
         VolontaireRepository $volontaireRepository,
         ZonePlageRepository $zonePlageRepository,
         ZonepRepository $zonepRepository,
-    ): Response
-    {
+        SurvzoneRepository $survzoneRepository,
+    ): Response {
         $now = new \DateTimeImmutable('now');
         $startCurrentMonth = $now->modify('first day of this month')->setTime(0, 0);
         $startPreviousMonth = $startCurrentMonth->modify('-1 month');
@@ -49,33 +50,11 @@ final class AdminController extends AbstractController
         $totalActivities = $activiteEcologiqueRepository->count([]);
         $totalSpecies = $fauneMarineRepository->count([]);
 
-        $reservationsCurrentMonth = $this->countReservationsBetween(
-            $reservationRepository,
-            $startCurrentMonth,
-            $now
-        );
-        $reservationsPreviousMonth = $this->countReservationsBetween(
-            $reservationRepository,
-            $startPreviousMonth,
-            $startCurrentMonth
-        );
-
-        $newVisitorsCurrentMonth = $this->countUsersCreatedBetween(
-            $utilisateurRepository,
-            $startCurrentMonth,
-            $now
-        );
-        $newVisitorsPreviousMonth = $this->countUsersCreatedBetween(
-            $utilisateurRepository,
-            $startPreviousMonth,
-            $startCurrentMonth
-        );
-
-        $newActivitiesCurrentMonth = $this->countActivitiesBetween(
-            $activiteEcologiqueRepository,
-            $startCurrentMonth,
-            $now
-        );
+        $reservationsCurrentMonth = $this->countReservationsBetween($reservationRepository, $startCurrentMonth, $now);
+        $reservationsPreviousMonth = $this->countReservationsBetween($reservationRepository, $startPreviousMonth, $startCurrentMonth);
+        $newVisitorsCurrentMonth = $this->countUsersCreatedBetween($utilisateurRepository, $startCurrentMonth, $now);
+        $newVisitorsPreviousMonth = $this->countUsersCreatedBetween($utilisateurRepository, $startPreviousMonth, $startCurrentMonth);
+        $newActivitiesCurrentMonth = $this->countActivitiesBetween($activiteEcologiqueRepository, $startCurrentMonth, $now);
 
         $latestReservations = $reservationRepository->createQueryBuilder('r')
             ->leftJoin('r.activiteEcologique', 'a')
@@ -96,20 +75,18 @@ final class AdminController extends AbstractController
         $totalVolunteers = $volontaireRepository->count([]);
         $totalBeachZones = $zonePlageRepository->count([]);
         $totalProtectedZones = $zonepRepository->count([]);
-
+        $totalSurveillances = $survzoneRepository->count([]);
         $totalWasteQuantity = $this->sumWasteQuantity($dechetRepository);
-        $wasteByZone = $this->buildWasteByZoneChart($dechetRepository);
 
-        $reservationsByMonth = $this->buildMonthlyCountSeries(
-            $reservationRepository,
-            'r',
-            'date_reservation'
-        );
-        $observationsByMonth = $this->buildMonthlyCountSeries(
-            $observationRepository,
-            'o',
-            'date_observation'
-        );
+        // Nouvelles stats zones
+        $zonesByStatus = $this->buildZonesByStatus($zonepRepository);
+        $surveillancesByMonth = $this->buildMonthlyCountSeries($survzoneRepository, 's', 'dateSurv');
+        $zonesWithoutSurveillance = $this->findZonesWithoutRecentSurveillance($zonepRepository);
+        $mostSurveilledZones = $this->buildMostSurveilledZones($survzoneRepository);
+
+        $wasteByZone = $this->buildWasteByZoneChart($dechetRepository);
+        $reservationsByMonth = $this->buildMonthlyCountSeries($reservationRepository, 'r', 'date_reservation');
+        $observationsByMonth = $this->buildMonthlyCountSeries($observationRepository, 'o', 'date_observation');
 
         $domainBlocks = [
             [
@@ -137,7 +114,20 @@ final class AdminController extends AbstractController
                 'items' => [
                     ['label' => 'Missions', 'value' => $totalDroneMissions],
                     ['label' => 'Detections', 'value' => $totalDroneDetections],
-                    ['label' => 'Zones surveillees', 'value' => $totalBeachZones + $totalProtectedZones],
+                    ['label' => 'Zones protegees', 'value' => $totalProtectedZones],
+                    ['label' => 'Surveillances', 'value' => $totalSurveillances],
+                ],
+            ],
+            [
+                'title' => 'Zones Marines',
+                'accent' => 'cyan',
+                'items' => [
+                    ['label' => 'Total zones', 'value' => $totalProtectedZones],
+                    ['label' => 'Zones actives', 'value' => $zonesByStatus['Actif'] ?? 0],
+                    ['label' => 'En surveillance', 'value' => $zonesByStatus['En surveillance'] ?? 0],
+                    ['label' => 'En maintenance', 'value' => $zonesByStatus['En maintenance'] ?? 0],
+                    ['label' => 'Inactives', 'value' => $zonesByStatus['Inactif'] ?? 0],
+                    ['label' => 'Sans surv. 30j', 'value' => count($zonesWithoutSurveillance)],
                 ],
             ],
             [
@@ -157,6 +147,8 @@ final class AdminController extends AbstractController
                 'visitors' => $totalVisitors,
                 'waste_quantity' => $totalWasteQuantity,
                 'drone_detections' => $totalDroneDetections,
+                'protected_zones' => $totalProtectedZones,
+                'surveillances' => $totalSurveillances,
             ],
             'metrics' => [
                 'reservations_current_month' => $reservationsCurrentMonth,
@@ -166,15 +158,86 @@ final class AdminController extends AbstractController
                 'new_activities_current_month' => $newActivitiesCurrentMonth,
                 'waste_records' => $totalWasteRecords,
                 'drone_missions' => $totalDroneMissions,
+                'protected_zones' => $totalProtectedZones,
+                'surveillances' => $totalSurveillances,
             ],
             'latest_reservations' => $latestReservations,
             'charts' => [
                 'reservations_by_month' => $reservationsByMonth,
                 'observations_by_month' => $observationsByMonth,
                 'waste_by_zone' => $wasteByZone,
+                'surveillances_by_month' => $surveillancesByMonth,
+                'zones_by_status' => $zonesByStatus,
+                'most_surveilled_zones' => $mostSurveilledZones,
             ],
             'domain_blocks' => $domainBlocks,
+            'zones_without_surveillance' => $zonesWithoutSurveillance,
         ]);
+    }
+
+    private function buildZonesByStatus(ZonepRepository $zonepRepository): array
+    {
+        $rows = $zonepRepository->createQueryBuilder('z')
+            ->select('z.status, COUNT(z.idZone) AS total')
+            ->groupBy('z.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['status']] = (int) $row['total'];
+        }
+        return $result;
+    }
+
+    private function findZonesWithoutRecentSurveillance(ZonepRepository $zonepRepository): array
+    {
+        $threshold = new \DateTimeImmutable('-30 days');
+
+        $zonesWithRecentSurv = $zonepRepository->createQueryBuilder('z')
+            ->select('IDENTITY(s.zone)')
+            ->join('App\Entity\Survzone', 's', 'WITH', 's.zone = z.idZone')
+            ->where('s.dateSurv >= :threshold')
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $qb = $zonepRepository->createQueryBuilder('z')
+            ->select('z');
+
+        if (!empty($zonesWithRecentSurv)) {
+            $qb->where('z.idZone NOT IN (:ids)')
+               ->setParameter('ids', $zonesWithRecentSurv);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    private function buildMostSurveilledZones(SurvzoneRepository $survzoneRepository): array
+    {
+        $rows = $survzoneRepository->createQueryBuilder('s')
+            ->select('z.nomZone AS nom, COUNT(s.idSurv) AS total')
+            ->join('s.zone', 'z')
+            ->groupBy('z.idZone')
+            ->orderBy('total', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getArrayResult();
+
+        $maxValue = 0;
+        foreach ($rows as $row) {
+            if ((int)$row['total'] > $maxValue) $maxValue = (int)$row['total'];
+        }
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[] = [
+                'label' => $row['nom'],
+                'value' => (int) $row['total'],
+                'height' => $maxValue > 0 ? round(((int)$row['total'] / $maxValue) * 100, 1) : 0.0,
+            ];
+        }
+        return $result;
     }
 
     private function sumWasteQuantity(DechetRepository $dechetRepository): float
@@ -183,30 +246,18 @@ final class AdminController extends AbstractController
             ->select('COALESCE(SUM(d.quantite), 0)')
             ->getQuery()
             ->getSingleScalarResult();
-
         return (float) $value;
     }
 
-    /**
-     * @return array<int, array{label: string, value: int, height: float}>
-     */
-    private function buildMonthlyCountSeries(
-        object $repository,
-        string $alias,
-        string $dateField,
-        int $months = 6
-    ): array {
+    private function buildMonthlyCountSeries(object $repository, string $alias, string $dateField, int $months = 6): array
+    {
         $now = new \DateTimeImmutable('now');
         $start = $now->modify(sprintf('first day of -%d months', $months - 1))->setTime(0, 0);
 
         $points = [];
         for ($i = 0; $i < $months; $i++) {
             $monthDate = $start->modify(sprintf('+%d months', $i));
-            $points[$monthDate->format('Y-m')] = [
-                'label' => $monthDate->format('m/Y'),
-                'value' => 0,
-                'height' => 0.0,
-            ];
+            $points[$monthDate->format('Y-m')] = ['label' => $monthDate->format('m/Y'), 'value' => 0, 'height' => 0.0];
         }
 
         $rows = $repository->createQueryBuilder($alias)
@@ -217,27 +268,18 @@ final class AdminController extends AbstractController
             ->getArrayResult();
 
         foreach ($rows as $row) {
-            if (!isset($row['eventDate']) || !$row['eventDate']) {
-                continue;
-            }
-
+            if (!isset($row['eventDate']) || !$row['eventDate']) continue;
             $eventDate = $row['eventDate'] instanceof \DateTimeInterface
                 ? \DateTimeImmutable::createFromInterface($row['eventDate'])
                 : new \DateTimeImmutable((string) $row['eventDate']);
-
             $key = $eventDate->format('Y-m');
-            if (isset($points[$key])) {
-                $points[$key]['value']++;
-            }
+            if (isset($points[$key])) $points[$key]['value']++;
         }
 
         $maxValue = 0;
         foreach ($points as $point) {
-            if ($point['value'] > $maxValue) {
-                $maxValue = $point['value'];
-            }
+            if ($point['value'] > $maxValue) $maxValue = $point['value'];
         }
-
         foreach ($points as &$point) {
             $point['height'] = $maxValue > 0 ? round(($point['value'] / $maxValue) * 100, 1) : 0.0;
         }
@@ -246,9 +288,6 @@ final class AdminController extends AbstractController
         return array_values($points);
     }
 
-    /**
-     * @return array<int, array{label: string, value: float, height: float}>
-     */
     private function buildWasteByZoneChart(DechetRepository $dechetRepository): array
     {
         $rows = $dechetRepository->createQueryBuilder('d')
@@ -262,29 +301,19 @@ final class AdminController extends AbstractController
         $maxValue = 0.0;
         foreach ($rows as $row) {
             $value = (float) $row['totalQty'];
-            if ($value > $maxValue) {
-                $maxValue = $value;
-            }
+            if ($value > $maxValue) $maxValue = $value;
         }
 
         $result = [];
         foreach ($rows as $row) {
             $value = (float) $row['totalQty'];
-            $result[] = [
-                'label' => (string) ($row['zone'] ?? 'N/A'),
-                'value' => round($value, 1),
-                'height' => $maxValue > 0 ? round(($value / $maxValue) * 100, 1) : 0.0,
-            ];
+            $result[] = ['label' => (string) ($row['zone'] ?? 'N/A'), 'value' => round($value, 1), 'height' => $maxValue > 0 ? round(($value / $maxValue) * 100, 1) : 0.0];
         }
-
         return $result;
     }
 
-    private function countReservationsBetween(
-        ReservationRepository $reservationRepository,
-        \DateTimeImmutable $start,
-        \DateTimeImmutable $end
-    ): int {
+    private function countReservationsBetween(ReservationRepository $reservationRepository, \DateTimeImmutable $start, \DateTimeImmutable $end): int
+    {
         return (int) $reservationRepository->createQueryBuilder('r')
             ->select('COUNT(r.id_reservation)')
             ->where('r.date_reservation >= :start')
@@ -295,11 +324,8 @@ final class AdminController extends AbstractController
             ->getSingleScalarResult();
     }
 
-    private function countUsersCreatedBetween(
-        UtilisateurRepository $utilisateurRepository,
-        \DateTimeImmutable $start,
-        \DateTimeImmutable $end
-    ): int {
+    private function countUsersCreatedBetween(UtilisateurRepository $utilisateurRepository, \DateTimeImmutable $start, \DateTimeImmutable $end): int
+    {
         return (int) $utilisateurRepository->createQueryBuilder('u')
             ->select('COUNT(u.id_utilisateur)')
             ->where('u.created_at IS NOT NULL')
@@ -311,11 +337,8 @@ final class AdminController extends AbstractController
             ->getSingleScalarResult();
     }
 
-    private function countActivitiesBetween(
-        ActiviteEcologiqueRepository $activiteEcologiqueRepository,
-        \DateTimeImmutable $start,
-        \DateTimeImmutable $end
-    ): int {
+    private function countActivitiesBetween(ActiviteEcologiqueRepository $activiteEcologiqueRepository, \DateTimeImmutable $start, \DateTimeImmutable $end): int
+    {
         return (int) $activiteEcologiqueRepository->createQueryBuilder('a')
             ->select('COUNT(a.id_activite)')
             ->where('a.date_activite >= :start')
@@ -328,13 +351,8 @@ final class AdminController extends AbstractController
 
     private function computeGrowthRate(int $current, int $previous): string
     {
-        if ($previous <= 0) {
-            return $current > 0 ? '+100.0%' : '0.0%';
-        }
-
+        if ($previous <= 0) return $current > 0 ? '+100.0%' : '0.0%';
         $value = (($current - $previous) / $previous) * 100;
-        $prefix = $value >= 0 ? '+' : '';
-
-        return sprintf('%s%.1f%%', $prefix, $value);
+        return sprintf('%s%.1f%%', $value >= 0 ? '+' : '', $value);
     }
 }

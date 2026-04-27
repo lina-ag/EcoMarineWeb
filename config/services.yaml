@@ -18,11 +18,24 @@ services:
     exclude:
       - "../src/DependencyInjection/"
       - "../src/Entity/"
+      - "../src/CleaningBundle/Entity/"
       - "../src/Kernel.php"
 
-  App\Service\AiRecommendationService:
+  App\CleaningBundle\Service\AiRecommendationService:
     bind:
       $openAiApiKey: "%env(OPENAI_API_KEY)%"
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
+
+  App\Service\GroqAnalyzer:
+    arguments:
+      $groqApiKey: "%env(GROQ_API_KEY)%"
+
+  # Service météorologique
+  App\Service\WeatherService:
+    arguments:
+      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
+
+  # Service de prédiction
+  App\Service\PredictionService: ~

@@ -2,197 +2,289 @@
 
 {% block title %}EcoMarine - Écotourisme à Kuriat{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 28px;
-            padding: 36px;
-        }
-
-        .card-header {
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 2.3rem;
-            margin-bottom: .4rem;
-            color: #ffffff;
-        }
-
-        .card-subtitle {
-            color: rgba(255, 255, 255, 0.78);
-            line-height: 1.6;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1.5rem;
-        }
-
-        .form-group-settings {
-            display: flex;
-            flex-direction: column;
-            gap: 0.65rem;
-        }
-
-        .form-group-settings.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            color: #f5f7ff;
-        }
-
-        .form-input {
-            width: 100%;
-            min-height: 52px;
-            padding: 1rem 1.1rem;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 18px;
-            color: #ffffff;
-            transition: all 0.25s ease;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-        }
-
-        .form-input:focus,
-        .form-input:focus-visible {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.18);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
-        }
-
-        textarea.form-input {
-            min-height: 170px;
-            resize: vertical;
-        }
-
-        ::placeholder {
-            color: rgba(255, 255, 255, 0.68);
-            opacity: 1;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
-            border: none;
-            color: #ffffff;
-            padding: 1rem 1.6rem;
-            border-radius: 16px;
-            min-width: 180px;
-            font-weight: 700;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 18px 30px rgba(22, 194, 226, 0.22);
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus {
-            transform: translateY(-1px);
-            box-shadow: 0 22px 40px rgba(22, 194, 226, 0.28);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            color: #ffffff;
-        }
-
-        .btn-secondary:hover,
-        .btn-secondary:focus {
-            background: rgba(255, 255, 255, 0.16);
-        }
-
-        .form-errors,
-        .form-errors li {
-            color: #ffccd5;
-            margin-top: 0.35rem;
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-
-        /* Styles pour les select/dropdown */
-        .form-input[type="select"],
-        select.form-input {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1.5em 1.5em;
-            padding-right: 3rem;
-        }
-
-        select.form-input option {
-            background-color: #1a1a2e;
-            color: #ffffff;
-            padding: 0.75rem;
-        }
-
-        select.form-input option:checked {
-            background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
-            background-color: #5268e4;
-            color: #ffffff;
-        }
-
-        select.form-input option:hover {
-            background-color: #2d2d44;
-        }
-
-        @media (max-width: 1024px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .glass-card {
-                padding: 28px;
-            }
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
 
-{% for label, messages in app.flashes %}
-    {% for message in messages %}
-        <div style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 15px 20px;
-            border-radius: 12px;
-            color: white;
-            background:
-                {% if label == 'success' %}#198754
-                {% elseif label == 'danger' %}#dc3545
-                {% elseif label == 'warning' %}#ffc107
-                {% else %}#0d6efd
-                {% endif %};
-        ">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endfor %}
+{% set flash_messages = app.flashes %}
+
+{% if flash_messages is not empty %}
+    <div class="flash-stack" id="flashStack">
+        {% for label, messages in flash_messages %}
+            {% for message in messages %}
+                <div class="flash-toast flash-{{ label }}" data-flash-toast>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<style>
+    .flash-stack {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: min(92vw, 720px);
+        pointer-events: none;
+    }
+
+    .flash-toast {
+        padding: 18px 24px;
+        border-radius: 20px;
+        color: #fff;
+        text-align: center;
+        font-size: 1rem;
+        line-height: 1.4;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .flash-toast.is-hiding {
+        opacity: 0;
+        transform: translateY(-14px);
+    }
+
+    .flash-success {
+        background: #198754;
+    }
+
+    .flash-danger,
+    .flash-error {
+        background: #dc3545;
+    }
+
+    .flash-warning {
+        background: #ffc107;
+        color: #1f2937;
+    }
+
+    .flash-info {
+        background: #0d6efd;
+    }
+
+    #nav-form-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: transparent;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        vertical-align: middle;
+        flex-shrink: 0;
+        border: none;
+        padding: 0.5rem 0.8rem;
+        border-radius: 4px;
+    }
+
+    #nav-form-btn:hover,
+    #nav-form-btn:focus-visible {
+        background: rgba(255, 255, 255, 0.1);
+        transform: none;
+        filter: none;
+        box-shadow: none;
+        outline: none;
+    }
+
+    #nav-form-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 0.08rem 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 500;
+        margin-left: 0.2rem;
+    }
+
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        padding: 0.5rem 1rem;
+    }
+
+    .navigation-row {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    #navigation {
+        display: flex;
+        align-items: center;
+        width: auto;
+    }
+
+    .nav-box {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .navigation-menu {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        gap: 0.2rem;
+        flex-wrap: wrap;
+    }
+
+    .navigation-menu li {
+        margin: 0;
+    }
+
+    .navigation-menu li a {
+        display: inline-block;
+        padding: 0.5rem 0.8rem;
+        color: #ffffff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border-radius: 4px;
+    }
+
+    .navigation-menu li a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.6rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .bg-success {
+        background: #198754;
+        color: #fff;
+    }
+
+    .bg-danger {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .btn-success {
+        background: #198754;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-sm {
+        font-size: 0.85rem;
+    }
+
+    select.form-input option {
+        background-color: #1a1a2e;
+        color: #ffffff;
+        padding: 0.75rem;
+    }
+
+    select.form-input option:checked {
+        background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
+        background-color: #5268e4;
+        color: #ffffff;
+    }
+
+    select.form-input option:hover {
+        background-color: #2d2d44;
+    }
+
+    @media (max-width: 992px) {
+        .navbar-toggle {
+            display: block;
+        }
+
+        .nav-box {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            flex-direction: column;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-box.active {
+            display: flex;
+        }
+
+        .navigation-menu {
+            flex-direction: column;
+            width: 100%;
+            text-align: center;
+        }
+
+        .navigation-menu li {
+            width: 100%;
+        }
+
+        .navigation-menu li a {
+            display: block;
+            padding: 0.8rem;
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .glass-card {
+            padding: 28px;
+        }
+    }
+</style>
 
 <div id="video">
 
-    <!-- Preloader -->
     <div class="preloader">
         <div class="preloader-bounce">
             <span></span>
@@ -201,32 +293,32 @@
         </div>
     </div>
 
-    <!-- Header / Navbar -->
     <header id="header">
         <div class="container-fluid">
             <div class="navbar">
                 <a href="#" id="logo" title="EcoMarine">
-    <img src="/assets/images/logoeco.png" " 
-         alt="EcoMarine" 
-         style="height: 160px; width: auto; vertical-align: middle; margin-right: 8px;">
-    
-</a>
+                    <img src="/assets/images/logoEco.png" alt="EcoMarine" style="height: 110px; width: auto; vertical-align: middle;">
+                </a>
+
                 <div class="navigation-row">
                     <nav id="navigation">
                         <button type="button" class="navbar-toggle">
                             <i class="fa fa-bars"></i>
                         </button>
+
                         <div class="nav-box navbar-collapse">
                             <ul class="navigation-menu nav navbar-nav navbars" id="nav">
                                 <li data-menuanchor="slide01" class="active"><a href="#slide01">Accueil</a></li>
                                 <li data-menuanchor="slide02"><a href="#slide02">À Propos</a></li>
                                 <li data-menuanchor="slide03"><a href="#slide03">Activités</a></li>
-                                <li data-menuanchor="slide04"><a href="#slide04">Notre Mission</a></li>
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
                                 <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
-                                <li data-menuanchor="slide09"><a href="#slide09">Nettoyage</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Activités Éco.</a></li>
+                                <li data-menuanchor="slide11"><a href="#slide11">Zones Protégées</a></li>
+                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
+                                <li data-menuanchor="slide12"><a href="#slide12">Nettoyage</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -235,7 +327,6 @@
         </div>
     </header>
 
-    <!-- Vidéo de fond -->
     <video autoplay muted loop id="myVideo">
         <source src="/assets/images/video-bg.mp4" type="video/mp4">
     </video>
@@ -243,7 +334,7 @@
     <div id="fullpage" class="fullpage-default">
 
         <!-- SLIDE 01 — Accueil -->
-        <div class="section animated-row" data-anchor="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
+        <div class="section animated-row" data-section="slide01" data-anchor="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
             <div class="section-inner">
                 <div class="welcome-box">
                     <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
@@ -261,7 +352,7 @@
         </div>
 
         <!-- SLIDE 02 — À Propos -->
-        <div class="section animated-row" data-anchor="slide02">
+        <div class="section animated-row" data-section="slide02" data-anchor="slide02">
             <div class="section-inner">
                 <div class="about-section">
                     <div class="row justify-content-center">
@@ -278,6 +369,7 @@
                                                 de nature avec des expériences uniques tout en protégeant l'écosystème marin.
                                             </p>
                                         </div>
+
                                         <div class="facts-list owl-carousel">
                                             <div class="item animate" data-animate="fadeInUp">
                                                 <div class="counter-box">
@@ -306,6 +398,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <figure class="about-img animate" data-animate="fadeInUp">
                                         <img src="/assets/images/profile-girl.jpg" class="rounded" alt="EcoMarine Team">
@@ -319,7 +412,7 @@
         </div>
 
         <!-- SLIDE 03 — Activités -->
-        <div class="section animated-row" data-anchor="slide03">
+        <div class="section animated-row" data-section="slide03" data-anchor="slide03">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -327,6 +420,7 @@
                             <span>Nos Activités</span>
                             <h2>Que proposons-nous ?</h2>
                         </div>
+
                         <div class="services-section">
                             <div class="services-list owl-carousel">
                                 <div class="item animate" data-animate="fadeInUp">
@@ -336,6 +430,7 @@
                                         <p>Partez découvrir les fonds marins de Kuriat lors de sorties en bateau encadrées par nos experts.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-life-ring" aria-hidden="true"></i></span>
@@ -343,6 +438,7 @@
                                         <p>Explorez les récifs et grottes sous-marines avec nos moniteurs diplômés d'État.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-camera" aria-hidden="true"></i></span>
@@ -350,6 +446,7 @@
                                         <p>Immortalisez vos découvertes avec notre matériel de prise de vue sous-marine.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-leaf" aria-hidden="true"></i></span>
@@ -357,6 +454,7 @@
                                         <p>Participez à nos programmes de suivi des tortues marines et de protection des coraux.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span>
@@ -364,6 +462,7 @@
                                         <p>Découvrez la faune et la flore de l'île de Kuriat lors de balades guidées sur le littoral.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
@@ -373,61 +472,14 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- SLIDE 04 — Notre Mission -->
-        <div class="section animated-row" data-anchor="slide04">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-7 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Notre Mission</span>
-                            <h2>Nos engagements</h2>
-                        </div>
-                        <div class="skills-row animate" data-animate="fadeInDown">
-                            <div class="row">
-                                <div class="col-md-8 offset-md-2">
-                                    <div class="skill-item">
-                                        <h6>Protection Marine</h6>
-                                        <div class="skill-bar">
-                                            <span>95%</span>
-                                            <div class="filled-bar-2"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item">
-                                        <h6>Satisfaction des visiteurs</h6>
-                                        <div class="skill-bar">
-                                            <span>90%</span>
-                                            <div class="filled-bar"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item">
-                                        <h6>Recherche scientifique</h6>
-                                        <div class="skill-bar">
-                                            <span>80%</span>
-                                            <div class="filled-bar-2"></div>
-                                        </div>
-                                    </div>
-                                    <div class="skill-item last-skill">
-                                        <h6>Tourisme durable</h6>
-                                        <div class="skill-bar">
-                                            <span>85%</span>
-                                            <div class="filled-bar"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- SLIDE 05 — Galerie -->
-        <div class="section animated-row" data-anchor="slide05">
+        <div class="section animated-row" data-section="slide05" data-anchor="slide05">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -435,57 +487,52 @@
                             <span>Galerie</span>
                             <h2>Nos plus beaux moments</h2>
                         </div>
+
                         <div class="gallery-section">
                             <div class="gallery-list owl-carousel">
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-5.jpeg" alt="Plongée à Kuriat">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-5.jpeg" alt="Plongée à Kuriat"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Plongée à Kuriat</h4>
                                             <p>Une immersion unique dans les eaux cristallines de l'île de Kuriat.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-2.jpeg" alt="Tortues marines">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-2.jpeg" alt="Tortues marines"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Tortues marines</h4>
                                             <p>Observation et suivi des tortues Caouannes dans leur habitat naturel.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-3.jpeg" alt="Excursion en mer">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-3.jpeg" alt="Excursion en mer"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Excursion en mer</h4>
                                             <p>Découverte des côtes de Monastir à bord de nos embarcations.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-1.jpeg" alt="Faune marine">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-1.jpeg" alt="Faune marine"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Faune marine</h4>
                                             <p>Richesse et diversité des espèces marines méditerranéennes.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-4.jpg" alt="Coucher de soleil">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-4.jpg" alt="Coucher de soleil"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Coucher de soleil</h4>
                                             <p>Des paysages à couper le souffle depuis les rivages de Kuriat.</p>
@@ -494,13 +541,14 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- SLIDE 06 — Témoignages -->
-        <div class="section animated-row" data-anchor="slide06">
+        <div class="section animated-row" data-section="slide06" data-anchor="slide06">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -508,14 +556,13 @@
                             <span>Témoignages</span>
                             <h2>Ce qu'ils disent</h2>
                         </div>
+
                         <div class="col-md-8 offset-md-2">
                             <div class="testimonials-section">
                                 <div class="testimonials-slider owl-carousel">
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Yasmine">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Yasmine"></div>
                                             <div class="testimonial-content">
                                                 <h4>Yasmine B.</h4>
                                                 <p>"Une expérience inoubliable ! L'équipe EcoMarine est passionnée et très professionnelle. Je recommande vivement."</p>
@@ -523,11 +570,10 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-girl.jpg" class="rounded-circle" alt="Karim">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-girl.jpg" class="rounded-circle" alt="Karim"></div>
                                             <div class="testimonial-content">
                                                 <h4>Karim M.</h4>
                                                 <p>"La plongée à Kuriat était magique. Voir les tortues dans leur milieu naturel est une expérience unique."</p>
@@ -535,11 +581,10 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Sofia">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Sofia"></div>
                                             <div class="testimonial-content">
                                                 <h4>Sofia L.</h4>
                                                 <p>"Parfait pour une escapade écologique. La réservation en ligne est simple et l'accueil chaleureux."</p>
@@ -550,13 +595,14 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- SLIDE 07 — Contact -->
-        <div class="section animated-row" data-anchor="slide07">
+        <div class="section animated-row" data-section="slide07" data-anchor="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-7 wide-col-laptop">
@@ -564,21 +610,17 @@
                             <span>Contact</span>
                             <h2>Contactez-nous !</h2>
                         </div>
+
                         <div class="contact-section">
                             <div class="row">
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
                                     <div class="contact-box">
-                                        <div class="contact-row">
-                                            <i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie
-                                        </div>
-                                        <div class="contact-row">
-                                            <i class="fa fa-phone"></i> +216 73 000 000
-                                        </div>
-                                        <div class="contact-row">
-                                            <i class="fa fa-envelope"></i> contact@ecomarine.tn
-                                        </div>
+                                        <div class="contact-row"><i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie</div>
+                                        <div class="contact-row"><i class="fa fa-phone"></i> +216 73 000 000</div>
+                                        <div class="contact-row"><i class="fa fa-envelope"></i> contact@ecomarine.tn</div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
                                     <form id="ajax-contact" method="post" action="#">
                                         <div class="input-field">
@@ -596,13 +638,14 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 08 — Réservations et Activités -->
-        <div class="section animated-row" data-anchor="slide08">
+        <!-- SLIDE 08 — Réservations -->
+        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-10 wide-col-laptop">
@@ -610,50 +653,191 @@
                             <span>Réservez maintenant</span>
                             <h2>Planifiez votre expérience</h2>
                         </div>
+
                         <div class="reservations-section">
                             <div class="row">
-                                <!-- Formulaire Réservation -->
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
                                     <div class="form-card">
                                         <h3>Faire une réservation</h3>
                                         <p class="form-subtitle">Réservez votre place pour une activité</p>
                                         {{ include('reservation/_form.html.twig', {
-                                            'form': form_reservation, 
+                                            'form': form_reservation,
                                             'button_label': 'Réserver',
-                                            'form_action': path('app_reservation_new'),
+                                            'form_action': path('app_reservation_new', {'source': 'front'}),
                                             'show_back_button': false
                                         }) }}
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-   
+        <!-- SLIDE 09 — Activités Écologiques -->
+        <div class="section animated-row" data-section="slide09" data-anchor="slide09">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Activités Écologiques</span>
+                            <h2>Proposer une activité écologique</h2>
+                        </div>
 
-        <!-- SLIDE 09 — Nettoyage -->
-    <div class="section animated-row" data-anchor="slide09">
-        <div class="section-inner">
-            <div class="row justify-content-center">
-                <div class="col-md-10 wide-col-laptop">
+                        <div class="reservations-section">
+                            <div class="row">
+                                <div class="col-md-7 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card form-card-activity">
+                                        <h3>Créer une activité écologique</h3>
+                                        <p class="form-subtitle">Renseignez les détails de votre activité</p>
+                                        {{ include('activite_ecologique/_form.html.twig', {
+                                            'form': form_activite,
+                                            'button_label': 'Créer l\'activité',
+                                            'form_action': path('app_activite_ecologique_new', {'source': 'front'}),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="title-block animate" data-animate="fadeInUp">
-                        <span>Actions de nettoyage</span>
-                        <h2>Participez à la protection du littoral</h2>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Bloc Récos : Actions recommandées -->
-                    <div class="form-card animate" data-animate="fadeInUp">
-                        <h3>Actions recommandées pour vous</h3>
-                        <p class="form-subtitle">
-                            Recommandations personnalisées sur les actions de nettoyage disponibles.
-                        </p>
+        <!-- SLIDE 11 — Zones Protégées -->
+        <div class="section animated-row" data-section="slide11" data-anchor="slide11">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Gérer les zones</span>
+                            <h2>Ajouter une zone protégée</h2>
+                        </div>
 
-                        {% if app.user is not null %}
-                            {% if actions_recommandees is defined and actions_recommandees is not empty %}
+                        <div class="reservations-section">
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card">
+                                        <h3>Créer une zone protégée</h3>
+                                        <p class="form-subtitle">Renseignez les informations de la nouvelle zone</p>
+                                        {{ include('zonep/_form.html.twig', {
+                                            'form': form_zonep,
+                                            'button_label': 'Créer la zone',
+                                            'form_action': path('app_zonep_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10 — Surveillance -->
+        <div class="section animated-row" data-section="slide10" data-anchor="slide10">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Suivi terrain</span>
+                            <h2>Ajouter une surveillance de zone</h2>
+                        </div>
+
+                        <div class="reservations-section">
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
+                                    <div class="form-card">
+                                        <h3>Créer une fiche de surveillance</h3>
+                                        <p class="form-subtitle">Enregistrez la date, la zone et vos observations</p>
+                                        {{ include('survzone/_form.html.twig', {
+                                            'form': form_survzone,
+                                            'button_label': 'Créer la surveillance',
+                                            'form_action': path('app_survzone_new'),
+                                            'show_back_button': false
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12 — Nettoyage -->
+        <div class="section animated-row" data-section="slide12" data-anchor="slide12">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-10 wide-col-laptop">
+
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Actions de nettoyage</span>
+                            <h2>Participez à la protection du littoral</h2>
+                        </div>
+
+                        <!-- Bloc : Actions recommandées -->
+                        <div class="form-card animate" data-animate="fadeInUp">
+                            <h3>Actions recommandées pour vous</h3>
+                            <p class="form-subtitle">
+                                Recommandations personnalisées sur les actions de nettoyage disponibles.
+                            </p>
+
+                            {% if current_user is not null %}
+                                {% if actions_recommandees is defined and actions_recommandees is not empty %}
+                                    <div class="table-responsive">
+                                        <table class="table table-dark table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Lieu</th>
+                                                    <th>Date</th>
+                                                    <th>Places</th>
+                                                    <th>Raison</th>
+                                                    <th>Participation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for rec in actions_recommandees %}
+                                                    {% set action = rec.action %}
+                                                    <tr>
+                                                        <td>{{ action.lieu }}</td>
+                                                        <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
+                                                        <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
+                                                        <td>{{ rec.raison }}</td>
+                                                        <td>
+                                                            <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+                                                                <button type="submit" class="btn btn-success btn-sm">Participer</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p>Aucune recommandation disponible pour le moment.</p>
+                                {% endif %}
+                            {% else %}
+                                <p>Connectez-vous pour recevoir des recommandations personnalisées.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Bloc : Actions disponibles -->
+                        <div class="form-card mt-4 animate" data-animate="fadeInUp">
+                            <h3>Actions disponibles</h3>
+                            <p class="form-subtitle">
+                                Consultez les actions de nettoyage disponibles et participez comme bénévole.
+                            </p>
+
+                            {% if actions_nettoyage is defined and actions_nettoyage is not empty %}
                                 <div class="table-responsive">
                                     <table class="table table-dark table-hover">
                                         <thead>
@@ -661,151 +845,19 @@
                                                 <th>Lieu</th>
                                                 <th>Date</th>
                                                 <th>Places</th>
-                                                <th>Raison</th>
+                                                <th>Statut</th>
                                                 <th>Participation</th>
                                             </tr>
                                         </thead>
+
                                         <tbody>
-                                            {% for rec in actions_recommandees %}
-                                                {% set action = rec.action %}
+                                            {% for action in actions_nettoyage %}
+                                                {% set dejaInscrit = inscriptions_utilisateur is defined and action.getIdAction() in inscriptions_utilisateur %}
+
                                                 <tr>
                                                     <td>{{ action.lieu }}</td>
                                                     <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
                                                     <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
-                                                    <td>{{ rec.raison }}</td>
-                                                    <td>
-                                                        <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
-                                                            <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
-                                                            <button type="submit" class="btn btn-success btn-sm">
-                                                                Participer
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <p>Aucune recommandation disponible pour le moment.</p>
-                            {% endif %}
-                        {% else %}
-                            <p>Connectez-vous pour recevoir des recommandations personnalisées.</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Bloc 1 : Actions disponibles -->
-                    <div class="form-card animate" data-animate="fadeInUp">
-                        <h3>Actions disponibles</h3>
-                        <p class="form-subtitle">
-                            Consultez les actions de nettoyage disponibles et participez comme bénévole.
-                        </p>
-
-                        {% if actions_nettoyage is defined and actions_nettoyage is not empty %}
-                            <div class="table-responsive">
-                                <table class="table table-dark table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Lieu</th>
-                                            <th>Date</th>
-                                            <th>Places</th>
-                                            <th>Statut</th>
-                                            <th>Participation</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {% for action in actions_nettoyage %}
-                                            {% set dejaInscrit = inscriptions_utilisateur is defined and action.getIdAction() in inscriptions_utilisateur %}
-
-                                            <tr>
-                                                <td>{{ action.lieu }}</td>
-
-                                                <td>
-                                                    {{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}
-                                                </td>
-
-                                                <td>
-                                                    {{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}
-                                                </td>
-
-                                                <td>
-                                                    {% if action.estComplete() %}
-                                                        <span class="badge bg-danger">Complet</span>
-                                                    {% else %}
-                                                        <span class="badge bg-success">Disponible</span>
-                                                    {% endif %}
-                                                </td>
-
-                                                <td>
-                                                    {% if dejaInscrit %}
-                                                        <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
-                                                            <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
-
-                                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                                Annuler
-                                                            </button>
-                                                        </form>
-                                                    {% elseif action.estComplete() %}
-                                                        <button class="btn btn-secondary btn-sm" disabled>
-                                                            Complet
-                                                        </button>
-                                                    {% else %}
-                                                        <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
-                                                            <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
-
-                                                            <button type="submit" class="btn btn-success btn-sm">
-                                                                Participer
-                                                            </button>
-                                                        </form>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <p>Aucune action de nettoyage disponible pour le moment.</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Bloc 2 : Mes participations -->
-                    <div class="form-card mt-4 animate" data-animate="fadeInUp">
-                        <h3>Mes actions de nettoyage</h3>
-                        <p class="form-subtitle">
-                            Retrouvez les actions de nettoyage auxquelles vous participez déjà.
-                        </p>
-
-                        {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
-                            <div class="table-responsive">
-                                <table class="table table-dark table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Lieu</th>
-                                            <th>Date</th>
-                                            <th>Places</th>
-                                            <th>Statut</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {% for inscription in mes_inscriptions_nettoyage %}
-                                            {% set action = inscription.getIdAction() %}
-
-                                            {% if action %}
-                                                <tr>
-                                                    <td>{{ action.lieu }}</td>
-
-                                                    <td>
-                                                        {{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}
-                                                    </td>
-
-                                                    <td>
-                                                        {{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}
-                                                    </td>
-
                                                     <td>
                                                         {% if action.estComplete() %}
                                                             <span class="badge bg-danger">Complet</span>
@@ -813,32 +865,91 @@
                                                             <span class="badge bg-success">Disponible</span>
                                                         {% endif %}
                                                     </td>
-
                                                     <td>
-                                                        <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
-                                                            <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
-
-                                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                                Annuler ma participation
-                                                            </button>
-                                                        </form>
+                                                        {% if dejaInscrit %}
+                                                            <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
+                                                            </form>
+                                                        {% elseif action.estComplete() %}
+                                                            <button class="btn btn-secondary btn-sm" disabled>Complet</button>
+                                                        {% else %}
+                                                            <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+                                                                <button type="submit" class="btn btn-success btn-sm">Participer</button>
+                                                            </form>
+                                                        {% endif %}
                                                     </td>
                                                 </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <p>Vous ne participez encore à aucune action de nettoyage.</p>
-                        {% endif %}
-                    </div>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Aucune action de nettoyage disponible pour le moment.</p>
+                            {% endif %}
+                        </div>
 
-                </div>  
+                        <!-- Bloc : Mes participations -->
+                        <div class="form-card mt-4 animate" data-animate="fadeInUp">
+                            <h3>Mes actions de nettoyage</h3>
+                            <p class="form-subtitle">
+                                Retrouvez les actions de nettoyage auxquelles vous participez déjà.
+                            </p>
+
+                            {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Lieu</th>
+                                                <th>Date</th>
+                                                <th>Places</th>
+                                                <th>Statut</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {% for inscription in mes_inscriptions_nettoyage %}
+                                                {% set action = inscription.getIdAction() %}
+
+                                                {% if action %}
+                                                    <tr>
+                                                        <td>{{ action.lieu }}</td>
+                                                        <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
+                                                        <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
+                                                        <td>
+                                                            {% if action.estComplete() %}
+                                                                <span class="badge bg-danger">Complet</span>
+                                                            {% else %}
+                                                                <span class="badge bg-success">Disponible</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Annuler ma participation</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p>Vous ne participez encore à aucune action de nettoyage.</p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
- </div>{# fin #fullpage #}
+
+    </div>{# fin #fullpage #}
+
     <!-- Réseaux sociaux -->
     <div id="social-icons">
         <div class="text-right">
@@ -852,5 +963,86 @@
     </div>
 
 </div>{# fin #video #}
+
+<script>
+    (function () {
+        var flashToasts = document.querySelectorAll('[data-flash-toast]');
+
+        flashToasts.forEach(function (toast, index) {
+            var visibleDelay = 3200 + (index * 250);
+
+            window.setTimeout(function () {
+                toast.classList.add('is-hiding');
+
+                window.setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+
+                    var flashStack = document.getElementById('flashStack');
+                    if (flashStack && flashStack.children.length === 0) {
+                        flashStack.remove();
+                    }
+                }, 450);
+            }, visibleDelay);
+        });
+    })();
+
+    var navbarToggle = document.querySelector('.navbar-toggle');
+    var navBox = document.querySelector('.nav-box');
+
+    if (navbarToggle && navBox) {
+        navbarToggle.addEventListener('click', function () {
+            navBox.classList.toggle('active');
+        });
+    }
+
+    (function () {
+        var FORMS = [
+            { anchor: 'slide08', label: 'Réservations' },
+            { anchor: 'slide09', label: 'Activité Éco.' },
+            { anchor: 'slide11', label: 'Zone Protégée' },
+            { anchor: 'slide10', label: 'Surveillance' },
+            { anchor: 'slide12', label: 'Nettoyage' },
+            { anchor: 'slide209b', label: 'Nvl. Activité' },
+            { anchor: 'slide210', label: 'Faune Marine' },
+            { anchor: 'slide211', label: 'Observation' },
+            { anchor: 'slide212', label: 'Prédiction' },
+            { anchor: 'slide213', label: 'Mission Drone' },
+            { anchor: 'slide214', label: 'Détection Drone' }
+        ];
+
+        var btn = document.getElementById('nav-form-btn');
+        var labelEl = document.getElementById('nav-form-label');
+        var badgeEl = document.getElementById('nav-form-badge');
+        var total = FORMS.length;
+        var nextIdx = 0;
+
+        if (!btn || !labelEl || !badgeEl) return;
+
+        function getCurrentFormIndex() {
+            var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+            for (var i = 0; i < total; i++) {
+                if (FORMS[i].anchor === hash) return i;
+            }
+            return -1;
+        }
+
+        function updateBtn() {
+            var idx = getCurrentFormIndex();
+            nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
+            labelEl.textContent = FORMS[nextIdx].label;
+            badgeEl.textContent = (nextIdx + 1) + '/' + total;
+        }
+
+        btn.addEventListener('click', function () {
+            window.location.hash = '#' + FORMS[nextIdx].anchor;
+            setTimeout(updateBtn, 80);
+        });
+
+        window.addEventListener('hashchange', updateBtn);
+        updateBtn();
+    })();
+</script>
 
 {% endblock %}

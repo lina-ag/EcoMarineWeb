@@ -22,6 +22,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+            CleaningBundle:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/CleaningBundle/Entity'
+                prefix: 'App\CleaningBundle\Entity'
+                alias: CleaningBundle
 
 when@test:
     doctrine:

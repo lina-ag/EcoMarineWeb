@@ -2,86 +2,126 @@
 
 namespace App\Controller;
 
-use App\Entity\ActionNettoyage;
+use App\Entity\ActiviteEcologique;
+use App\Entity\DetectionDrone;
+use App\Entity\FauneMarine;
+use App\Entity\MissionDrone;
+use App\Entity\Observation;
+use App\Entity\PredictionEchouage;
+use App\Entity\Survzone;
 use App\Entity\Utilisateur;
+use App\Entity\Zonep;
+use App\CleaningBundle\Repository\ActionNettoyageRepository;
+use App\CleaningBundle\Repository\VolontaireRepository;
+use App\CleaningBundle\Service\AiRecommendationService;
+use App\Form\ActiviteEcologiqueType;
+use App\Form\DetectionDroneType;
+use App\Form\FauneMarineType;
+use App\Form\MissionDroneType;
+use App\Form\ObservationType;
+use App\Form\PredictionEchouageType;
 use App\Form\ReservationType;
-use App\Repository\ActionNettoyageRepository;
-use App\Repository\VolontaireRepository;
-use App\Service\AiRecommendationService;
+use App\Form\SurvzoneType;
+use App\Form\UtilisateurType;
+use App\Form\ZonepType;
+use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
+    // 🔥 NOUVELLE ROUTE POUR LA RACINE
+    #[Route('/', name: 'app_root')]
+    public function root(): Response
+    {
+        // Rediriger vers la page de connexion
+        return $this->redirectToRoute('app_signIn');
+    }
+
     #[Route('/home', name: 'app_home', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         EntityManagerInterface $entityManager,
         ActionNettoyageRepository $actionNettoyageRepository,
         VolontaireRepository $volontaireRepository,
-        AiRecommendationService $recommendationService
+        UtilisateurRepository $utilisateurRepository,
+        AiRecommendationService $aiRecommendationService,
+        SessionInterface $session
     ): Response {
-        /*
-         * Module Réservation
-         * On garde le formulaire de réservation car il appartient à l'autre module.
-         */
+        $form = $this->createForm(UtilisateurType::class, new Utilisateur());
         $formReservation = $this->createForm(ReservationType::class);
 
-        /*
-         * Module Nettoyage
-         * On récupère toutes les actions de nettoyage.
-         */
-        $actionsNettoyage = $actionNettoyageRepository->findBy([], [
-            'date_action' => 'ASC',
-        ]);
+        $zonepForm = $this->createForm(ZonepType::class);
+        $survzoneForm = $this->createForm(SurvzoneType::class);
 
-        /*
-         * Ces deux tableaux servent à l'affichage utilisateur :
-         * - mes_inscriptions_nettoyage : liste complète des participations de l'utilisateur connecté
-         * - inscriptions_utilisateur : seulement les IDs des actions où il est déjà inscrit
-         */
+        $zonepForm = $this->createForm(ZonepType::class, new Zonep());
+        $survzoneForm = $this->createForm(SurvzoneType::class, new Survzone());
+        $activiteForm = $this->createForm(ActiviteEcologiqueType::class, new ActiviteEcologique());
+        $fauneMarineForm = $this->createForm(FauneMarineType::class, new FauneMarine());
+        $observationForm = $this->createForm(ObservationType::class, new Observation());
+        $predictionForm = $this->createForm(PredictionEchouageType::class, new PredictionEchouage());
+        $missionDroneForm = $this->createForm(MissionDroneType::class, new MissionDrone());
+        $detectionDroneForm = $this->createForm(DetectionDroneType::class, new DetectionDrone());
+
+        $actionsNettoyage = $actionNettoyageRepository->findAll();
         $mesInscriptionsNettoyage = [];
         $inscriptionsUtilisateur = [];
+        $actionsRecommandees = [];
+        $currentUser = $session->get('user');
 
-        $utilisateur = $this->getUser();
-
-        if ($utilisateur instanceof Utilisateur) {
-            $mesInscriptionsNettoyage = $volontaireRepository->findBy([
-                'utilisateur' => $utilisateur,
-            ]);
-
-            foreach ($mesInscriptionsNettoyage as $inscription) {
-                if ($inscription->getIdAction()) {
-                    $inscriptionsUtilisateur[] = $inscription->getIdAction()->getIdAction();
-                }
-            }
+        if (!$currentUser instanceof Utilisateur && $this->getUser() instanceof Utilisateur) {
+            $currentUser = $this->getUser();
         }
 
-        $actionsDisponibles = array_filter(
-            $actionsNettoyage,
-            static fn(ActionNettoyage $action) =>
-            !$action->estComplete() && !in_array($action->getIdAction(), $inscriptionsUtilisateur, true)
-        );
+        if ($currentUser instanceof Utilisateur) {
+            $currentUser = $utilisateurRepository->find($currentUser->getIdUtilisateur()) ?? $currentUser;
+            $mesInscriptionsNettoyage = $volontaireRepository->findBy(['utilisateur' => $currentUser]);
+            $inscriptionsUtilisateur = array_map(
+                static fn($volontaire) => $volontaire->getIdAction()?->getIdAction(),
+                $mesInscriptionsNettoyage
+            );
+            $inscriptionsUtilisateur = array_values(array_filter($inscriptionsUtilisateur, static fn($id) => $id !== null));
 
-        $actionsRecommandees = $recommendationService->recommendActions(
-            array_values($actionsDisponibles),
-            $utilisateur instanceof Utilisateur ? $utilisateur : null
-        );
+            $actionsDisponiblesPourRecommandation = array_values(array_filter(
+                $actionsNettoyage,
+                static fn($action) => !$action->estComplete() && !in_array($action->getIdAction(), $inscriptionsUtilisateur, true)
+            ));
+
+            $actionsRecommandees = $aiRecommendationService->recommendActions($actionsDisponiblesPourRecommandation, $currentUser);
+        }
 
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
+            'form' => $form->createView(),
 
-            // Module réservation
+            // Variables used by the current home slides/partials.
             'form_reservation' => $formReservation->createView(),
 
-            // Module nettoyage
+            'zonepForm' => $zonepForm->createView(),
+            'survzoneForm' => $survzoneForm->createView(),
+
+            'form_activite' => $activiteForm->createView(),
+            'form_zonep' => $zonepForm->createView(),
+            'form_survzone' => $survzoneForm->createView(),
+
+            // Compatibility aliases used by other blocks in the same template.
+
+            'activiteForm' => $activiteForm->createView(),
+            'fauneMarineForm' => $fauneMarineForm->createView(),
+            'observationForm' => $observationForm->createView(),
+            'predictionForm' => $predictionForm->createView(),
+            'missionDroneForm' => $missionDroneForm->createView(),
+            'detectionDroneForm' => $detectionDroneForm->createView(),
+
             'actions_nettoyage' => $actionsNettoyage,
+            'actions_recommandees' => $actionsRecommandees,
             'inscriptions_utilisateur' => $inscriptionsUtilisateur,
             'mes_inscriptions_nettoyage' => $mesInscriptionsNettoyage,
-            'actions_recommandees' => $actionsRecommandees,
+            'current_user' => $currentUser,
         ]);
     }
 }
