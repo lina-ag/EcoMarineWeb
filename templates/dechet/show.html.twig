@@ -1,76 +1,129 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail du déchet{% endblock %}
+{% block title %}Dechet{% endblock %}
 
 {% block body %}
-    {% set quantite = dechet.quantite ?? 0 %}
-    {% set niveau = quantite <= 5 ? 'Faible' : (quantite <= 15 ? 'Moyenne' : 'Élevée') %}
-    {% set typeIcon = {
-        'plastique': '♻️',
-        'verre': '🧴',
-        'metal': '🔩',
-        'organique': '🍃',
-        'papier': '📄',
-        'autre': '🗑️'
-    }[dechet.type] ?? '🗑️' %}
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Signalement #{{ dechet.idDechet }}</h2>
-                <p class="card-subtitle">Vue détaillée du signalement.</p>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Signalement intelligent #{{ dechet.idDechet }}</h1>
+            <p>Cette fiche met en valeur le bundle, les API, l IA et la logique metier intelligente du module Dechet.</p>
+        </div>
+        <div class="module-actions">
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour</a>
+        </div>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">B</div>
+            <h3>Bundle UX Dropzone</h3>
+            <p>Ajout visuel d image avec drag and drop dans le formulaire Symfony.</p>
+            <div class="smart-badge-row">
+                <span class="bundle-badge">Bundle visible</span>
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <tbody>
-                    <tr><th>Id</th><td>{{ dechet.idDechet }}</td></tr>
-                    <tr><th>Type</th><td>{{ typeIcon }} {{ dechet.type|capitalize }}</td></tr>
-                    <tr><th>Quantité</th><td>{{ dechet.quantite }}</td></tr>
-                    <tr><th>Zone</th><td>{{ dechet.zone }}</td></tr>
-                    <tr><th>Description</th><td>{{ dechet.description }}</td></tr>
-                    <tr><th>Date de signalement</th><td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td></tr>
-                    <tr>
-                        <th>Statut</th>
-                        <td>
-                            {% if dechet.statut == 'signale' %}
-                                <span class="btn btn-secondary">Signalé</span>
-                            {% elseif dechet.statut == 'en_cours' %}
-                                <span class="btn btn-secondary">En cours</span>
-                            {% else %}
-                                <span class="btn btn-primary">Traité</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Niveau pollution</th>
-                        <td>
-                            {% if niveau == 'Faible' %}
-                                <span class="btn btn-secondary">Faible</span>
-                            {% elseif niveau == 'Moyenne' %}
-                                <span class="btn btn-secondary">Moyenne</span>
-                            {% else %}
-                                <span class="btn btn-primary">Élevée</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
+        <div class="feature-card">
+            <div class="feature-icon">A</div>
+            <h3>API meteo</h3>
+            <p>La meteo locale et le vent sont relies aux coordonnees du signalement.</p>
+            <div class="smart-badge-row">
+                <span class="api-badge">OpenWeather</span>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">I</div>
+            <h3>Analyse IA</h3>
+            <p>L image peut etre analysee pour suggerer un type, une confiance et un resume.</p>
+            <div class="smart-badge-row">
+                <span class="ai-badge">OpenAI Vision</span>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">S</div>
+            <h3>Smart metier</h3>
+            <p>Le systeme calcule une priorite et propose une recommandation automatique.</p>
+            <div class="smart-badge-row">
+                <span class="priority-badge priority-moyenne">Moteur metier</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="smart-grid">
+        <div class="smart-card">
+            <h3>Donnees du signalement</h3>
+            <table class="details-table">
+                <tr><th>ID</th><td>{{ dechet.idDechet }}</td></tr>
+                <tr><th>Type</th><td>{{ dechet.type }}</td></tr>
+                <tr><th>Quantite</th><td>{{ dechet.quantite }}</td></tr>
+                <tr><th>Zone</th><td>{{ dechet.zone }}</td></tr>
+                <tr><th>Description</th><td>{{ dechet.description }}</td></tr>
+                <tr><th>Date</th><td>{{ dechet.dateSignalement ? dechet.dateSignalement|date('Y-m-d') : '' }}</td></tr>
+                <tr><th>Statut</th><td>{{ dechet.statut }}</td></tr>
+                <tr><th>Latitude</th><td>{{ dechet.latitude ?: 'Non definie' }}</td></tr>
+                <tr><th>Longitude</th><td>{{ dechet.longitude ?: 'Non definie' }}</td></tr>
             </table>
         </div>
 
-        <div class="btn-group">
-            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
-            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">Modifier</a>
+        <div class="smart-card">
+            <h3>API + IA + priorite</h3>
 
-            {% if dechet.statut != 'traite' %}
-                <form method="post" action="{{ path('app_dechet_traiter', {'id_dechet': dechet.id_dechet}) }}" style="display:inline-block;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('traiter' ~ dechet.id_dechet) }}">
-                    <button class="btn btn-primary" type="submit">Marquer traité</button>
-                </form>
+            {% set priorityClass = 'priority-faible' %}
+            {% if dechet.priorityLabel == 'moyenne' %}
+                {% set priorityClass = 'priority-moyenne' %}
+            {% elseif dechet.priorityLabel == 'elevee' %}
+                {% set priorityClass = 'priority-elevee' %}
+            {% elseif dechet.priorityLabel == 'critique' %}
+                {% set priorityClass = 'priority-critique' %}
             {% endif %}
 
-            {{ include('dechet/_delete_form.html.twig') }}
+            <div class="smart-badge-row">
+                <span class="weather-badge">Meteo : {{ dechet.weatherMain ?: 'Non recuperee' }}</span>
+                <span class="smart-badge">Vent : {{ dechet.weatherWind ?: 0 }} m/s</span>
+                <span class="priority-badge {{ priorityClass }}">Priorite : {{ dechet.priorityLabel ?: 'faible' }}</span>
+            </div>
+
+            <div class="smart-list" style="margin-top: 18px;">
+                <div class="smart-item">
+                    <strong>Type suggere par IA</strong><br>
+                    {{ dechet.aiTypeSuggestion ?: 'Non detecte' }}
+                </div>
+
+                <div class="smart-item">
+                    <strong>Confiance IA</strong><br>
+                    {{ dechet.aiConfidence is not null ? dechet.aiConfidence : 0 }}
+                </div>
+
+                <div class="smart-item">
+                    <strong>Resume IA</strong><br>
+                    {{ dechet.aiSummary ?: 'Aucun resume genere.' }}
+                </div>
+
+                <div class="smart-item">
+                    <strong>Score de priorite</strong><br>
+                    {{ dechet.priorityScore is not null ? dechet.priorityScore ~ '/100' : 'Non calcule' }}
+                </div>
+
+                <div class="smart-item">
+                    <strong>Recommandation automatique</strong><br>
+                    {{ dechet.recommendedAction ?: 'Aucune recommandation disponible.' }}
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+
+    <div class="highlight-card">
+        <h3>Image du signalement</h3>
+        {% if dechet.photo %}
+            <img class="show-photo" src="{{ asset('uploads/dechets/' ~ dechet.photo) }}" alt="Photo dechet">
+        {% else %}
+            <p style="color:#dbe7ff;">Aucune photo disponible.</p>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

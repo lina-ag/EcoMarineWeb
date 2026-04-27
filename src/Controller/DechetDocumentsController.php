@@ -8,9 +8,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class HomeController extends AbstractController
+#[Route('/dechet/documents')]
+final class DechetDocumentsController extends AbstractController
 {
-    #[Route('/', name: 'app_home', methods: ['GET'])]
+    #[Route('', name: 'app_dechet_documents', methods: ['GET'])]
     public function index(Request $request, DechetRepository $dechetRepository): Response
     {
         $allowedTabs = ['overview', 'latest', 'documents', 'contact'];
@@ -20,7 +21,7 @@ final class HomeController extends AbstractController
             $tab = 'overview';
         }
 
-        $dechets = $dechetRepository->findBy([], ['id_dechet' => 'DESC']);
+        $dechets = $dechetRepository->findAll();
 
         $statsCards = [
             'totalSignalements' => count($dechets),
@@ -56,7 +57,7 @@ final class HomeController extends AbstractController
             $statsCards['progressionNettoyage'] = round(($statusCounts['traite'] / $statsCards['totalSignalements']) * 100, 1);
         }
 
-        return $this->render('home/index.html.twig', [
+        return $this->render('dechet/documents_home.html.twig', [
             'activeTab' => $tab,
             'contact' => [
                 'name' => 'FARHAT MERYEM',

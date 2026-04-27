@@ -1,17 +1,17 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block page_title %}Activités écologiques{% endblock %}
-{% block navbar_title %}Activités écologiques{% endblock %}
+{% block page_title %}ActivitÃƒÂ©s ÃƒÂ©cologiques{% endblock %}
+{% block navbar_title %}ActivitÃƒÂ©s ÃƒÂ©cologiques{% endblock %}
 
 {% block admin_content %}
     <section class="glass-card table-card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Liste des activités écologiques</h2>
-                <p class="card-subtitle">Suivi des activités enregistrées dans la plateforme.</p>
+                <h2 class="card-title">Liste des activitÃƒÂ©s ÃƒÂ©cologiques</h2>
+                <p class="card-subtitle">Suivi des activitÃƒÂ©s enregistrÃƒÂ©es dans la plateforme.</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary">Créer une activité</a>
+                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary">CrÃƒÂ©er une activitÃƒÂ©</a>
             </div>
         </div>
 
@@ -19,10 +19,10 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Id activité</th>
-                        <th>Nom activité</th>
-                        <th>Date activité</th>
-                        <th>Capacité</th>
+                        <th>Id activitÃƒÂ©</th>
+                        <th>Nom activitÃƒÂ©</th>
+                        <th>Date activitÃƒÂ©</th>
+                        <th>CapacitÃƒÂ©</th>
                         <th>Description</th>
                         <th>Actions</th>
                     </tr>
@@ -42,7 +42,7 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6">Aucun enregistrement trouvé</td>
+                        <td colspan="6">Aucun enregistrement trouvÃƒÂ©</td>
                     </tr>
                 {% endfor %}
                 </tbody>

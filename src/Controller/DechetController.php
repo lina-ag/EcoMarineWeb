@@ -5,179 +5,186 @@ namespace App\Controller;
 use App\Entity\Dechet;
 use App\Form\DechetType;
 use App\Repository\DechetRepository;
+use App\Service\AiWasteAnalyzerService;
+use App\Service\DechetPriorityService;
+use App\Service\WeatherService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/dechet')]
 final class DechetController extends AbstractController
 {
     #[Route(name: 'app_dechet_index', methods: ['GET'])]
-    public function index(Request $request, DechetRepository $dechetRepository, EntityManagerInterface $entityManager): Response
+    public function index(DechetRepository $dechetRepository): Response
     {
-        if ($request->query->get('demo') === '1' && count($dechetRepository->findAll()) === 0) {
-            $samples = [
-                ['plastique', 12, 'Kuriat Nord', 'Déchets plastiques près du rivage', '2026-04-12', 'signale'],
-                ['verre', 6, 'Kuriat Sud', 'Bouteilles cassées sur le sable', '2026-04-11', 'en_cours'],
-                ['metal', 18, 'Plage Monastir', 'Canettes et objets métalliques dispersés', '2026-04-10', 'traite'],
-                ['papier', 4, 'Kuriat Nord', 'Papiers et emballages légers', '2026-04-09', 'signale'],
-                ['organique', 9, 'Plage Skanes', 'Déchets organiques abandonnés', '2026-04-08', 'en_cours'],
-            ];
-
-            foreach ($samples as [$type, $quantite, $zone, $description, $date, $statut]) {
-                $dechet = new Dechet();
-                $dechet->setType($type);
-                $dechet->setQuantite((float) $quantite);
-                $dechet->setZone($zone);
-                $dechet->setDescription($description);
-                $dechet->setDateSignalement(new \DateTime($date));
-                $dechet->setStatut($statut);
-                $entityManager->persist($dechet);
-            }
-
-            $entityManager->flush();
-            $this->addFlash('success', 'Des données de démonstration ont été ajoutées.');
-            return $this->redirectToRoute('app_dechet_index');
-        }
-
-        $q = trim((string) $request->query->get('q', ''));
-        $type = trim((string) $request->query->get('type', ''));
-        $statut = trim((string) $request->query->get('statut', ''));
-        $zone = trim((string) $request->query->get('zone', ''));
-        $sort = trim((string) $request->query->get('sort', 'date'));
-        $direction = strtolower(trim((string) $request->query->get('direction', 'desc'))) === 'asc' ? 'asc' : 'desc';
-
         $dechets = $dechetRepository->findAll();
 
-        $dechets = array_values(array_filter($dechets, function (Dechet $dechet) use ($q, $type, $statut, $zone) {
-            if ($q !== '') {
-                $haystack = mb_strtolower(
-                    ($dechet->getType() ?? '') . ' ' .
-                    ($dechet->getZone() ?? '') . ' ' .
-                    ($dechet->getDescription() ?? '') . ' ' .
-                    ($dechet->getStatut() ?? '')
-                );
-
-                if (!str_contains($haystack, mb_strtolower($q))) {
-                    return false;
-                }
-            }
-
-            if ($type !== '' && $dechet->getType() !== $type) {
-                return false;
-            }
-
-            if ($statut !== '' && $dechet->getStatut() !== $statut) {
-                return false;
-            }
-
-            if ($zone !== '' && !str_contains(mb_strtolower($dechet->getZone() ?? ''), mb_strtolower($zone))) {
-                return false;
-            }
-
-            return true;
-        }));
-
-        usort($dechets, function (Dechet $a, Dechet $b) use ($sort, $direction) {
-            $valueA = null;
-            $valueB = null;
-
-            switch ($sort) {
-                case 'type':
-                    $valueA = mb_strtolower($a->getType() ?? '');
-                    $valueB = mb_strtolower($b->getType() ?? '');
-                    break;
-                case 'quantite':
-                    $valueA = $a->getQuantite() ?? 0;
-                    $valueB = $b->getQuantite() ?? 0;
-                    break;
-                case 'statut':
-                    $valueA = mb_strtolower($a->getStatut() ?? '');
-                    $valueB = mb_strtolower($b->getStatut() ?? '');
-                    break;
-                case 'zone':
-                    $valueA = mb_strtolower($a->getZone() ?? '');
-                    $valueB = mb_strtolower($b->getZone() ?? '');
-                    break;
-                case 'date':
-                default:
-                    $valueA = $a->getDateSignalement()?->format('Y-m-d') ?? '';
-                    $valueB = $b->getDateSignalement()?->format('Y-m-d') ?? '';
-                    break;
-            }
-
-            $result = $valueA <=> $valueB;
-            return $direction === 'asc' ? $result : -$result;
-        });
-
-        $totalSignalements = count($dechets);
-        $totalQuantite = 0;
-        $zones = [];
-        $pollutionElevee = 0;
-        $statusCounts = [
-            'signale' => 0,
-            'en_cours' => 0,
-            'traite' => 0,
+        $statsCards = [
+            'totalSignalements' => count($dechets),
+            'totalQuantite' => 0,
+            'zonesTouchees' => 0,
+            'pollutionElevee' => 0,
+            'progressionNettoyage' => 0,
         ];
 
+        $statusCounts = ['signale' => 0, 'en_cours' => 0, 'traite' => 0];
+        $zones = [];
+
         foreach ($dechets as $dechet) {
-            $quantite = $dechet->getQuantite() ?? 0;
-            $totalQuantite += $quantite;
+            $statsCards['totalQuantite'] += (float) ($dechet->getQuantite() ?? 0);
 
-            $zoneName = trim((string) $dechet->getZone());
-            if ($zoneName !== '') {
-                $zones[$zoneName] = true;
+            if ($dechet->getZone()) {
+                $zones[$dechet->getZone()] = true;
             }
 
-            if ($quantite > 15) {
-                $pollutionElevee++;
+            if (((float) ($dechet->getQuantite() ?? 0)) > 15) {
+                $statsCards['pollutionElevee']++;
             }
 
-            $currentStatut = $dechet->getStatut();
-            if (isset($statusCounts[$currentStatut])) {
-                $statusCounts[$currentStatut]++;
+            $statut = $dechet->getStatut();
+            if (isset($statusCounts[$statut])) {
+                $statusCounts[$statut]++;
             }
         }
 
-        $progressionNettoyage = $totalSignalements > 0 ? round(($statusCounts['traite'] / $totalSignalements) * 100) : 0;
+        $statsCards['zonesTouchees'] = count($zones);
+
+        if ($statsCards['totalSignalements'] > 0) {
+            $statsCards['progressionNettoyage'] = round(($statusCounts['traite'] / $statsCards['totalSignalements']) * 100, 1);
+        }
 
         return $this->render('dechet/index.html.twig', [
             'dechets' => $dechets,
-            'filters' => [
-                'q' => $q,
-                'type' => $type,
-                'statut' => $statut,
-                'zone' => $zone,
-                'sort' => $sort,
-                'direction' => $direction,
-            ],
-            'statsCards' => [
-                'totalSignalements' => $totalSignalements,
-                'totalQuantite' => $totalQuantite,
-                'zonesTouchees' => count($zones),
-                'pollutionElevee' => $pollutionElevee,
-                'progressionNettoyage' => $progressionNettoyage,
-            ],
+            'statsCards' => $statsCards,
             'statusCounts' => $statusCounts,
+            'filters' => [
+                'q' => '',
+                'type' => '',
+                'statut' => '',
+                'zone' => '',
+                'sort' => 'date',
+                'direction' => 'desc',
+            ],
         ]);
     }
 
     #[Route('/new', name: 'app_dechet_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger,
+        WeatherService $weatherService,
+        AiWasteAnalyzerService $aiWasteAnalyzerService,
+        DechetPriorityService $priorityService,
+        DechetRepository $dechetRepository
+    ): Response {
         $dechet = new Dechet();
         $form = $this->createForm(DechetType::class, $dechet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $photoFile = $form->get('photoFile')->getData();
+            $uploadedPath = null;
+
+            if ($photoFile) {
+                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename ?: 'dechet');
+                $extension = $photoFile->guessExtension() ?: 'jpg';
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$extension;
+
+                try {
+                    $targetDir = $this->getParameter('kernel.project_dir').'/public/uploads/dechets';
+
+                    if (!is_dir($targetDir)) {
+                        mkdir($targetDir, 0777, true);
+                    }
+
+                    $photoFile->move($targetDir, $newFilename);
+                    $dechet->setPhoto($newFilename);
+                    $uploadedPath = $targetDir.'/'.$newFilename;
+                } catch (FileException $e) {
+                    $this->addFlash('error', "Erreur lors de l'upload de l'image.");
+                }
+            }
+
+            $latitude = $form->get('latitude')->getData();
+            $longitude = $form->get('longitude')->getData();
+
+            if ($latitude !== null && $latitude !== '') {
+                $dechet->setLatitude((float) $latitude);
+            }
+
+            if ($longitude !== null && $longitude !== '') {
+                $dechet->setLongitude((float) $longitude);
+            }
+
+            $weatherMain = null;
+            $weatherWind = 0.0;
+
+            if ($dechet->getLatitude() !== null && $dechet->getLongitude() !== null) {
+                try {
+                    $weather = $weatherService->getCurrentWeather(
+                        (float) $dechet->getLatitude(),
+                        (float) $dechet->getLongitude()
+                    );
+
+                    $weatherMain = $weather['main'] ?? null;
+                    $weatherWind = (float) ($weather['wind_speed'] ?? 0);
+
+                    $dechet->setWeatherMain($weatherMain);
+                    $dechet->setWeatherWind($weatherWind);
+                } catch (\Throwable $e) {
+                    $this->addFlash('warning', 'Meteo indisponible pour ce signalement.');
+                }
+            }
+
+            $aiType = null;
+            $aiConfidence = 0.0;
+            $aiSummary = null;
+            $aiRecommendedAction = null;
+
+            if ($uploadedPath && file_exists($uploadedPath)) {
+                try {
+                    $ai = $aiWasteAnalyzerService->analyzeImage($uploadedPath, $dechet->getType(), $dechet->getDescription(), $dechet->getZone(), $dechet->getQuantite(), $dechet->getStatut());
+
+                    $aiType = $ai['type_suggestion'] ?? null;
+                    $aiConfidence = (float) ($ai['confidence'] ?? 0);
+                    $aiSummary = $ai['summary'] ?? null;
+                    $aiRecommendedAction = $ai['recommended_action'] ?? null;
+
+                    $dechet->setAiTypeSuggestion($aiType);
+                    $dechet->setAiConfidence($aiConfidence);
+                    $dechet->setAiSummary($aiSummary);
+                } catch (\Throwable $e) {
+                    $this->addFlash('warning', 'Analyse IA indisponible pour cette image.');
+                }
+            }
+
+            $sameZoneCount = count($dechetRepository->findBy(['zone' => $dechet->getZone()]));
+
+            $priority = $priorityService->compute(
+                (float) ($dechet->getQuantite() ?? 0),
+                $weatherMain,
+                $weatherWind,
+                $aiType,
+                $aiConfidence,
+                $sameZoneCount
+            );
+
+            $dechet->setPriorityScore((int) $priority['score']);
+            $dechet->setPriorityLabel((string) $priority['label']);
+            $dechet->setRecommendedAction($aiRecommendedAction ?: (string) $priority['recommendation']);
+
             $entityManager->persist($dechet);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Signalement ajouté avec succès.');
-
-            return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dechet_show', ['id_dechet' => $dechet->getIdDechet()]);
         }
 
         return $this->render('dechet/new.html.twig', [
@@ -186,55 +193,72 @@ final class DechetController extends AbstractController
         ]);
     }
 
-    #[Route('/{id_dechet<\d+>}', name: 'app_dechet_show', methods: ['GET'])]
-    public function show(Dechet $dechet): Response
+    #[Route('/{id_dechet}', name: 'app_dechet_show', requirements: ['id_dechet' => '\d+'], methods: ['GET'])]
+    public function show(int $id_dechet, DechetRepository $dechetRepository): Response
     {
+        $dechet = $dechetRepository->find($id_dechet);
+
+        if (!$dechet) {
+            throw $this->createNotFoundException('Dechet introuvable.');
+        }
+
         return $this->render('dechet/show.html.twig', [
             'dechet' => $dechet,
         ]);
     }
 
-    #[Route('/{id_dechet<\d+>}/edit', name: 'app_dechet_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
+    #[Route('/stats-old', name: 'app_dechet_stats_old', methods: ['GET'])]
+    public function stats(DechetRepository $dechetRepository): Response
     {
-        $form = $this->createForm(DechetType::class, $dechet);
-        $form->handleRequest($request);
+        $dechets = $dechetRepository->findAll();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        $totalDechets = count($dechets);
+        $totalQuantite = 0;
+        $parType = [];
+        $parZone = [];
+        $parStatut = [];
 
-            $this->addFlash('success', 'Signalement mis à jour avec succès.');
-
-            return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
+        foreach ($dechets as $dechet) {
+            $totalQuantite += (float) ($dechet->getQuantite() ?? 0);
+            $parType[$dechet->getType() ?? 'Inconnu'] = ($parType[$dechet->getType() ?? 'Inconnu'] ?? 0) + 1;
+            $parZone[$dechet->getZone() ?? 'Inconnue'] = ($parZone[$dechet->getZone() ?? 'Inconnue'] ?? 0) + 1;
+            $parStatut[$dechet->getStatut() ?? 'Inconnu'] = ($parStatut[$dechet->getStatut() ?? 'Inconnu'] ?? 0) + 1;
         }
 
-        return $this->render('dechet/edit.html.twig', [
-            'dechet' => $dechet,
-            'form' => $form,
+        $topZone = !empty($parZone) ? array_key_first($parZone) : null;
+        $topType = !empty($parType) ? array_key_first($parType) : null;
+
+        $prioriteLabels = [
+            'faible' => 0,
+            'moyenne' => 0,
+            'elevee' => 0,
+            'critique' => 0,
+        ];
+
+        foreach ($dechets as $dechet) {
+            $label = $dechet->getPriorityLabel() ?? 'faible';
+            if (!isset($prioriteLabels[$label])) {
+                $prioriteLabels[$label] = 0;
+            }
+            $prioriteLabels[$label]++;
+        }
+
+        $criticalZones = [];
+        $smartInsight = 'Aucune zone critique detectee pour le moment.';
+        $globalRecommendation = 'Maintenir une surveillance normale.';
+
+        return $this->render('dechet/stats.html.twig', [
+            'totalDechets' => $totalDechets,
+            'totalQuantite' => $totalQuantite,
+            'parType' => $parType,
+            'parZone' => $parZone,
+            'parStatut' => $parStatut,
+            'topZone' => $topZone,
+            'topType' => $topType,
+            'prioriteLabels' => $prioriteLabels,
+            'criticalZones' => $criticalZones,
+            'smartInsight' => $smartInsight,
+            'globalRecommendation' => $globalRecommendation,
         ]);
-    }
-
-    #[Route('/{id_dechet<\d+>}/traiter', name: 'app_dechet_traiter', methods: ['POST'])]
-    public function traiter(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('traiter' . $dechet->getId_dechet(), $request->request->get('_token'))) {
-            $dechet->setStatut('traite');
-            $entityManager->flush();
-            $this->addFlash('success', 'Le signalement a été marqué comme traité.');
-        }
-
-        return $this->redirectToRoute('app_dechet_index', $request->query->all(), Response::HTTP_SEE_OTHER);
-    }
-
-    #[Route('/{id_dechet<\d+>}', name: 'app_dechet_delete', methods: ['POST'])]
-    public function delete(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $dechet->getId_dechet(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($dechet);
-            $entityManager->flush();
-            $this->addFlash('success', 'Le signalement a été supprimé.');
-        }
-
-        return $this->redirectToRoute('app_dechet_index', [], Response::HTTP_SEE_OTHER);
     }
 }
