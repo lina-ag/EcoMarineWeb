@@ -1,184 +1,206 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Statistiques Déchets{% endblock %}
+{% block title %}Statistiques des dechets{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Statistiques pollution</h2>
-                <p class="card-subtitle">Vue d’ensemble moderne des signalements de déchets.</p>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Statistiques intelligentes des dechets</h1>
+            <p>Visualisation des donnees du module avec vos informations reelles.</p>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour dashboard</a>
+            <a href="{{ path('app_dechet_documents') }}" class="btn btn-secondary">Documents</a>
+        </div>
+    </div>
+
+    <div class="stats-hero-grid">
+        <div class="stats-number-card glass-card">
+            <div class="stats-number-value">{{ totalDechets|default(0) }}</div>
+            <div class="stats-number-label">Signalements enregistres</div>
+        </div>
+
+        <div class="stats-number-card glass-card">
+            <div class="stats-number-value">{{ totalQuantite|default(0) }}</div>
+            <div class="stats-number-label">Quantite totale</div>
+        </div>
+
+        <div class="stats-number-card glass-card">
+            <div class="stats-number-value">{{ topZone|default('Aucune') }}</div>
+            <div class="stats-number-label">Zone la plus suivie</div>
+        </div>
+
+        <div class="stats-number-card glass-card">
+            <div class="stats-number-value">{{ topType|default('Aucun')|capitalize }}</div>
+            <div class="stats-number-label">Type dominant</div>
+        </div>
+    </div>
+
+    <div class="stats-chart-grid">
+        <div class="stats-chart-card glass-card">
+            <h3>Repartition par type</h3>
+            <canvas id="typeChart"></canvas>
+        </div>
+
+        <div class="stats-chart-card glass-card">
+            <h3>Repartition par zone</h3>
+            <canvas id="zoneChart"></canvas>
+        </div>
+
+        <div class="stats-chart-card glass-card">
+            <h3>Repartition par statut</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+
+        <div class="stats-chart-card glass-card">
+            <h3>Niveaux de priorite</h3>
+            <canvas id="priorityChart"></canvas>
+        </div>
+    </div>
+
+    <div class="stats-doc-grid">
+        <div class="stats-doc-card glass-card">
+            <div class="stats-doc-tag">ANALYSE GLOBALE</div>
+            <div class="stats-doc-text">
+                Le module contient actuellement <strong>{{ totalDechets|default(0) }}</strong> signalement(s) pour une quantite totale de
+                <strong>{{ totalQuantite|default(0) }}</strong>.
             </div>
-            <div class="btn-group">
-                <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
-                <a href="{{ path('app_dechet_export_csv') }}" class="btn btn-secondary">Exporter CSV</a>
-                <button onclick="window.print()" class="btn btn-primary" type="button">Imprimer</button>
+        </div>
+
+        <div class="stats-doc-card glass-card">
+            <div class="stats-doc-tag">ZONE PRINCIPALE</div>
+            <div class="stats-doc-text">
+                La zone la plus representee est <strong>{{ topZone|default('Aucune') }}</strong>.
             </div>
         </div>
 
-        <div class="glass-card" style="margin-bottom: 20px; border-left: 4px solid #3b82f6;">
-            <h3>💡 Insight intelligent</h3>
-            <p>{{ insight }}</p>
+        <div class="stats-doc-card glass-card">
+            <div class="stats-doc-tag">TYPE DOMINANT</div>
+            <div class="stats-doc-text">
+                Le type de dechet le plus frequent est <strong>{{ topType|default('Aucun')|capitalize }}</strong>.
+            </div>
         </div>
 
-        <div class="table-wrapper" style="margin-bottom: 20px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Total des signalements</th>
-                        <th>Quantité totale signalée</th>
-                        <th>Type le plus fréquent</th>
-                        <th>Zone la plus touchée</th>
-                        <th>Progression nettoyage</th>
-                        <th>Impact visuel</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ totalDechets }}</td>
-                        <td>{{ totalQuantite }}</td>
-                        <td>{{ topType }}</td>
-                        <td>{{ topZone }}</td>
-                        <td>{{ progressionNettoyage }}%</td>
-                        <td>
-                            {% if impact == 'Critique' %}
-                                <span class="btn btn-primary">Critique</span>
-                            {% elseif impact == 'Modéré' %}
-                                <span class="btn btn-secondary">Modéré</span>
-                            {% else %}
-                                <span class="btn btn-secondary">Faible</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="stats-doc-card stats-doc-highlight">
+            <div class="stats-doc-tag">RECOMMANDATION</div>
+            <div class="stats-doc-text">
+                {{ globalRecommendation|default('Aucune recommandation disponible.') }}
+            </div>
         </div>
+    </div>
 
-        <div class="table-wrapper" style="margin-bottom: 20px;">
-            <h3>🏖️ Top 3 zones les plus polluées</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Rang</th>
-                        <th>Zone</th>
-                        <th>Nombre</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set rang = 1 %}
-                    {% for zone, nombre in zoneRanking %}
-                        <tr>
-                            <td>#{{ rang }}</td>
-                            <td>{{ zone }}</td>
-                            <td>{{ nombre }}</td>
-                        </tr>
-                        {% set rang = rang + 1 %}
-                    {% else %}
-                        <tr>
-                            <td colspan="3">Aucune donnée.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="highlight-card" style="margin-top:22px;">
+        <h3>Insight metier</h3>
+        <p style="color:#dce7ff; line-height:1.8; margin:0;">
+            {{ smartInsight|default('Aucune analyse disponible.') }}
+        </p>
+    </div>
+</section>
 
-        <div class="glass-card" style="margin-bottom: 20px;">
-            <canvas id="dechetChart" height="100"></canvas>
-        </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const typeLabels = [{% for label, value in parType|default({}) %}'{{ label|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    const typeData = [{% for label, value in parType|default({}) %}{{ value }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-        <div class="table-wrapper" style="margin-top: 20px;">
-            <h3>Répartition par type</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Nombre</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for type, nombre in parType %}
-                        <tr>
-                            <td>{{ type }}</td>
-                            <td>{{ nombre }}</td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="2">Aucune donnée.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    const zoneLabels = [{% for label, value in parZone|default({}) %}'{{ label|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    const zoneData = [{% for label, value in parZone|default({}) %}{{ value }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-        <div class="table-wrapper" style="margin-top: 20px;">
-            <h3>Répartition par zone</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Zone</th>
-                        <th>Nombre</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for zone, nombre in parZone %}
-                        <tr>
-                            <td>{{ zone }}</td>
-                            <td>{{ nombre }}</td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="2">Aucune donnée.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    const statusLabels = [{% for label, value in parStatut|default({}) %}'{{ label|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    const statusData = [{% for label, value in parStatut|default({}) %}{{ value }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-        <div class="table-wrapper" style="margin-top: 20px;">
-            <h3>Répartition par statut</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Statut</th>
-                        <th>Nombre</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for statut, nombre in parStatut %}
-                        <tr>
-                            <td>{{ statut }}</td>
-                            <td>{{ nombre }}</td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="2">Aucune donnée.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
+    const priorityLabels = [{% for label, value in prioriteLabels|default({}) %}'{{ label|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    const priorityData = [{% for label, value in prioriteLabels|default({}) %}{{ value }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const ctx = document.getElementById('dechetChart');
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: {{ chartLabels|json_encode|raw }},
-                    datasets: [{
-                        label: 'Déchets par type',
-                        data: {{ chartValues|json_encode|raw }}
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: true }
-                    }
-                }
-            });
+    const commonLegend = {
+        labels: {
+            color: '#dce7ff',
+            font: { family: 'Poppins', size: 12 }
         }
-    </script>
+    };
+
+    const commonTicks = {
+        color: '#cdd8ef',
+        font: { family: 'Poppins', size: 11 }
+    };
+
+    new Chart(document.getElementById('typeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: typeLabels,
+            datasets: [{
+                data: typeData,
+                backgroundColor: ['#34d399', '#38bdf8', '#f59e0b', '#a78bfa', '#f87171', '#22c55e'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: commonLegend }
+        }
+    });
+
+    new Chart(document.getElementById('zoneChart'), {
+        type: 'bar',
+        data: {
+            labels: zoneLabels,
+            datasets: [{
+                label: 'Zones',
+                data: zoneData,
+                backgroundColor: '#38bdf8',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: commonTicks, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: commonTicks, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: ['#f59e0b', '#38bdf8', '#22c55e', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: commonLegend }
+        }
+    });
+
+    new Chart(document.getElementById('priorityChart'), {
+        type: 'bar',
+        data: {
+            labels: priorityLabels,
+            datasets: [{
+                label: 'Priorite',
+                data: priorityData,
+                backgroundColor: ['#64748b', '#f59e0b', '#ef4444', '#991b1b'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: commonTicks, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: commonTicks, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
