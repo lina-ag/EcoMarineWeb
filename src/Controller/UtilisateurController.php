@@ -13,26 +13,43 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Sonata\Exporter\Exporter;
+use Sonata\Exporter\Source\IteratorCallbackSourceIterator;
+use Sonata\Exporter\Writer\XlsxWriter;
+use Sonata\Exporter\Writer\CsvWriter;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/utilisateur')]
 final class UtilisateurController extends AbstractController
 {
     #[Route(name: 'app_utilisateur_index', methods: ['GET'])]
-    public function index(Request $request, UtilisateurRepository $utilisateurRepository, RoleRepository $roleRepository): Response
-    {
-        $search = trim((string) $request->query->get('search', ''));
-        $role = (string) $request->query->get('role', 'all');
+public function index(
+    Request $request,
+    UtilisateurRepository $utilisateurRepository,
+    RoleRepository $roleRepository,
+    PaginatorInterface $paginator
+): Response {
+    $search = trim((string) $request->query->get('search', ''));
+    $role   = (string) $request->query->get('role', 'all');
 
-        $utilisateurs = $utilisateurRepository->searchUsers($search, $role);
-        $roles = $roleRepository->findAll();
+    $query = $utilisateurRepository->searchUsersQuery($search, $role);
+    $roles = $roleRepository->findAll();
 
-        return $this->render('utilisateur/index.html.twig', [
-            'utilisateurs' => $utilisateurs,
-            'search' => $search,
-            'selectedRole' => $role,
-            'roles' => $roles,
-        ]);
-    }
+    $utilisateurs = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        5
+    );
+
+    return $this->render('utilisateur/index.html.twig', [
+        'utilisateurs' => $utilisateurs,
+        'search'       => $search,
+        'selectedRole' => $role,
+        'roles'        => $roles,
+    ]);
+}
+
 
     #[Route('/new', name: 'app_utilisateur_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator, UtilisateurRepository $utilisateurRepository, RoleRepository $roleRepository, FaceRecognitionService $faceService ): Response
@@ -50,6 +67,7 @@ final class UtilisateurController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             
             // 🔐 Hash du mot de passe
             $plainPassword = $utilisateur->getMotDePasse();
@@ -115,11 +133,45 @@ final class UtilisateurController extends AbstractController
             }
         }
 
-            $entityManager->persist($utilisateur);
-            $entityManager->flush();
 
-        return $this->redirectToRoute('app_utilisateur_index', [], Response::HTTP_SEE_OTHER);
+    $plainPassword = $utilisateur->getMotDePasse();
+    if (!empty($plainPassword)) {
+        $utilisateur->setMotDePasse(password_hash($plainPassword, PASSWORD_BCRYPT));
+    }
+
+    $existingUser = $utilisateurRepository->findOneBy(['email' => $utilisateur->getEmail()]);
+    if ($existingUser) {
+        $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
+        return $this->render('utilisateur/new.html.twig', ['utilisateur' => $utilisateur, 'form' => $form]);
+    }
+
+    if (!preg_match('/@gmail\.com$/', $utilisateur->getEmail())) {
+        $this->addFlash('error', "L'email doit être une adresse Gmail (@gmail.com)");
+        return $this->render('utilisateur/new.html.twig', ['utilisateur' => $utilisateur, 'form' => $form]);
+    }
+
+    $dateNaissance = $utilisateur->getDateNaissance();
+    $today = (new \DateTime())->setTime(0, 0, 0);
+    if ($dateNaissance && $dateNaissance >= $today) {
+        $this->addFlash('error', "La date de naissance doit être strictement inférieure à aujourd'hui");
+        return $this->render('utilisateur/new.html.twig', ['utilisateur' => $utilisateur, 'form' => $form]);
+    }
+
+    $errors = $validator->validate($utilisateur);
+    if (count($errors) > 0) {
+        foreach ($errors as $error) {
+            $this->addFlash('error', $error->getMessage());
         }
+        return $this->render('utilisateur/new.html.twig', ['utilisateur' => $utilisateur, 'form' => $form]);
+    }
+
+
+    $entityManager->persist($utilisateur);
+    $entityManager->flush();
+
+    $this->addFlash('success', 'Utilisateur créé avec succès !');
+    return $this->redirectToRoute('app_utilisateur_index', [], Response::HTTP_SEE_OTHER);
+}
 
         return $this->render('utilisateur/new.html.twig', [
             'utilisateur' => $utilisateur,
@@ -222,4 +274,37 @@ final class UtilisateurController extends AbstractController
 
         return $this->redirectToRoute('app_utilisateur_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/export/excel', name: 'app_utilisateur_export_excel', methods: ['GET'])]
+public function exportExcel(
+    UtilisateurRepository $utilisateurRepository,
+    Exporter $exporter
+): StreamedResponse {
+    $utilisateurs = $utilisateurRepository->findAll();
+
+    $source = new IteratorCallbackSourceIterator(
+        new \ArrayIterator($utilisateurs),
+        function (Utilisateur $u) {
+            return [
+                'ID'             => $u->getIdUtilisateur(),
+                'Nom'            => $u->getNom(),
+                'Prénom'         => $u->getPrenom(),
+                'Email'          => $u->getEmail(),
+                'Téléphone'      => $u->getTelephone(),
+                'Rôle'           => $u->getRoleName(),
+                'Date naissance' => $u->getDateNaissance()?->format('d/m/Y'),
+                'Créé le'        => $u->getCreatedAt()?->format('d/m/Y H:i'),
+            ];
+        }
+    );
+
+    return $exporter->getResponse(
+        'xlsx',
+        'utilisateurs_' . date('Y-m-d') . '.xlsx',
+        $source
+    );
 }
+}
+
+
+

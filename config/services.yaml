@@ -5,6 +5,11 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
 
+    face_upload_dir: '%kernel.project_dir%/public/uploads/faces'
+    python_face_service_url: 'http://localhost:5000'
+
+
+
 services:
     # default configuration for services in *this* file
     _defaults:

@@ -13,6 +13,8 @@ use App\Service\FaceRecognitionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use App\Repository\BlockedCountryRepository;
+use App\Service\GeoIpService;
 
 final class SecurityController extends AbstractController
 {
@@ -32,7 +34,9 @@ final class SecurityController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         SessionInterface $session,
-        FaceRecognitionService $faceService
+        FaceRecognitionService $faceService,
+        GeoIpService $geoIpService,
+        BlockedCountryRepository $blockedCountryRepo
     ): Response {
         $user = new Utilisateur();
 
@@ -41,6 +45,31 @@ final class SecurityController extends AbstractController
             $user->setRole($defaultRole);
         }
 
+// ── Vérification du pays ──
+$ip = $request->getClientIp();
+
+// ⚠️ Cas local (dev)
+if ($ip === '127.0.0.1' || $ip === '::1') {
+    $ip = '41.226.0.1'; // Tunisie pour test
+}
+
+$location = $geoIpService->getCountryFromIp($ip);
+
+// ⚠️ Sécurité si API retourne null
+if (!$location || !isset($location['country_code'])) {
+    $this->addFlash('error', "Impossible de détecter votre localisation.");
+    return $this->redirectToRoute('app_signIn');
+}
+
+// 🚫 Pays bloqué
+if ($blockedCountryRepo->isCountryBlocked($location['country_code'])) {
+
+    $this->addFlash('error',
+        "🚫 L'inscription est bloquée depuis votre pays ({$location['country_name']})."
+    );
+
+    return $this->redirectToRoute('app_signIn');
+}
         $form = $this->createForm(SignUpType::class, $user);
         $form->handleRequest($request);
 
@@ -86,7 +115,8 @@ $em->flush();
     // CONNEXION CLASSIQUE
     // ─────────────────────────────────────────────
     #[Route('/signIn', name: 'app_signIn')]
-    public function signIn(Request $request, EntityManagerInterface $em, SessionInterface $session): Response
+    public function signIn(Request $request, EntityManagerInterface $em, SessionInterface $session
+    ): Response
     {
         if ($request->isMethod('POST')) {
             $email    = $request->request->get('email');
@@ -119,6 +149,10 @@ $em->flush();
 
             if (!$user) {
                 $this->addFlash('error', 'Email incorrect');
+                return $this->redirectToRoute('app_signIn');
+            }
+            if ($user->isBlocked()) {
+                $this->addFlash('error', '🚫 Votre compte a été bloqué. Contactez l\'administrateur.');
                 return $this->redirectToRoute('app_signIn');
             }
 
