@@ -15,12 +15,12 @@ class PredictionService
     private LoggerInterface $logger;
 
     public function __construct(
-        WeatherService $weatherService,
+        WeatherServices $weatherServices,
         FauneMarineRepository $fauneMarineRepository,
         ObservationRepository $observationRepository,
         LoggerInterface $logger
     ) {
-        $this->weatherService = $weatherService;
+        $this->weatherServices = $weatherServices;
         $this->fauneMarineRepository = $fauneMarineRepository;
         $this->observationRepository = $observationRepository;
         $this->logger = $logger;
