@@ -6,7 +6,6 @@ use App\Entity\Reservation;
 use App\Form\ReservationType;
 use App\Repository\ActiviteEcologiqueRepository;
 use App\Repository\ReservationRepository;
-use App\Service\GroqMailService;
 use App\Service\GroqReportService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -21,6 +20,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/reservation')]
 final class ReservationController extends AbstractController
@@ -162,7 +163,7 @@ final class ReservationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, GroqMailService $groqMailService): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $reservation = new Reservation();
         $form = $this->createForm(ReservationType::class, $reservation);
@@ -175,14 +176,37 @@ final class ReservationController extends AbstractController
             $this->addFlash('success', 'Votre réservation a été enregistrée avec succès !');
 
             try {
-                $groqMailService->sendReservationConfirmation(
-                    (string) $reservation->getEmail(),
-                    (string) $reservation->getNom(),
-                    (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
-                    $reservation->getDate_reservation()?->format('d/m/Y') ?? ''
-                );
-            } catch (\Throwable) {
-                $this->addFlash('error', 'La réservation a été enregistrée, mais l\'email de confirmation n\'a pas pu être envoyé.');
+                $activityName = 'Activite EcoMarine';
+                $activity = $reservation->getActiviteEcologique();
+                if ($activity !== null) {
+                    if (method_exists($activity, 'getNomActivite')) {
+                        $activityName = (string) $activity->getNomActivite();
+                    } elseif (method_exists($activity, 'getNom_activite')) {
+                        $activityName = (string) $activity->getNom_activite();
+                    }
+                }
+
+                $fromEmail = trim((string) ($_ENV['MAIL_FROM'] ?? $_SERVER['MAIL_FROM'] ?? $_ENV['MAILER_USER'] ?? $_SERVER['MAILER_USER'] ?? ''));
+
+                if ($fromEmail === '') {
+                    $fromEmail = 'ecomarine.reservation@outlook.com';
+                }
+
+                $email = (new Email())
+                    ->from($fromEmail)
+                    ->to((string) $reservation->getEmail())
+                    ->subject('Confirmation de votre réservation EcoMarine')
+                    ->html($this->renderView('emails/reservation_confirmation.html.twig', [
+                        'reservation' => $reservation,
+                        'activityName' => $activityName,
+                        'date' => $reservation->getDateReservation()?->format('d/m/Y') ?? '',
+                        'personnes' => (int) ($reservation->getNombrePersonnes() ?? 0),
+                    ]));
+
+                $mailer->send($email);
+            } catch (\Throwable $e) {
+                error_log('Email sending error: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur email: ' . $e->getMessage());
             }
 
             if ($request->query->get('source') === 'front') {
@@ -201,7 +225,7 @@ final class ReservationController extends AbstractController
     }
 
 #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient, GroqMailService $groqMailService): Response
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
 {
     $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
     $questions = [];
@@ -258,7 +282,7 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
     }
     unset($question);
 
-    if ($request->isMethod('POST')) {
+        if ($request->isMethod('POST')) {
         $answers = $request->request->all('answers');
         $correctCount = 0;
 
@@ -276,19 +300,7 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
             default => 'bronze',
         };
 
-        try {
-            $groqMailService->sendQuizConfirmation(
-                (string) $reservation->getEmail(),
-                (string) $reservation->getNom(),
-                (string) ($reservation->getActiviteEcologique()?->getNom_activite() ?? 'Activite EcoMarine'),
-                $reservation->getDate_reservation()?->format('d/m/Y') ?? '',
-                $correctCount,
-                count($questions),
-                $badge
-            );
-        } catch (\Throwable) {
-            $this->addFlash('error', 'Le résultat du quiz a été calculé, mais l\'email n\'a pas pu être envoyé.');
-        }
+        // Quiz result email removed (GroqMailService)
 
         return $this->render('reservation/quiz_result.html.twig', [
             'reservation' => $reservation,

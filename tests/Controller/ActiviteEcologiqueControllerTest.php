@@ -50,8 +50,8 @@ final class ActiviteEcologiqueControllerTest extends WebTestCase
 
         $this->client->submitForm('Save', [
             'activite_ecologique[nom_activite]' => 'Testing',
-            'activite_ecologique[date_activite]' => 'Testing',
-            'activite_ecologique[capacite]' => 'Testing',
+            'activite_ecologique[date_activite]' => '2024-01-01',
+            'activite_ecologique[capacite]' => '10',
             'activite_ecologique[description]' => 'Testing',
         ]);
 
@@ -66,14 +66,14 @@ final class ActiviteEcologiqueControllerTest extends WebTestCase
     {
         $fixture = new ActiviteEcologique();
         $fixture->setNomActivite('My Title');
-        $fixture->setDateActivite('My Title');
-        $fixture->setCapacite('My Title');
+        $fixture->setDateActivite(new \DateTimeImmutable('2024-01-01'));
+        $fixture->setCapacite(10);
         $fixture->setDescription('My Title');
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getIdActivite()));
 
         self::assertResponseStatusCodeSame(200);
         self::assertPageTitleContains('ActiviteEcologique');
@@ -86,19 +86,19 @@ final class ActiviteEcologiqueControllerTest extends WebTestCase
     {
         $fixture = new ActiviteEcologique();
         $fixture->setNomActivite('Value');
-        $fixture->setDateActivite('Value');
-        $fixture->setCapacite('Value');
+        $fixture->setDateActivite(new \DateTimeImmutable('2024-01-01'));
+        $fixture->setCapacite(10);
         $fixture->setDescription('Value');
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getIdActivite()));
 
         $this->client->submitForm('Update', [
             'activite_ecologique[nom_activite]' => 'Something New',
-            'activite_ecologique[date_activite]' => 'Something New',
-            'activite_ecologique[capacite]' => 'Something New',
+            'activite_ecologique[date_activite]' => '2024-02-02',
+            'activite_ecologique[capacite]' => '25',
             'activite_ecologique[description]' => 'Something New',
         ]);
 
@@ -107,8 +107,8 @@ final class ActiviteEcologiqueControllerTest extends WebTestCase
         $fixture = $this->activiteEcologiqueRepository->findAll();
 
         self::assertSame('Something New', $fixture[0]->getNomActivite());
-        self::assertSame('Something New', $fixture[0]->getDateActivite());
-        self::assertSame('Something New', $fixture[0]->getCapacite());
+        self::assertSame('2024-02-02', $fixture[0]->getDateActivite()?->format('Y-m-d'));
+        self::assertSame(25, $fixture[0]->getCapacite());
         self::assertSame('Something New', $fixture[0]->getDescription());
 
         $this->markTestIncomplete('This test was generated');
@@ -118,14 +118,14 @@ final class ActiviteEcologiqueControllerTest extends WebTestCase
     {
         $fixture = new ActiviteEcologique();
         $fixture->setNomActivite('Value');
-        $fixture->setDateActivite('Value');
-        $fixture->setCapacite('Value');
+        $fixture->setDateActivite(new \DateTimeImmutable('2024-01-01'));
+        $fixture->setCapacite(10);
         $fixture->setDescription('Value');
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getIdActivite()));
         $this->client->submitForm('Delete');
 
         self::assertResponseRedirects('/activite/ecologique');

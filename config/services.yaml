@@ -27,11 +27,6 @@ services:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
 
-
-    App\Service\GroqMailService:
-        arguments:
-            $httpClient: '@http_client'
-
     App\Service\GroqReportService:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'

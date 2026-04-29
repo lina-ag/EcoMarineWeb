@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\PredictionEchouage;
 use App\Form\PredictionEchouageType;
 use App\Repository\PredictionEchouageRepository;
-use App\Service\WeatherService;
+use App\Service\WeatherServices;
 use App\Service\PredictionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,10 +17,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/prediction/map')]
 final class PredictionMapController extends AbstractController
 {
-    private WeatherService $weatherService;
+    private WeatherServices $weatherService;
     private PredictionService $predictionService;
 
-    public function __construct(WeatherService $weatherService, PredictionService $predictionService)
+    public function __construct(WeatherServices $weatherService, PredictionService $predictionService)
     {
         $this->weatherService = $weatherService;
         $this->predictionService = $predictionService;

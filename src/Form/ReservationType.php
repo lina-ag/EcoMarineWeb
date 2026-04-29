@@ -50,7 +50,26 @@ class ReservationType extends AbstractType
             ])
             ->add('activiteEcologique', EntityType::class, [
                 'class' => ActiviteEcologique::class,
-                'choice_label' => 'nom_activite',
+                'choice_label' => function (?ActiviteEcologique $activite): string {
+                    if (!$activite) {
+                        return '';
+                    }
+                    
+                    $label = (string) $activite->getNom_activite();
+                    
+                    if ($activite->getDate_activite()) {
+                        $state = $this->getCapacityState($activite);
+                        $stateLabel = match($state['state']) {
+                            'full' => '🔴 Complet',
+                            'warning' => '🟠 Presque complet',
+                            'available' => '🟢 Disponible',
+                            default => ''
+                        };
+                        $label .= ' (' . $stateLabel . ' ' . $state['used'] . '/' . $state['total'] . ')';
+                    }
+                    
+                    return $label;
+                },
                 'label' => 'Activité écologique',
                 'placeholder' => '-- Choisissez une activité --',
                 'autocomplete' => true,
@@ -72,7 +91,7 @@ class ReservationType extends AbstractType
                         'data-capacity-total' => (string) $capacityState['total'],
                         'data-capacity-remaining' => (string) $capacityState['remaining'],
                         'class' => 'capacity-option capacity-option-' . $capacityState['state'],
-                        'style' => 'color: ' . $capacityState['color'] . ';',
+                        'style' => 'color: ' . $capacityState['color'] . '; font-weight: 600;',
                     ];
                 },
             ])
