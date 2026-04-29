@@ -68,7 +68,7 @@ class ActiviteEcologique
         return $this->date_activite;
     }
 
-    public function setDate_activite(\DateTimeInterface $date_activite): self
+    public function setDate_activite(?\DateTimeInterface $date_activite): self
     {
         $this->date_activite = $date_activite;
         return $this;
@@ -163,12 +163,12 @@ class ActiviteEcologique
         return $this;
     }
 
-    public function getDateActivite(): ?\DateTime
+    public function getDateActivite(): ?\DateTimeInterface
     {
         return $this->date_activite;
     }
 
-    public function setDateActivite(\DateTime $date_activite): static
+    public function setDateActivite(?\DateTimeInterface $date_activite): static
     {
         $this->date_activite = $date_activite;
 

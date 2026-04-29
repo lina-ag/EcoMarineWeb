@@ -15,29 +15,32 @@ class ZonepType extends AbstractType
     {
         $builder
             ->add('nomZone', TextType::class, [
-                'label' => 'Nom de la zone',
+                'label' => 'zonep.fields.name',
+                'translation_domain' => 'messages',
                 'trim' => true,
                 'attr' => [
                     'maxlength' => 100,
-                    'placeholder' => 'Ex: Zone Kuriat Nord',
+                    'placeholder' => 'zonep.placeholders.name',
                 ],
             ])
             ->add('categorieZone', TextType::class, [
-                'label' => 'Categorie',
+                'label' => 'zonep.fields.category',
+                'translation_domain' => 'messages',
                 'trim' => true,
                 'attr' => [
                     'maxlength' => 80,
-                    'placeholder' => 'Ex: Protection, Tourisme, Surveillance',
+                    'placeholder' => 'zonep.placeholders.category',
                 ],
             ])
             ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
-                'placeholder' => 'Choisir un statut',
+                'label' => 'zonep.fields.status',
+                'translation_domain' => 'messages',
+                'placeholder' => 'zonep.placeholders.status',
                 'choices' => [
-                    'Actif' => 'Actif',
-                    'En surveillance' => 'En surveillance',
-                    'En maintenance' => 'En maintenance',
-                    'Inactif' => 'Inactif',
+                    'status.actif' => 'Actif',
+                    'status.en_surveillance' => 'En surveillance',
+                    'status.en_maintenance' => 'En maintenance',
+                    'status.inactif' => 'Inactif',
                 ],
             ])
         ;

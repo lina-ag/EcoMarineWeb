@@ -72,8 +72,7 @@ final class HomeController extends AbstractController
             'form_survzone' => $survzoneForm->createView(),
 
             // Compatibility aliases used by other blocks in the same template.
-            'zonepForm' => $zonepForm->createView(),
-            'survzoneForm' => $survzoneForm->createView(),
+           
             'activiteForm' => $activiteForm->createView(),
             'fauneMarineForm' => $fauneMarineForm->createView(),
             'observationForm' => $observationForm->createView(),

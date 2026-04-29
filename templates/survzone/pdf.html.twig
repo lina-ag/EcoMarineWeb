@@ -3,44 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: Arial, sans-serif; font-size: 13px; color: #222; }
-        h1 { text-align: center; color: #0e7490; margin-bottom: 20px; }
-        .date { text-align: right; font-size: 11px; color: #666; margin-bottom: 10px; }
+        body { font-family: Arial, sans-serif; font-size: 13px; color: #222; margin: 0; padding: 20px; }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-bottom: 24px;
+            border-bottom: 3px solid #0e7490;
+            padding-bottom: 16px;
+        }
+
+        .header img {
+            height: 70px;
+            margin-bottom: 10px;
+        }
+
+        h1 { text-align: center; color: #0e7490; margin: 0 0 6px 0; font-size: 20px; }
+        .subtitle { text-align: center; color: #64748b; font-size: 12px; margin: 0; }
+        .date { text-align: right; font-size: 11px; color: #666; margin-bottom: 14px; }
+
         table { width: 100%; border-collapse: collapse; }
         thead { background-color: #0e7490; color: white; }
         th { padding: 10px; text-align: left; }
         td { padding: 8px 10px; border-bottom: 1px solid #e0e0e0; }
         tr:nth-child(even) { background-color: #f0f9ff; }
-        .observation { max-width: 300px; word-wrap: break-word; }
+        .observation { max-width: 400px; word-wrap: break-word; }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Historique des Surveillances de Zones</h1>
+
+    <div class="header">
+        
+        <img src="{{ absolute_url(asset('assets/images/logoEco.png')) }}" alt="EcoMarine Logo">
+        <h1>Historique des Surveillances de Zones</h1>
+        <p class="subtitle">EcoMarine — Surveillance et Protection des Zones Marines</p>
+    </div>
+
     <div class="date">Généré le {{ "now"|date("d/m/Y à H:i") }}</div>
 
     <table>
         <thead>
             <tr>
-                <th>#</th>
                 <th>Date</th>
-                <th>Zone</th>
+                <th>Nom de la zone</th>
                 <th>Observation</th>
             </tr>
         </thead>
         <tbody>
         {% for survzone in survzones %}
             <tr>
-                <td>{{ survzone.idSurv }}</td>
                 <td>{{ survzone.dateSurv ? survzone.dateSurv|date('d/m/Y') : '-' }}</td>
-                <td>{{ survzone.zone.nomZone }}</td>
+                <td>{{ survzone.zone ? survzone.zone.nomZone : '—' }}</td>
                 <td class="observation">{{ survzone.observation }}</td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="4" style="text-align:center;">Aucune surveillance enregistrée.</td>
+                <td colspan="3" style="text-align:center;">Aucune surveillance enregistrée.</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
+
+    <div class="footer">
+        EcoMarine © {{ "now"|date("Y") }} — Document généré automatiquement
+    </div>
+
 </body>
 </html>

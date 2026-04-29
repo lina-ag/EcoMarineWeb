@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Table(name: 'reservation')]
 class Reservation
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -164,23 +165,6 @@ class Reservation
     #[Assert\Callback]
     public function validateDateMatchesActivity(ExecutionContextInterface $context): void
     {
-        if (!$this->activiteEcologique || !$this->date_reservation) {
-            return;
-        }
-
-        $reservationDate = $this->date_reservation->format('Y-m-d');
-        $activityDate = $this->activiteEcologique->getDate_activite()?->format('Y-m-d');
-
-        if ($activityDate === null) {
-            return;
-        }
-
-        if ($reservationDate !== $activityDate) {
-            $context
-                ->buildViolation('La date de reservation doit correspondre a la date de l\'activite selectionnee.')
-                ->atPath('date_reservation')
-                ->addViolation();
-        }
+        // Validation gérée dans ReservationType via POST_SUBMIT
     }
-
 }

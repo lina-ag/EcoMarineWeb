@@ -15,6 +15,14 @@ use App\Entity\FauneMarine;
 #[ORM\Table(name: 'observation')]
 class Observation
 {
+    #[ORM\OneToMany(mappedBy: 'observation', targetEntity: ChatMessage::class, orphanRemoval: true)]
+    private Collection $chatMessages;
+
+    public function __construct()
+    {
+        $this->chatMessages = new ArrayCollection();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -34,6 +42,7 @@ class Observation
     #[ORM\Column(type: 'date', nullable: false)]
     #[Assert\NotBlank(message: "La date d'observation ne peut pas être vide.")]
     #[Assert\LessThanOrEqual('today', message: "La date doit être aujourd'hui ou dans le passé.")]
+    #[Assert\GreaterThanOrEqual('-10 years', message: "La date d'observation ne peut pas être antérieure à 10 ans.")]
     private ?\DateTimeInterface $date_observation = null;
 
     public function getDate_observation(): ?\DateTimeInterface
@@ -48,7 +57,7 @@ class Observation
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
-    #[Assert\Range(min: -50, max: 50, notInRangeMessage: "La température doit être entre -50°C et 50°C.")]
+    #[Assert\Range(min: -5, max: 40, notInRangeMessage: "La température doit être entre -5°C et 40°C pour un environnement marin réaliste.")]
     private ?float $temperature = null;
 
     public function getTemperature(): ?float
@@ -126,6 +135,36 @@ class Observation
 
     public function setIdAnimal(int $id_animal): static
     {
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ChatMessage>
+     */
+    public function getChatMessages(): Collection
+    {
+        return $this->chatMessages;
+    }
+
+    public function addChatMessage(ChatMessage $chatMessage): self
+    {
+        if (!$this->chatMessages->contains($chatMessage)) {
+            $this->chatMessages->add($chatMessage);
+            $chatMessage->setObservation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChatMessage(ChatMessage $chatMessage): self
+    {
+        if ($this->chatMessages->removeElement($chatMessage)) {
+            // set the owning side to null (unless already changed)
+            if ($chatMessage->getObservation() === $this) {
+                $chatMessage->setObservation(null);
+            }
+        }
+
         return $this;
     }
 }

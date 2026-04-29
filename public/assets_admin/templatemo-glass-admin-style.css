@@ -2713,3 +2713,96 @@ input[type="week"]:focus {
 .login-card {
     animation: fadeInUp 0.6s ease-out;
 }
+
+.autocomplete-hint {
+    margin-top: -0.2rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(51, 65, 85, 0.78);
+}
+
+.capacity-select-shell .ts-wrapper {
+    width: 100%;
+    margin-top: 0.85rem;
+}
+
+.capacity-select-shell .ts-wrapper.single .ts-control,
+.capacity-select-shell .ts-wrapper.multi .ts-control {
+    min-height: 58px;
+    padding: 0.95rem 3rem 0.95rem 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(125, 211, 252, 0.5);
+    background:
+        radial-gradient(circle at top right, rgba(34, 211, 238, 0.14), transparent 38%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(239, 246, 255, 0.92));
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+.capacity-select-shell .ts-wrapper.focus .ts-control,
+.capacity-select-shell .ts-wrapper.single.focus .ts-control {
+    border-color: rgba(14, 165, 233, 0.9);
+    box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.2), 0 18px 36px rgba(14, 165, 233, 0.14);
+}
+
+.capacity-select-shell .ts-wrapper.single .ts-control:after {
+    border-color: #0891b2 transparent transparent;
+    right: 18px;
+}
+
+.capacity-select-shell .ts-wrapper.single.dropdown-active .ts-control:after {
+    border-color: transparent transparent #0891b2;
+}
+
+.capacity-select-shell .ts-wrapper .ts-control input,
+.capacity-select-shell .ts-wrapper .item {
+    color: #0f172a;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.capacity-select-shell .ts-wrapper .ts-control input::placeholder {
+    color: #64748b;
+}
+
+.capacity-select-shell .ts-dropdown {
+    margin-top: 0.5rem;
+    border-radius: 18px;
+    border: 1px solid rgba(125, 211, 252, 0.32);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 20px 42px rgba(15, 23, 42, 0.14);
+    overflow: hidden;
+}
+
+.capacity-select-shell .ts-dropdown .option,
+.capacity-select-shell .ts-dropdown .no-results,
+.capacity-select-shell .ts-dropdown .create {
+    padding: 0.9rem 1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.capacity-select-shell .ts-dropdown .option {
+    border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+}
+
+.capacity-select-shell .ts-dropdown .option:last-child {
+    border-bottom: 0;
+}
+
+.capacity-select-shell .ts-dropdown .active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(15, 118, 110, 0.12));
+    color: #0f172a;
+}
+
+.capacity-select-shell .ts-dropdown .option[data-capacity-state="available"] {
+    color: #166534;
+}
+
+.capacity-select-shell .ts-dropdown .option[data-capacity-state="warning"] {
+    color: #9a3412;
+}
+
+.capacity-select-shell .ts-dropdown .option[data-capacity-state="full"] {
+    color: #991b1b;
+}

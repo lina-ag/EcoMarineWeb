@@ -123,14 +123,14 @@ $em->flush();
             $password = $request->request->get('password');
 
             // Admin spécial
-            if ($email === 'admin@gmail.com' && $password === 'admin') {
+            if ($email === 'admin@outlook.com' && $password === 'admin') {
                 $adminUser = $em->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
                 if ($adminUser) {
                     $session->set('user', $adminUser);
                 } else {
                     $adminRole = $em->getRepository(Role::class)->findOneBy(['nomRole' => 'admin']);
                     $admin = new Utilisateur();
-                    $admin->setEmail('admin@gmail.com');
+                    $admin->setEmail('admin@outlook.com');
                     $admin->setMotDePasse(password_hash('admin', PASSWORD_BCRYPT));
                     $admin->setNom('Admin');
                     $admin->setPrenom('Admin');

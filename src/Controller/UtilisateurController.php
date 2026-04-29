@@ -68,6 +68,72 @@ public function index(
 
         if ($form->isSubmitted() && $form->isValid()) {
 
+            
+            // 🔐 Hash du mot de passe
+            $plainPassword = $utilisateur->getMotDePasse();
+            if (!empty($plainPassword)) {
+                $utilisateur->setMotDePasse(password_hash($plainPassword, PASSWORD_BCRYPT));
+            }
+            
+            // 🔥 Vérifier que l'email n'existe pas déjà
+            $existingUser = $utilisateurRepository->findOneBy(['email' => $utilisateur->getEmail()]);
+            if ($existingUser) {
+                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
+                return $this->render('utilisateur/new.html.twig', [
+                    'utilisateur' => $utilisateur,
+                    'form' => $form,
+                ]);
+            }
+            
+            // 🔥 Vérifier que l'email est Outlook
+            $email = $utilisateur->getEmail();
+            if (!preg_match('/@(outlook|hotmail)\.com$/', $email)) {
+                $this->addFlash('error', 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)');
+                return $this->render('utilisateur/new.html.twig', [
+                    'utilisateur' => $utilisateur,
+                    'form' => $form,
+                ]);
+            }
+            
+            // 🔥 Vérifier que la date de naissance est dans le passé
+            $dateNaissance = $utilisateur->getDateNaissance();
+            $today = new \DateTime();
+            $today->setTime(0, 0, 0);
+            
+            if ($dateNaissance && $dateNaissance >= $today) {
+                $this->addFlash('error', 'La date de naissance doit être strictement inférieure à la date d\'aujourd\'hui');
+                return $this->render('utilisateur/new.html.twig', [
+                    'utilisateur' => $utilisateur,
+                    'form' => $form,
+                ]);
+            }
+            
+            // Validation manuelle
+            $errors = $validator->validate($utilisateur);
+            
+            if (count($errors) > 0) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+                return $this->render('utilisateur/new.html.twig', [
+                    'utilisateur' => $utilisateur,
+                    'form' => $form,
+                ]);
+            }
+            
+            $entityManager->persist($utilisateur);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Utilisateur créé avec succès !');
+            $imageBase64 = $request->request->get('face_image_data');
+            if ($imageBase64) {
+                $encoding = $faceService->extractEncoding($imageBase64);
+            if ($encoding) {
+                $utilisateur->setFaceEncoding($encoding);
+            }
+        }
+
+
     $plainPassword = $utilisateur->getMotDePasse();
     if (!empty($plainPassword)) {
         $utilisateur->setMotDePasse(password_hash($plainPassword, PASSWORD_BCRYPT));
@@ -149,10 +215,10 @@ public function index(
                 ]);
             }
             
-            // 🔥 Vérifier que l'email est Gmail
+            // 🔥 Vérifier que l'email est Outlook
             $email = $utilisateur->getEmail();
-            if (!preg_match('/@gmail\.com$/', $email)) {
-                $this->addFlash('error', 'L\'email doit être une adresse Gmail (@gmail.com)');
+            if (!preg_match('/@(outlook|hotmail)\.com$/', $email)) {
+                $this->addFlash('error', 'L\'email doit être une adresse Outlook (@outlook.com ou @hotmail.com)');
                 return $this->render('utilisateur/edit.html.twig', [
                     'utilisateur' => $utilisateur,
                     'form' => $form,
@@ -208,6 +274,7 @@ public function index(
 
         return $this->redirectToRoute('app_utilisateur_index', [], Response::HTTP_SEE_OTHER);
     }
+
     #[Route('/export/excel', name: 'app_utilisateur_export_excel', methods: ['GET'])]
 public function exportExcel(
     UtilisateurRepository $utilisateurRepository,
@@ -238,3 +305,6 @@ public function exportExcel(
     );
 }
 }
+
+
+
