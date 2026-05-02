@@ -3,9 +3,21 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th>{{ 'common.id'|trans }}</th>
-                <th>{{ 'zonep.fields.name'|trans }}</th>
-                <th>{{ 'zonep.fields.category'|trans }}</th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'idZone', 'sens': sortBy == 'idZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'common.id'|trans }} {{ sortBy == 'idZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'nomZone', 'sens': sortBy == 'nomZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.name'|trans }} {{ sortBy == 'nomZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'categorieZone', 'sens': sortBy == 'categorieZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.category'|trans }} {{ sortBy == 'categorieZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
                 <th>{{ 'zonep.fields.status'|trans }}</th>
                 <th>{{ 'common.actions'|trans }}</th>
             </tr>

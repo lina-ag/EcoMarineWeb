@@ -68,6 +68,10 @@ final class ZonepController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             return $this->render('zonep/_results.html.twig', [
                 'zoneps' => $zoneps,
+                'sortBy' => $sortBy,
+                'order' => $order,
+                'search' => $search,
+                'status' => $status,
             ]);
         }
 
