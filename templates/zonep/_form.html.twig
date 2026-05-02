@@ -1,4 +1,9 @@
-{{ form_start(form, {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}}) }}
+{% set zonep_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}} %}
+{% if form_action is defined and form_action %}
+    {% set zonep_form_options = zonep_form_options|merge({'action': form_action}) %}
+{% endif %}
+
+{{ form_start(form, zonep_form_options) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}

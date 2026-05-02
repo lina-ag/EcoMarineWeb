@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ae71bf63e6d358d7100c49e9114e932d",
+    "content-hash": "a9c96ad09020b5f2f6fb0af8e3402889",
     "packages": [
         {
             "name": "94noni/highcharts-bundle",
@@ -2416,32 +2416,31 @@
         },
         {
             "name": "maennchen/zipstream-php",
-            "version": "3.1.2",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maennchen/ZipStream-PHP.git",
-                "reference": "aeadcf5c412332eb426c0f9b4485f6accba2a99f"
+                "reference": "6187e9cc4493da94b9b63eb2315821552015fca9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maennchen/ZipStream-PHP/zipball/aeadcf5c412332eb426c0f9b4485f6accba2a99f",
-                "reference": "aeadcf5c412332eb426c0f9b4485f6accba2a99f",
+                "url": "https://api.github.com/repos/maennchen/ZipStream-PHP/zipball/6187e9cc4493da94b9b63eb2315821552015fca9",
+                "reference": "6187e9cc4493da94b9b63eb2315821552015fca9",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
                 "ext-zlib": "*",
-                "php-64bit": "^8.2"
+                "php-64bit": "^8.1"
             },
             "require-dev": {
-                "brianium/paratest": "^7.7",
                 "ext-zip": "*",
                 "friendsofphp/php-cs-fixer": "^3.16",
                 "guzzlehttp/guzzle": "^7.5",
                 "mikey179/vfsstream": "^1.6",
                 "php-coveralls/php-coveralls": "^2.5",
-                "phpunit/phpunit": "^11.0",
-                "vimeo/psalm": "^6.0"
+                "phpunit/phpunit": "^10.0",
+                "vimeo/psalm": "^5.0"
             },
             "suggest": {
                 "guzzlehttp/psr7": "^2.4",
@@ -2482,7 +2481,7 @@
             ],
             "support": {
                 "issues": "https://github.com/maennchen/ZipStream-PHP/issues",
-                "source": "https://github.com/maennchen/ZipStream-PHP/tree/3.1.2"
+                "source": "https://github.com/maennchen/ZipStream-PHP/tree/3.1.1"
             },
             "funding": [
                 {
@@ -2490,7 +2489,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-27T12:07:53+00:00"
+            "time": "2024-10-10T12:33:01+00:00"
         },
         {
             "name": "markbaker/complex",
@@ -2998,6 +2997,59 @@
                 }
             ],
             "time": "2026-01-22T13:58:52+00:00"
+        },
+        {
+            "name": "php-ai/php-ml",
+            "version": "0.10.0",
+            "source": {
+                "type": "git",
+                "url": "git@gitlab.com:php-ai/php-ml.git",
+                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://gitlab.com/api/v4/projects/php-ai%2Fphp-ml/repository/archive.zip?sha=543f11158c57bf64ef8ddecd5bab51d396d39f50",
+                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpbench/phpbench": "^1.2",
+                "phpstan/phpstan": "^0.12",
+                "phpstan/phpstan-phpunit": "^0.12",
+                "phpstan/phpstan-strict-rules": "^0.12",
+                "phpunit/phpunit": "^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Phpml\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Arkadiusz Kondas",
+                    "email": "arkadiusz.kondas@gmail.com"
+                }
+            ],
+            "description": "PHP-ML - Machine Learning library for PHP",
+            "homepage": "https://gitlab.com/php-ai/php-ml",
+            "keywords": [
+                "Neural network",
+                "artificial intelligence",
+                "computational learning theory",
+                "data science",
+                "feature extraction",
+                "machine learning",
+                "pattern recognition"
+            ],
+            "time": "2022-11-09T09:25:29+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -4224,20 +4276,20 @@
         },
         {
             "name": "sonata-project/exporter",
-            "version": "3.4.0",
+            "version": "3.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sonata-project/exporter.git",
-                "reference": "ff9f0c116d8cdf08a05ac98a6eb8fb4cd94f73d0"
+                "reference": "f3435385aba028229f67fe2e830585fa6dfe1a0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sonata-project/exporter/zipball/ff9f0c116d8cdf08a05ac98a6eb8fb4cd94f73d0",
-                "reference": "ff9f0c116d8cdf08a05ac98a6eb8fb4cd94f73d0",
+                "url": "https://api.github.com/repos/sonata-project/exporter/zipball/f3435385aba028229f67fe2e830585fa6dfe1a0f",
+                "reference": "f3435385aba028229f67fe2e830585fa6dfe1a0f",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.2"
+                "php": "^8.1"
             },
             "conflict": {
                 "doctrine/mongodb-odm": "<2.3",
@@ -4246,28 +4298,31 @@
                 "symfony/config": "<5.4"
             },
             "require-dev": {
-                "doctrine/dbal": "^3.1 || ^4.0",
-                "doctrine/mongodb-odm": "^2.15.1",
+                "doctrine/dbal": "^3.1",
+                "doctrine/mongodb-odm": "^2.3",
                 "doctrine/orm": "^2.14 || ^3.0",
                 "friendsofphp/php-cs-fixer": "^3.4",
-                "matthiasnoback/symfony-config-test": "^6.1",
-                "matthiasnoback/symfony-dependency-injection-test": "dev-ci-updates as 6.1.0.1",
+                "matthiasnoback/symfony-config-test": "^4.2 || ^5.0",
+                "matthiasnoback/symfony-dependency-injection-test": "^4.0 || ^5.0",
                 "phpoffice/phpspreadsheet": "^1.23",
                 "phpstan/extension-installer": "^1.0",
                 "phpstan/phpdoc-parser": "^1.0",
-                "phpstan/phpstan": "^1.0 || ^2.0",
-                "phpstan/phpstan-phpunit": "^1.0 || ^2.0",
-                "phpstan/phpstan-strict-rules": "^1.0 || ^2.0",
-                "phpstan/phpstan-symfony": "^1.0 || ^2.0",
-                "phpunit/phpunit": "^11.5.38 || ^12.3.10",
-                "rector/rector": "^1.1 || ^2.0",
-                "symfony/cache": "^6.4 || ^7.3 || ^8.0",
-                "symfony/config": "^6.4 || ^7.3 || ^8.0",
-                "symfony/dependency-injection": "^6.4 || ^7.3 || ^8.0",
-                "symfony/http-foundation": "^6.4 || ^7.3 || ^8.0",
-                "symfony/http-kernel": "^6.4 || ^7.3 || ^8.0",
-                "symfony/property-access": "^6.4 || ^7.3 || ^8.0",
-                "symfony/routing": "^6.4 || ^7.3 || ^8.0"
+                "phpstan/phpstan": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpstan/phpstan-symfony": "^1.0",
+                "phpunit/phpunit": "^9.5",
+                "psalm/plugin-phpunit": "^0.18",
+                "psalm/plugin-symfony": "^5.0",
+                "rector/rector": "^1.1",
+                "symfony/config": "^6.4 || ^7.1",
+                "symfony/dependency-injection": "^6.4 || ^7.1",
+                "symfony/http-foundation": "^6.4 || ^7.1",
+                "symfony/http-kernel": "^6.4 || ^7.1",
+                "symfony/phpunit-bridge": "^6.4 || ^7.1",
+                "symfony/property-access": "^6.4 || ^7.1",
+                "symfony/routing": "^6.4 || ^7.1",
+                "vimeo/psalm": "^5.0"
             },
             "suggest": {
                 "phpoffice/phpspreadsheet": "To be able to export the data in XLSX",
@@ -4306,7 +4361,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sonata-project/exporter/issues",
-                "source": "https://github.com/sonata-project/exporter/tree/3.4.0"
+                "source": "https://github.com/sonata-project/exporter/tree/3.3.1"
             },
             "funding": [
                 {
@@ -4326,7 +4381,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-23T16:46:42+00:00"
+            "time": "2025-02-05T19:11:49+00:00"
         },
         {
             "name": "symfony/asset",
