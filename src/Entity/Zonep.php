@@ -110,11 +110,6 @@ class Zonep
         return $this;
     }
 
-    public function __toString(): string
-    {
-        return $this->nomZone ?? ('Zone #'.($this->idZone ?? ''));
-    }
-
     public function getSurvzones(): Collection
     {
         return $this->survzones;
