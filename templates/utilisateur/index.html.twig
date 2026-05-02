@@ -45,8 +45,6 @@
             background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
             border: none;
             color: #fff;
-            width: 70px;
-
             width: 92px;
             height: 50px;
             padding: 0;
@@ -55,8 +53,6 @@
             justify-content: center;
             margin-right: 0.3cm;
             border-radius: 8px;
-            font-size: 10px;
-
             font-size: 12px;
         }
 
@@ -75,6 +71,15 @@
             background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
             border: none;
             color: #fff;
+            width: 92px;
+            height: 50px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.3cm;
+            border-radius: 8px;
+            font-size: 12px;
         }
 
         .utilisateurs-compact .btn-info:hover {
@@ -132,12 +137,6 @@
             align-items: center;
         }
 
-        .search-actions .btn-primary {
-            padding: 0.35rem 0.7rem;
-            font-size: 0.75rem;
-            min-width: auto;
-        }
-
         .search-actions .btn-reset {
             padding: 0.35rem 0.7rem;
             font-size: 0.75rem;
@@ -148,36 +147,19 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .search-actions .btn-reset:hover {
             background: linear-gradient(135deg, #1f8a82, #17645e);
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(26, 176, 163, 0.25);
+            color: white;
         }
 
         .search-form.is-loading .form-control,
         .search-form.is-loading .btn-reset {
             opacity: 0.7;
-        }
-
-        .data-table .no-results td {
-            padding: 1.2rem;
-            background: #f8f9fa;
-            color: #495057;
-        }
-
-        @media (max-width: 768px) {
-            .search-form .search-row {
-                flex-direction: column;
-                align-items: stretch;
-                color: #495057;
-            }
-
-            .search-actions {
-                width: 100%;
-                justify-content: stretch;
-            }
         }
 
         .badge {
@@ -206,47 +188,6 @@
             background-color: #6c757d;
             color: white;
         }
-
-
-        .badge.bg-blocked {
-            background-color: #ff416c;
-            color: white;
-        }
-
-        /* Pagination KnpPaginator */
-        .pagination {
-            display: flex;
-            gap: 6px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .pagination span.current {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            background-color: #495057 !important;
-            color: #fff !important;
-            font-weight: 600;
-            border: 1px solid #495057;
-        }
-
-        .pagination span.page a,
-        .pagination span.next a,
-        .pagination span.last a,
-        .pagination span.previous a,
-        .pagination span.first a {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            color: #495057 !important;
-            background-color: #fff !important;
-            border: 1px solid #495057 !important;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
 
         .badge.bg-blocked {
             background-color: #ff416c;
@@ -295,11 +236,21 @@
             color: #fff !important;
         }
 
-        /* Ligne bloquée */
-
         tr.blocked-row {
             background-color: rgba(255, 65, 108, 0.12) !important;
             border-left: 4px solid #ff416c;
+        }
+
+        @media (max-width: 768px) {
+            .search-form .search-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
         }
     </style>
 {% endblock %}
@@ -321,11 +272,8 @@
 
     <section class="glass-card utilisateurs-compact">
         <div class="card-header">
-            <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">
-                📥Excel
-            </a>
-            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
             <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">📥 Excel</a>
+            <a href="{{ path('admin_rapport_index') }}" class="btn btn-info">📊 Rapport</a>
             <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">➕ Creer un utilisateur</a>
         </div>
 
@@ -354,98 +302,12 @@
             </form>
         </div>
 
-
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Email</th>
-                        <th>Téléphone</th>
-                        <th>Rôle</th>
-                        <th>Date naissance</th>
-                        <th>Créé le</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for utilisateur in utilisateurs %}
-                    <tr class="{{ utilisateur.isBlocked ? 'blocked-row' : '' }}">
-                        <td>{{ utilisateur.idUtilisateur }}</td>
-                        <td>{{ utilisateur.nom }}</td>
-                        <td>{{ utilisateur.prenom }}</td>
-                        <td>{{ utilisateur.email }}</td>
-                        <td>{{ utilisateur.telephone }}</td>
-                        <td>
-                            {% set roleName = utilisateur.roleName %}
-                            {% if roleName == 'admin' %}
-                                <span class="badge bg-danger">Administrateur</span>
-                            {% elseif roleName == 'chercheur' %}
-                                <span class="badge bg-primary">Chercheur</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Utilisateur</span>
-                            {% endif %}
-                            {% if utilisateur.isBlocked %}
-                                <span class="badge bg-blocked">🚫 Bloqué</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('d/m/Y') : '-' }}</td>
-                        <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y H:i') : '-' }}</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-info">Voir</a>
-                                <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-warning">Modifier</a>
-
-                                {% if utilisateur.isBlocked %}
-                                    <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'unblock')"
-                                            class="btn btn-sm"
-                                            style="background:linear-gradient(135deg,#28a745,#20c997); color:white; border:none; border-radius:6px;">
-                                        ✅ Débloquer
-                                    </button>
-                                {% else %}
-                                    <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'block')"
-                                            class="btn btn-sm"
-                                            style="background:linear-gradient(135deg,#ff416c,#ff4b2b); color:white; border:none; border-radius:6px;">
-                                        🚫 Bloquer
-                                    </button>
-                                {% endif %}
-
-                                <form action="{{ path('app_utilisateur_delete', {'id_utilisateur': utilisateur.idUtilisateur}) }}" method="post" style="display:inline-block" onsubmit="return confirm('Confirmer la suppression de {{ utilisateur.nom }} {{ utilisateur.prenom }} ?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.idUtilisateur) }}">
-                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="9" class="text-center">Aucun utilisateur trouvé</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {# Pagination #}
-        <div style="display:flex; justify-content:center; margin-top:50px;">
-            {{ knp_pagination_render(utilisateurs) }}
-        </div>
-    </section>
-
-    <script>
-        // ── Bloquer / Débloquer via API ──
-        async function toggleBlock(id, action) {
-            const msg = action === 'block' ? '🚫 Bloquer cet utilisateur ?' : '✅ Débloquer cet utilisateur ?';
-
         {% include 'utilisateur/_results.html.twig' %}
     </section>
 
     <script>
         async function toggleBlock(id, action) {
             const msg = action === 'block' ? 'Bloquer cet utilisateur ?' : 'Debloquer cet utilisateur ?';
-
             if (!confirm(msg)) return;
 
             try {
@@ -455,23 +317,12 @@
                 if (data.success) {
                     location.reload();
                 } else {
-
-                    alert('❌ ' + data.message);
-                }
-            } catch (error) {
-                alert('❌ Erreur: ' + error.message);
-            }
-        }
-
-        // ── Recherche dynamique ──
-
                     alert(data.message || 'Action impossible');
                 }
             } catch (error) {
                 alert('Erreur: ' + error.message);
             }
         }
-
 
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('user-search');
@@ -481,30 +332,6 @@
             let debounceTimer = null;
             let activeRequest = null;
 
-
-            function performSearch() {
-                const searchValue = searchInput.value;
-                const roleValue = roleFilter.value;
-
-                let url = new URL(searchForm.action);
-                if (searchValue) url.searchParams.set('search', searchValue);
-                if (roleValue && roleValue !== 'all') url.searchParams.set('role', roleValue);
-
-                fetch(url.toString(), {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const newDoc = parser.parseFromString(html, 'text/html');
-                    const newTable = newDoc.querySelector('.table-wrapper');
-                    if (newTable) tableWrapper.innerHTML = newTable.innerHTML;
-                })
-                .catch(error => console.error('Erreur lors de la recherche:', error));
-            }
-
-            searchInput.addEventListener('input', performSearch);
-            roleFilter.addEventListener('change', performSearch);
             function buildUrl(page = 1) {
                 const url = new URL(searchForm.action, window.location.origin);
                 const searchValue = searchInput.value.trim();
