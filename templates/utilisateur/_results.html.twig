@@ -1,0 +1,78 @@
+<div id="users-results">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nom</th>
+                    <th>Prenom</th>
+                    <th>Email</th>
+                    <th>Telephone</th>
+                    <th>Role</th>
+                    <th>Date naissance</th>
+                    <th>Cree le</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for utilisateur in utilisateurs %}
+                <tr class="{{ utilisateur.isBlocked ? 'blocked-row' : '' }}">
+                    <td>{{ utilisateur.idUtilisateur }}</td>
+                    <td>{{ utilisateur.nom }}</td>
+                    <td>{{ utilisateur.prenom }}</td>
+                    <td>{{ utilisateur.email }}</td>
+                    <td>{{ utilisateur.telephone }}</td>
+                    <td>
+                        {% set roleName = utilisateur.roleName %}
+                        {% if roleName == 'admin' %}
+                            <span class="badge bg-danger">Administrateur</span>
+                        {% elseif roleName == 'chercheur' %}
+                            <span class="badge bg-primary">Chercheur</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Utilisateur</span>
+                        {% endif %}
+                        {% if utilisateur.isBlocked %}
+                            <span class="badge bg-blocked">🚫 Bloque</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('d/m/Y') : '-' }}</td>
+                    <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-info">👁 Voir</a>
+                            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-warning">✏ Modifier</a>
+
+                            {% if utilisateur.isBlocked %}
+                                <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'unblock')"
+                                        class="btn btn-sm"
+                                        style="background:linear-gradient(135deg,#28a745,#20c997); color:white; border:none; border-radius:6px;">
+                                    ✅ Debloquer
+                                </button>
+                            {% else %}
+                                <button onclick="toggleBlock({{ utilisateur.idUtilisateur }}, 'block')"
+                                        class="btn btn-sm"
+                                        style="background:linear-gradient(135deg,#ff416c,#ff4b2b); color:white; border:none; border-radius:6px;">
+                                    🚫 Bloquer
+                                </button>
+                            {% endif %}
+
+                            <form action="{{ path('app_utilisateur_delete', {'id_utilisateur': utilisateur.idUtilisateur}) }}" method="post" style="display:inline-block" onsubmit="return confirm('Confirmer la suppression de {{ utilisateur.nom }} {{ utilisateur.prenom }} ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.idUtilisateur) }}">
+                                <button type="submit" class="btn btn-sm btn-danger">🗑 Supprimer</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">Aucun utilisateur trouve</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-wrapper" style="display:flex; justify-content:center; margin-top:50px;">
+        {{ knp_pagination_render(utilisateurs) }}
+    </div>
+</div>

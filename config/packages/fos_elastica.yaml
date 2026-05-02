@@ -1,0 +1,28 @@
+fos_elastica:
+    clients:
+        default:
+            hosts:
+                - '%env(ELASTICSEARCH_URL)%'
+
+    indexes:
+        survzone:
+            index_name: 'survzone_%kernel.environment%'
+            properties:
+                idSurv:
+                    type: integer
+                dateSurv:
+                    type: date
+                observation:
+                    type: text
+                zone:
+                    properties:
+                        idZone:
+                            type: integer
+                        nomZone:
+                            type: text
+            persistence:
+                driver: orm
+                model: App\Entity\Survzone
+                provider: ~
+                listener: false
+                finder: ~

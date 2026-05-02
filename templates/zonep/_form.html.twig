@@ -1,27 +1,31 @@
-{{ form_start(form) }}
+{% set zonep_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}} %}
+{% if form_action is defined and form_action %}
+    {% set zonep_form_options = zonep_form_options|merge({'action': form_action}) %}
+{% endif %}
+
+{{ form_start(form, zonep_form_options) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nomZone, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.nomZone, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Zone Kuriat Nord'}}) }}
+            {{ form_widget(form.nomZone, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.nomZone) }}
         </div>
 
         <div class="form-group-settings">
             {{ form_label(form.categorieZone, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.categorieZone, {'attr': {'class': 'form-input', 'placeholder': 'Ex. Protection'}}) }}
+            {{ form_widget(form.categorieZone, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.categorieZone) }}
         </div>
 
         <div class="form-group-settings full-width">
             {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.status, {'attr': {'class': 'form-input', 'placeholder': 'Actif, En surveillance, etc.'}}) }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
             {{ form_errors(form.status) }}
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">back to list</a>
+        <button class="btn btn-primary">{{ button_label|default('common.save'|trans) }}</button>
     </div>
 
     {{ form_rest(form) }}

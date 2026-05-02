@@ -1,0 +1,100 @@
+<div id="zonepResults">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'idZone', 'sens': sortBy == 'idZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'common.id'|trans }} {{ sortBy == 'idZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'nomZone', 'sens': sortBy == 'nomZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.name'|trans }} {{ sortBy == 'nomZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'categorieZone', 'sens': sortBy == 'categorieZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.category'|trans }} {{ sortBy == 'categorieZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>{{ 'zonep.fields.status'|trans }}</th>
+                <th>{{ 'common.actions'|trans }}</th>
+            </tr>
+            </thead>
+
+            <tbody id="tableBody">
+            {% for zonep in zoneps %}
+                <tr>
+                    <td>{{ zonep.idZone }}</td>
+                    <td>{{ zonep.nomZone }}</td>
+                    <td>{{ zonep.categorieZone }}</td>
+
+                    <td>
+                        {% if zonep.status == 'Actif' %}
+                            <span class="badge badge-actif">{{ 'status.actif'|trans }}</span>
+                        {% elseif zonep.status == 'En surveillance' %}
+                            <span class="badge badge-surveillance">{{ 'status.en_surveillance'|trans }}</span>
+                        {% elseif zonep.status == 'En maintenance' %}
+                            <span class="badge badge-maintenance">{{ 'status.en_maintenance'|trans }}</span>
+                        {% else %}
+                            <span class="badge badge-inactif">{{ 'status.inactif'|trans }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{{ path('app_zonep_show', {'idZone': zonep.idZone}) }}" class="btn btn-secondary">
+                            {{ 'common.show'|trans }}
+                        </a>
+                        <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">
+                            {{ 'common.edit'|trans }}
+                        </a>
+                        <a href="{{ path('app_zonep_analyse_risque', {'idZone': zonep.idZone}) }}"
+                           class="btn btn-ai">
+                            Analyser IA
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5">{{ 'zonep.no_records'|trans }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="paginationBox">
+        {{ knp_pagination_render(zoneps) }}
+    </div>
+</div>
+
+<style>
+    .btn-ai {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(125, 211, 252, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(125, 211, 252, 0.35);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-ai::before {
+        content: '🤖';
+        font-size: 13px;
+    }
+
+    .btn-ai:hover {
+        background: rgba(125, 211, 252, 0.28);
+        border-color: rgba(125, 211, 252, 0.6);
+        color: #7dd3fc;
+        transform: translateY(-1px);
+    }
+</style>

@@ -28,5 +28,79 @@
             <a href="{{ path('app_observation_edit', {'id_observation': observation.id_observation}) }}" class="btn btn-primary">edit</a>
             {{ include('observation/_delete_form.html.twig') }}
         </div>
+
+        <div class="chat-container mt-4">
+            <h3>Discussion</h3>
+            <div id="chat-messages" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.8); border-radius: 8px;">
+                <!-- Messages will be loaded here -->
+            </div>
+            
+            <form id="chat-form" class="d-flex">
+                <input type="text" id="chat-input" class="form-control me-2" placeholder="Saisir votre message..." required>
+                <button type="submit" class="btn btn-success">Envoyer</button>
+            </form>
+        </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const observationId = '{{ observation.idObservation }}';
+
+            // Function to append a message to the chat container
+            function appendMessage(msg) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chat-message', 'mb-2');
+                messageDiv.innerHTML = `<strong>${msg.author}</strong> <small class="text-muted">${msg.createdAt}</small><br><span>${msg.content}</span>`;
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Fetch initial messages history
+            fetch(`/observation/${observationId}/chat/messages`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(msg => appendMessage(msg));
+                })
+                .catch(err => console.error('Error fetching messages:', err));
+
+            // Subscribe to Mercure Hub
+            // We use the topic URL as configured in the controller
+            const topicUrl = encodeURIComponent(`chat/observation/${observationId}`);
+            // Note: Replace the URL with your actual Mercure public URL if different
+            const eventSourceUrl = `http://127.0.0.1:3000/.well-known/mercure?topic=${topicUrl}`;
+            
+            const eventSource = new EventSource(eventSourceUrl);
+            eventSource.onmessage = event => {
+                const data = JSON.parse(event.data);
+                appendMessage(data);
+            };
+
+            // Handle form submission via AJAX
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const content = chatInput.value;
+                if (!content) return;
+
+                const formData = new FormData();
+                formData.append('content', content);
+
+                fetch(`/observation/${observationId}/chat/send`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        chatInput.value = '';
+                    } else {
+                        alert(data.error || 'Erreur lors de l envoi du message');
+                    }
+                })
+                .catch(err => console.error('Error sending message:', err));
+            });
+        });
+    </script>
 {% endblock %}

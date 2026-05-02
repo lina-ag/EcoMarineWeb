@@ -27,13 +27,24 @@ class ActionNettoyageType extends AbstractType
                     'maxlength' => 255,
                 ],
             ])
+
+            // ->add('limiteBenevoles', IntegerType::class, [
+            //     'label' => 'Limite de bénévoles',
+            //     'attr' => [
+            //         'placeholder' => 'Entrer la limite',
+            //         'min' => 1,
+            //     ],
+            // ])
+
             ->add('limiteBenevoles', IntegerType::class, [
                 'label' => 'Limite de bénévoles',
                 'attr' => [
                     'placeholder' => 'Entrer la limite',
                     'min' => 1,
                 ],
-            ]);
+            ])
+
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -43,3 +54,4 @@ class ActionNettoyageType extends AbstractType
         ]);
     }
 }
+

@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -33,7 +34,7 @@ class FixSurvzoneOrphanedCommand extends Command
         $orphanedCount = $this->entityManager->getConnection()->executeQuery(
             'SELECT COUNT(*) FROM survzone WHERE idZone IS NOT NULL AND idZone NOT IN (?)',
             [array_values($validZoneIds)],
-            [\Doctrine\DBAL\Connection::PARAM_INT_ARRAY]
+            [ArrayParameterType::INTEGER]
         )->fetchOne();
 
         if ($orphanedCount == 0) {
@@ -47,7 +48,7 @@ class FixSurvzoneOrphanedCommand extends Command
         $this->entityManager->getConnection()->executeStatement(
             'UPDATE survzone SET idZone = NULL WHERE idZone IS NOT NULL AND idZone NOT IN (?)',
             [array_values($validZoneIds)],
-            [\Doctrine\DBAL\Connection::PARAM_INT_ARRAY]
+            [ArrayParameterType::INTEGER]
         );
 
         $io->success("Fixed {$orphanedCount} orphaned survzone records by setting idZone to NULL.");

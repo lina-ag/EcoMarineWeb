@@ -1,0 +1,313 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Diagnostic - Reconnaissance Faciale{% endblock %}
+
+{% block body %}
+<div class="diagnostic-container">
+    <div class="diagnostic-card">
+        <h1>🔍 Diagnostic - Système de Reconnaissance Faciale</h1>
+        
+        <div class="status-section">
+            {% if python_service_ok %}
+                <div class="status-item success">
+                    <div class="status-icon">✅</div>
+                    <div class="status-info">
+                        <h3>Service Python</h3>
+                        <p>Le service de reconnaissance faciale est <strong>opérationnel</strong></p>
+                        <small>API disponible à http://localhost:5000</small>
+                    </div>
+                </div>
+            {% else %}
+                <div class="status-item error">
+                    <div class="status-icon">❌</div>
+                    <div class="status-info">
+                        <h3>Service Python</h3>
+                        <p>Le service de reconnaissance faciale est <strong>indisponible</strong></p>
+                        <small>Assurez-vous d'avoir démarré le service Python (start.bat ou start.sh)</small>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="instructions-section">
+            <h2>📋 Instructions de Démarrage</h2>
+            
+            <div class="instruction-item">
+                <h3>1️⃣ Démarrer le Service Python</h3>
+                <p><strong>Sur Windows :</strong></p>
+                <pre><code>cd python_service
+start.bat</code></pre>
+                
+                <p><strong>Sur Linux/Mac :</strong></p>
+                <pre><code>cd python_service
+bash start.sh</code></pre>
+            </div>
+
+            <div class="instruction-item">
+                <h3>2️⃣ Vérifier que le Service Fonctionne</h3>
+                <pre><code>curl http://localhost:5000/health</code></pre>
+                <p>Vous devriez recevoir une réponse JSON avec le statut "ok"</p>
+            </div>
+
+            <div class="instruction-item">
+                <h3>3️⃣ Tester la Reconnaissance Faciale</h3>
+                <p>Une fois le service lancé :</p>
+                <ul>
+                    <li>Allez sur <a href="{{ path('app_signUp') }}">/signUp</a> pour créer un compte chercheur</li>
+                    <li>Enregistrez votre visage lors de l'inscription</li>
+                    <li>Allez sur <a href="{{ path('app_signIn') }}">/signIn</a> et testez la connexion faciale</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>ℹ️ À Propos du Service</h2>
+            
+            <div class="info-box">
+                <h3>Technologie</h3>
+                <ul>
+                    <li><strong>Framework :</strong> Flask (Python)</li>
+                    <li><strong>Reconnaissance :</strong> face_recognition (avec dlib)</li>
+                    <li><strong>Détection :</strong> OpenCV & HOG</li>
+                    <li><strong>Encodage :</strong> Vecteur 128-dimensionnel</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>Endpoints API</h3>
+                <ul>
+                    <li><code>GET /health</code> - Vérifier que le service fonctionne</li>
+                    <li><code>POST /extract_encoding</code> - Extraire l'encodage d'une image</li>
+                    <li><code>POST /compare_faces</code> - Comparer deux visages</li>
+                    <li><code>POST /verify_face</code> - Vérifier qu'il y a un visage dans l'image</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>Configuration</h3>
+                <ul>
+                    <li><strong>Port :</strong> 5000</li>
+                    <li><strong>Seuil de similarité :</strong> 0.6 (distance euclidienne)</li>
+                    <li><strong>Temps réponse :</strong> ~200-400ms par image</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="troubleshooting-section">
+            <h2>🆘 Troubleshooting</h2>
+            
+            <div class="issue">
+                <h3>❓ Le service ne démarre pas</h3>
+                <p><strong>Solution :</strong></p>
+                <pre><code>cd python_service
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python face_recognition_api.py</code></pre>
+            </div>
+
+            <div class="issue">
+                <h3>❓ Erreur "No module named 'dlib'"</h3>
+                <p><strong>Solution :</strong> Installez Visual Studio Build Tools, puis :</p>
+                <pre><code>pip install --force-reinstall dlib</code></pre>
+            </div>
+
+            <div class="issue">
+                <h3>❓ La connexion faciale ne fonctionne pas</h3>
+                <p><strong>À vérifier :</strong></p>
+                <ol>
+                    <li>Le service Python est lancé et accessible</li>
+                    <li>Les logs Symfony montrent des erreurs</li>
+                    <li>La caméra est bien autorisée dans le navigateur</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <h2>🔗 Liens Rapides</h2>
+            <a href="{{ path('app_signUp') }}" class="btn btn-primary">Créer un Compte</a>
+            <a href="{{ path('app_signIn') }}" class="btn btn-primary">Se Connecter</a>
+            <a href="{{ path('diagnostic_health') }}" class="btn btn-secondary">API Health</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .diagnostic-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f2b4f, #1a4a7a);
+        padding: 40px 20px;
+        color: white;
+    }
+
+    .diagnostic-card {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: rgba(255,255,255,0.95);
+        border-radius: 20px;
+        padding: 40px;
+        color: #333;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .diagnostic-card h1 {
+        color: #1e3c72;
+        margin-bottom: 30px;
+        font-size: 2em;
+    }
+
+    .diagnostic-card h2 {
+        color: #1e3c72;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #2ec4b6;
+    }
+
+    .diagnostic-card h3 {
+        color: #1e3c72;
+        margin-bottom: 10px;
+    }
+
+    .status-section {
+        margin-bottom: 30px;
+    }
+
+    .status-item {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 5px solid;
+    }
+
+    .status-item.success {
+        background: #d4edda;
+        border-color: #28a745;
+    }
+
+    .status-item.error {
+        background: #f8d7da;
+        border-color: #dc3545;
+    }
+
+    .status-icon {
+        font-size: 2em;
+        min-width: 50px;
+    }
+
+    .status-info h3 {
+        margin: 0 0 5px 0;
+    }
+
+    .status-info p {
+        margin: 5px 0;
+    }
+
+    .status-info small {
+        display: block;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    .instruction-item {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid #2ec4b6;
+    }
+
+    .instruction-item pre {
+        background: #333;
+        color: #0f0;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 10px 0;
+    }
+
+    .instruction-item code {
+        font-family: 'Courier New', monospace;
+    }
+
+    .info-box {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid #2ec4b6;
+    }
+
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .info-box li {
+        padding: 8px 0;
+    }
+
+    .info-box code {
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .troubleshooting-section .issue {
+        background: #fffacd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-left: 4px solid #ff9800;
+    }
+
+    .issue pre {
+        background: #333;
+        color: #0f0;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 10px 0;
+    }
+
+    .quick-links {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px solid #ddd;
+    }
+
+    .quick-links .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(46, 196, 182, 0.4);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+</style>
+{% endblock %}

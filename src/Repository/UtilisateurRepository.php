@@ -16,28 +16,100 @@ class UtilisateurRepository extends ServiceEntityRepository
         parent::__construct($registry, Utilisateur::class);
     }
 
-    //    /**
-    //     * @return Utilisateur[] Returns an array of Utilisateur objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Recherche des utilisateurs selon les critères (nom, prénom, rôle)
+     */
+    public function searchUsers(?string $search = null, ?string $role = null): array
+    {
+        $qb = $this->createQueryBuilder('u');
+        
+        // Filtre par rôle
+        if ($role && $role !== 'all') {
+            $qb->join('u.role', 'r')
+                ->andWhere('r.nomRole = :role')
+                ->setParameter('role', $role);
+        }
+        
+        // Filtre par recherche (nom ou prénom)
+        if ($search && !empty($search)) {
+            $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+        
+        return $qb->orderBy('u.id_utilisateur', 'DESC')
+                  ->getQuery()
+                  ->getResult();
+    }
+    public function searchUsersQuery(?string $search = null, ?string $role = null): \Doctrine\ORM\Query
+{
+    $qb = $this->createQueryBuilder('u');
 
-    //    public function findOneBySomeField($value): ?Utilisateur
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    if ($role && $role !== 'all') {
+        $qb->join('u.role', 'r')
+            ->andWhere('r.nomRole = :role')
+            ->setParameter('role', $role);
+    }
+
+    if ($search && !empty($search)) {
+        $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
+    }
+
+    return $qb->orderBy('u.id_utilisateur', 'DESC')
+              ->getQuery();
+}
+    
+    /**
+     * Récupérer tous les rôles distincts
+     */
+    public function getDistinctRoles(): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->select('DISTINCT u.role')
+            ->orderBy('u.role', 'ASC');
+        
+        $result = $qb->getQuery()->getResult();
+        
+        $roles = [];
+        foreach ($result as $item) {
+            $roles[] = $item['role'];
+        }
+        
+        return $roles;
+    }
+    
+    /**
+     * Compter les utilisateurs par rôle
+     */
+    public function countByRole(string $role): int
+    {
+        return $this->count(['role' => $role]);
+    }
+    
+    /**
+     * Récupérer les statistiques complètes
+     */
+    public function getStats(): array
+    {
+        $total = $this->count([]);
+        $admin = $this->countByRole('admin');
+        $chercheur = $this->countByRole('chercheur');
+        $utilisateur = $this->countByRole('utilisateur');
+        
+        return [
+            'total' => $total,
+            'admin' => $admin,
+            'chercheur' => $chercheur,
+            'utilisateur' => $utilisateur,
+        ];
+    }
+    public function findAllWithFaceEncoding(): array
+{
+    return $this->createQueryBuilder('u')
+        ->where('u.faceEncoding IS NOT NULL')
+        ->andWhere('u.faceEncoding != :empty')
+        ->setParameter('empty', '')
+        ->getQuery()
+        ->getResult();
+}
 }

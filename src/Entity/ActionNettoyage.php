@@ -34,14 +34,19 @@ class ActionNettoyage
         maxMessage: "Le lieu ne doit pas dépasser {{ limit }} caractères."
     )]
     #[Assert\Regex(
-        pattern: "/^[\p{L}\s'-]+$/u",
-        message: "Le lieu ne doit contenir que des lettres et des espaces."
+        pattern: "/^[\p{L}\s'\-0-9,]+$/u",
+        message: "Le lieu contient des caractères non autorisés."
     )]
     private ?string $lieu = null;
 
     #[ORM\Column(type: 'integer', nullable: false)]
     #[Assert\NotBlank(message: "La limite de bénévoles est obligatoire.")]
     #[Assert\Positive(message: "La limite de bénévoles doit être un nombre positif.")]
+    #[Assert\Range(
+        min: 1,
+        max: 1000,
+        notInRangeMessage: "La limite doit être entre {{ min }} et {{ max }}."
+    )]
     private ?int $limiteBenevoles = null;
 
     #[ORM\OneToMany(mappedBy: 'id_action', targetEntity: Volontaire::class, orphanRemoval: false)]
@@ -101,6 +106,7 @@ class ActionNettoyage
         return $this;
     }
 
+
     public function getLimiteBenevoles(): ?int
     {
         return $this->limiteBenevoles;
@@ -155,3 +161,4 @@ class ActionNettoyage
         return $this->getNombreVolontaires() >= $this->limiteBenevoles;
     }
 }
+

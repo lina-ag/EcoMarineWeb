@@ -1,4 +1,7 @@
-{{ form_start(form, {'attr': {'class': 'activity-form'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+{% set isRecurringChecked = form.is_recurring.vars.checked ? true : false %}
+
+{{ form_start(form, {'attr': {'class': 'activity-form reservation-form', 'novalidate': 'novalidate'}, 'action': form_action|default(path('app_activite_ecologique_new'))}) }}
+    {{ form_errors(form) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.nom_activite, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -8,30 +11,252 @@
 
         <div class="form-group-settings">
             {{ form_label(form.date_activite, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_activite, {'attr': {'class': 'form-input'}}) }}
+            {{ form_widget(form.date_activite, {'attr': {'class': 'form-input', 'type': 'date'}}) }}
             {{ form_errors(form.date_activite) }}
         </div>
 
         <div class="form-group-settings">
             {{ form_label(form.capacite, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'min': 1, 'max': 500}}) }}
+            <div class="d-flex gap-2 align-items-start">
+                <div class="flex-grow-1">
+                    {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'min': 1, 'max': 500}}) }}
+                </div>
+                <button type="button" class="btn btn-outline-primary" id="capacity-analyze-btn" style="white-space:nowrap; margin-top:0.15rem;">
+                    Analyser
+                </button>
+            </div>
             {{ form_errors(form.capacite) }}
+            <div id="live-prediction-container" class="mt-2"></div>
         </div>
 
         <div class="form-group-settings full-width">
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité', 'id': 'description-field'}}) }}
             {{ form_errors(form.description) }}
+            <div style="margin-top:0.5em;">
+                
+                <span class="reservation-rating" id="activity-rating-stars" data-rating="0" data-editable-rating="activity-description"></span>
+            </div>
+        </div>
+
+        <div class="form-group-settings full-width">
+            <label class="checkbox-label activity-recurring-toggle">
+                {{ form_widget(form.is_recurring, {
+                    'attr': {
+                        'onchange': "(function(el){var box=document.getElementById('" ~ form.is_recurring.vars.id ~ "_recurrence_box');if(!box){return;}var on=!!el.checked;box.style.display=on?'block':'none';box.setAttribute('aria-hidden',on?'false':'true');var checks=box.querySelectorAll('input[type=checkbox]');checks.forEach(function(i){i.disabled=!on;});var end=document.getElementById('" ~ form.recurrence_end_date.vars.id ~ "');if(end){end.disabled=!on;}})(this)",
+                        'oninput': "this.onchange && this.onchange()",
+                        'onclick': "this.onchange && this.onchange()"
+                    }
+                }) }}
+                <span>{{ form.is_recurring.vars.label }}</span>
+            </label>
+            {{ form_errors(form.is_recurring) }}
+        </div>
+
+        <div id="{{ form.is_recurring.vars.id }}_recurrence_box" class="form-group-settings full-width activity-recurrence-shell{% if isRecurringChecked %} is-open{% endif %}" aria-hidden="{{ isRecurringChecked ? 'false' : 'true' }}" style="{% if not isRecurringChecked %}display:none;{% endif %}">
+            <label class="form-label" style="margin-bottom:10px;">{{ form.recurrence_days.vars.label }}</label>
+            <div class="activity-recurrence-days">
+                {% for dayField in form.recurrence_days %}
+                    <label class="activity-recurrence-chip">
+                        {{ form_widget(dayField) }}
+                        <span>{{ dayField.vars.label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.recurrence_days) }}
+
+            <div class="form-group-settings activity-recurrence-end-date">
+                {{ form_label(form.recurrence_end_date, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.recurrence_end_date, {'attr': {'class': 'form-input', 'type': 'date'}}) }}
+                {{ form_errors(form.recurrence_end_date) }}
+            </div>
+
+            <small id="{{ form.is_recurring.vars.id }}_recurrence_preview" class="activity-recurrence-preview">Aucun jour sélectionné</small>
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
-        {% if show_back_button|default(true) %}
-            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        <button class="btn btn-primary reservation-admin-cta">{{ button_label|default('Enregistrer') }}</button>
+        {% if show_back_button is not defined or show_back_button %}
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary reservation-admin-action-btn">Retour à la liste</a>
         {% endif %}
     </div>
 
     {{ form_rest(form) }}
 {{ form_end(form) }}
 
+<script>
+(() => {
+    const recurringToggle = document.getElementById('{{ form.is_recurring.vars.id }}');
+    const recurrenceBox = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_box');
+    const preview = document.getElementById('{{ form.is_recurring.vars.id }}_recurrence_preview');
+    const startDateInput = document.getElementById('{{ form.date_activite.vars.id }}');
+    const endDateInput = document.getElementById('{{ form.recurrence_end_date.vars.id }}');
+    const dayInputs = recurrenceBox ? recurrenceBox.querySelectorAll('input[type="checkbox"]') : [];
+
+    if (!recurringToggle || !recurrenceBox || !preview) {
+        return;
+    }
+
+    const setupDatePicker = (input) => {
+        if (!input) {
+            return;
+        }
+
+        input.setAttribute('type', 'date');
+
+        const tryOpenPicker = () => {
+            if (typeof input.showPicker === 'function' && !input.disabled) {
+                try {
+                    input.showPicker();
+                } catch (e) {
+                    // Ignore browsers that deny programmatic picker opening.
+                }
+            }
+        };
+
+        input.addEventListener('focus', tryOpenPicker);
+        input.addEventListener('click', tryOpenPicker);
+    };
+
+    const updatePreview = () => {
+        const labels = [];
+        dayInputs.forEach((input) => {
+            if (input.checked && input.parentElement) {
+                const text = input.parentElement.textContent ? input.parentElement.textContent.trim() : '';
+                if (text) {
+                    labels.push(text);
+                }
+            }
+        });
+
+        preview.textContent = labels.length > 0
+            ? 'Jours sélectionnés: ' + labels.join(', ')
+            : 'Aucun jour sélectionné';
+    };
+
+    const syncVisibility = () => {
+        const enabled = Boolean(recurringToggle.checked);
+        recurrenceBox.style.display = enabled ? '' : 'none';
+        recurrenceBox.classList.toggle('is-open', enabled);
+        recurrenceBox.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+
+        dayInputs.forEach((input) => {
+            input.disabled = !enabled;
+        });
+
+        if (endDateInput) {
+            endDateInput.disabled = !enabled;
+        }
+    };
+
+    dayInputs.forEach((input) => input.addEventListener('change', updatePreview));
+    recurringToggle.addEventListener('change', syncVisibility);
+    recurringToggle.addEventListener('input', syncVisibility);
+    recurringToggle.addEventListener('click', () => requestAnimationFrame(syncVisibility));
+    setupDatePicker(startDateInput);
+    setupDatePicker(endDateInput);
+
+    syncVisibility();
+    updatePreview();
+})();
+</script>
+
+<script>
+(() => {
+    // Live prediction UI triggered manually by button
+    const capaciteInput = document.getElementById('{{ form.capacite.vars.id }}');
+    const dateInput = document.getElementById('{{ form.date_activite.vars.id }}');
+    const nomInput = document.getElementById('{{ form.nom_activite.vars.id }}');
+    const analyzeButton = document.getElementById('capacity-analyze-btn');
+    const liveContainer = document.getElementById('live-prediction-container');
+
+    if (!capaciteInput || !analyzeButton || !liveContainer) return;
+
+    const getValues = () => {
+        const capacite = parseInt(capaciteInput.value, 10) || 0;
+        const nom = nomInput ? nomInput.value || '' : '';
+        const dateVal = dateInput ? dateInput.value : '';
+        let mois = 0, jour = 0;
+        if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+                mois = d.getMonth() + 1;
+                // dayofweek 0=Monday -> JS getDay 0=Sunday
+                const jsDay = d.getDay();
+                jour = jsDay === 0 ? 6 : jsDay - 1;
+            }
+        }
+        // type inferred from first word
+        const type = nom.trim().split(/\s+/)[0] ? nom.trim().split(/\s+/)[0].toLowerCase() : '';
+        return { capacite, mois, jour, type };
+    };
+
+    const render = (data) => {
+        liveContainer.innerHTML = '';
+        if (!data) return;
+        const pct = data.risque_pct !== undefined ? data.risque_pct : null;
+        const niveau = data.niveau || '';
+        const msg = data.message || '';
+        const optimal = data.capacite_optimale !== undefined ? data.capacite_optimale : null;
+        const optimalRisk = data.risque_optimale !== undefined ? data.risque_optimale : null;
+        const historicalCapacity = data.capacite_historique_estimee !== undefined ? data.capacite_historique_estimee : null;
+        const deviation = data.ecart_pourcent !== undefined ? data.ecart_pourcent : null;
+
+        const html = document.createElement('div');
+        html.className = 'alert alert-info mb-2';
+        html.innerHTML = `<strong>Analyse IA</strong><br>${msg}`;
+        liveContainer.appendChild(html);
+
+        if (historicalCapacity !== null) {
+            const demand = document.createElement('div');
+            demand.className = 'small text-muted mb-1';
+            demand.textContent = `Capacité de référence historique: ${historicalCapacity}${deviation !== null ? ` | Écart actuel: ${deviation}%` : ''}`;
+            liveContainer.appendChild(demand);
+        }
+
+        if (optimal && optimal != getValues().capacite) {
+            const sug = document.createElement('div');
+            sug.className = 'small text-muted mt-1 d-flex align-items-center gap-2';
+            sug.innerHTML = `Suggestion: capacité optimale ~ <strong>${optimal}</strong>${optimalRisk !== null ? ` (risque estimé ${optimalRisk}%)` : ''}`;
+
+            const applyBtn = document.createElement('button');
+            applyBtn.type = 'button';
+            applyBtn.className = 'btn btn-sm btn-outline-primary';
+            applyBtn.style.marginLeft = '0.5rem';
+            applyBtn.textContent = 'Appliquer suggestion';
+            applyBtn.addEventListener('click', () => {
+                capaciteInput.value = optimal;
+                analyzePrediction();
+            });
+
+            sug.appendChild(applyBtn);
+            liveContainer.appendChild(sug);
+        }
+    };
+
+    const analyzePrediction = () => {
+        const v = getValues();
+        if (!v.mois || !v.jour) {
+            liveContainer.innerHTML = '<div class="alert alert-warning mb-0">Choisissez une date valide pour analyser le risque.</div>';
+            return;
+        }
+
+        const params = new URLSearchParams({
+            mois: v.mois,
+            jour_semaine: v.jour,
+            capacite: v.capacite || 1,
+            type: v.type || ''
+        });
+
+        fetch('{{ path('app_activite_ecologique_predict_ajax') }}', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+            .then(res => res.json())
+            .then(json => render(json))
+            .catch(() => { liveContainer.innerHTML = '<div class="alert alert-danger mb-0">Analyse indisponible.</div>'; });
+    };
+
+    analyzeButton.addEventListener('click', analyzePrediction);
+    if (dateInput) dateInput.addEventListener('change', () => { liveContainer.innerHTML = ''; });
+    if (nomInput) nomInput.addEventListener('input', () => { liveContainer.innerHTML = ''; });
+})();
+</script>

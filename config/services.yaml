@@ -4,6 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+  face_upload_dir: "%kernel.project_dir%/public/uploads/faces"
+  google_recaptcha_site_key: "%env(GOOGLE_RECAPTCHA_SITE_KEY)%"
+  python_face_service_url: "http://localhost:5000"
 
 services:
   # default configuration for services in *this* file
@@ -18,6 +21,7 @@ services:
     exclude:
       - "../src/DependencyInjection/"
       - "../src/Entity/"
+      - "../src/Entity/"
       - "../src/Kernel.php"
 
   App\Service\AiRecommendationService:
@@ -26,3 +30,24 @@ services:
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
+
+  App\Service\GroqAnalyzer:
+    arguments:
+      $groqApiKey: "%env(GROQ_API_KEY)%"
+
+  App\Service\GroqReportService:
+    arguments:
+      $groqApiKey: "%env(GROQ_API_KEY)%"
+
+  # Service météorologique
+  App\Service\WeatherService:
+    arguments:
+      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
+
+  App\Service\WeatherServices:
+    arguments:
+      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
+
+  # Service de prédiction
+  App\Service\PredictionService: ~
+

@@ -1,0 +1,6 @@
+fos_elastica:
+    indexes:
+        survzone:
+            persistence:
+                listener:
+                    enabled: false
