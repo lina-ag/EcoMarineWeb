@@ -668,6 +668,40 @@
         <div id="activite-voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
 
         <div id="activite-empty-message" class="ux-empty-message" style="display: none;">{{ 'activite.empty_message'|trans }}</div>
+{# ── Prédiction AI ──────────────────────────────────────────────────────── #}
+{% for type in ['prediction_success', 'prediction_warning', 'prediction_danger', 'prediction_secondary'] %}
+    {% for message in app.flashes(type) %}
+        {% set couleur = type|replace({'prediction_': ''}) %}
+        <div class="alert alert-{{ couleur }} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+            {% if couleur == 'danger' %}
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            {% elseif couleur == 'warning' %}
+                <i class="bi bi-exclamation-circle-fill fs-5"></i>
+            {% else %}
+                <i class="bi bi-check-circle-fill fs-5"></i>
+            {% endif %}
+            <div>
+                <strong>Analyse IA — Risque de sous-remplissage</strong><br>
+                {{ message }}
+                {% if 'indisponible' in message|lower %}
+                    <div class="small mt-2">
+                        <strong>Que faire ?</strong>
+                        Vérifiez la présence de <code>model.pkl</code> et <code>label_encoder.pkl</code>, puis réentraînez le modèle avec <code>python train_model.py</code> avant de réessayer.
+                    </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{# Show last prediction error summary in dev if available #}
+{% if prediction_error is defined and prediction_error %}
+    <div class="alert alert-warning">
+        <strong>Analyse IA — erreur récente (dev)</strong><br>
+        Dernière erreur: {{ prediction_error.timestamp }} — code {{ prediction_error.exit_code|default('n/a') }}
+    </div>
+{% endif %}
 
         <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">

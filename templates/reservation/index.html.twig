@@ -34,6 +34,7 @@
                 <a href="{{ path('app_front_calendar') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.see_calendar'|trans }}</a>
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.export_pdf'|trans }}</a>
                 <button type="button" id="reservation-ai-report-btn" class="btn btn-secondary reservation-admin-cta" data-report-url="{{ path('app_reservation_report_ai') }}">Rapport IA</button>
+                <button type="button" id="reservation-ai-report-pdf-btn" class="btn btn-secondary reservation-admin-cta" data-pdf-url="{{ path('app_reservation_report_ai_pdf') }}">PDF IA</button>
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'reservation.create'|trans }}</a>
             </div>
         </div>
@@ -927,6 +928,7 @@
 
             const initAiReport = function () {
                 const reportButton = document.getElementById('reservation-ai-report-btn');
+                const reportPdfButton = document.getElementById('reservation-ai-report-pdf-btn');
                 const reportPanel = document.getElementById('reservation-ai-report-panel');
                 const reportStatus = document.getElementById('reservation-ai-report-status');
                 const reportLoading = document.getElementById('reservation-ai-report-loading');
@@ -934,7 +936,7 @@
                 const reportResult = document.getElementById('reservation-ai-report-result');
                 const searchForm = document.getElementById('reservation-search-form');
 
-                if (!reportButton || !reportPanel || !reportStatus || !reportLoading || !reportError || !reportResult) {
+                if (!reportButton || !reportPdfButton || !reportPanel || !reportStatus || !reportLoading || !reportError || !reportResult) {
                     return;
                 }
 
@@ -943,6 +945,17 @@
                 }
 
                 reportButton.dataset.bound = '1';
+
+                reportPdfButton.addEventListener('click', function () {
+                    const baseUrl = reportPdfButton.dataset.pdfUrl;
+                    if (!baseUrl) {
+                        return;
+                    }
+
+                    const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
+                    const pdfUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
+                    window.open(pdfUrl, '_blank');
+                });
 
                 reportButton.addEventListener('click', function () {
                     const baseUrl = reportButton.dataset.reportUrl;

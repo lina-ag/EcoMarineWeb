@@ -404,6 +404,76 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
         }
     }
 
+    #[Route('/report/ai/pdf', name: 'app_reservation_report_ai_pdf', methods: ['GET'])]
+    public function reportAiPdf(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        GroqReportService $groqReportService
+    ): Response {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $statusFilter = (string) $request->query->get('status', 'all');
+        $personnesFilter = (string) $request->query->get('personnes', 'all');
+        $dateFrom = trim((string) $request->query->get('date_from', ''));
+        $dateTo = trim((string) $request->query->get('date_to', ''));
+        $sort = (string) $request->query->get('sort', 'id_desc');
+
+        $queryBuilder = $this->buildFilteredReservationQueryBuilder(
+            $reservationRepository,
+            $searchTerm,
+            $searchField,
+            $statusFilter,
+            $personnesFilter,
+            $dateFrom,
+            $dateTo
+        );
+        $this->applyReservationSort($queryBuilder, $sort);
+
+        /** @var array<int, Reservation> $reservations */
+        $reservations = $queryBuilder->getQuery()->getResult();
+
+        $report = null;
+        try {
+            $reportPayload = $this->buildReservationReportPayload($reservations);
+            $report = $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']);
+        } catch (\Throwable $exception) {
+            $report = 'Rapport IA indisponible pour cet export PDF.';
+        }
+
+        $html = $this->renderView('reservation/pdf_ai.html.twig', [
+            'reservations' => $reservations,
+            'generatedAt' => new \DateTimeImmutable(),
+            'report' => $report,
+            'filters' => [
+                'q' => $searchTerm,
+                'field' => $searchField,
+                'status' => $statusFilter,
+                'personnes' => $personnesFilter,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'sort' => $sort,
+            ],
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="rapport_ia_reservations_%s.pdf"', (new \DateTimeImmutable())->format('Y-m-d')),
+            ]
+        );
+    }
+
     /**
      * @param array<int, Reservation> $reservations
      * @return array{activities: array<int, array{nom: string, date: string, capacite: int, booked: int, reservations: int}>, reservations: array<int, array{nom: string, activite: string, date: string, nombrePersonnes: int, statut: string}>}
