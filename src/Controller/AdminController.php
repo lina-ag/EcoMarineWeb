@@ -15,8 +15,8 @@ use App\Repository\UtilisateurRepository;
 use App\Repository\ZonePlageRepository;
 use App\Repository\SurvzoneRepository;
 use App\Repository\ZonepRepository;
-use App\CleaningBundle\Repository\ActionNettoyageRepository;
-use App\CleaningBundle\Repository\VolontaireRepository;
+use App\Repository\ActionNettoyageRepository;
+use App\Repository\VolontaireRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -356,3 +356,4 @@ final class AdminController extends AbstractController
         return sprintf('%s%.1f%%', $value >= 0 ? '+' : '', $value);
     }
 }
+

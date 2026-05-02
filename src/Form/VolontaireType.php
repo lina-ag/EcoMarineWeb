@@ -47,3 +47,4 @@ class VolontaireType extends AbstractType
         ]);
     }
 }
+

@@ -199,6 +199,14 @@
         padding: 0.45rem 0.8rem;
     }
 
+    .btn-outline-success {
+        background: transparent;
+        color: #198754;
+        border: 1px solid #198754;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
     .btn-danger {
         background: #dc3545;
         color: #fff;
@@ -213,6 +221,262 @@
         color: #ffffff;
         border-radius: 8px;
         padding: 0.45rem 0.8rem;
+    }
+
+    .cleaning-actions-panel {
+        display: block;
+    }
+
+    #cleaning-actions-wrapper.is-loading {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .cleaning-card {
+        position: relative;
+        overflow: hidden;
+        padding: 28px 28px 24px;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background:
+            linear-gradient(145deg, rgba(7, 30, 52, 0.74), rgba(9, 45, 73, 0.56)),
+            rgba(255, 255, 255, 0.08);
+        box-shadow: 0 28px 60px rgba(2, 18, 35, 0.24);
+        backdrop-filter: blur(16px);
+        text-align: left;
+    }
+
+    .cleaning-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, rgba(33, 211, 238, 0.95), rgba(14, 165, 233, 0.25));
+    }
+
+    .cleaning-card h3 {
+        margin-bottom: 10px;
+        font-size: 1.9rem;
+        letter-spacing: 0.04em;
+    }
+
+    .cleaning-card .form-subtitle {
+        margin-bottom: 24px;
+        color: rgba(235, 248, 255, 0.84);
+        font-size: 1rem;
+    }
+
+    .cleaning-table-shell {
+        border-radius: 24px;
+        border: 1px solid rgba(178, 245, 255, 0.24);
+        background:
+            linear-gradient(180deg, rgba(26, 126, 173, 0.22), rgba(31, 194, 214, 0.16)),
+            rgba(255, 255, 255, 0.1);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            0 16px 34px rgba(4, 59, 94, 0.16);
+        overflow: hidden;
+    }
+
+    .cleaning-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #f7fbff;
+        text-align: left;
+    }
+
+    .cleaning-table thead th {
+        padding: 18px 20px;
+        border: none;
+        background: linear-gradient(180deg, rgba(16, 113, 162, 0.5), rgba(33, 154, 190, 0.28));
+        color: #ffffff;
+        font-size: 0.98rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .cleaning-table tbody td {
+        padding: 20px;
+        border: none;
+        border-top: 1px solid rgba(192, 244, 255, 0.16);
+        background: rgba(235, 251, 255, 0.06);
+        color: rgba(245, 252, 255, 0.98);
+        font-size: 1.02rem;
+        vertical-align: middle;
+    }
+
+    .cleaning-table tbody tr {
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cleaning-table tbody tr:nth-child(even) td {
+        background: rgba(183, 239, 255, 0.1);
+    }
+
+    .cleaning-table tbody tr:hover {
+        background: rgba(126, 220, 255, 0.14);
+    }
+
+    .cleaning-table tbody tr:hover td {
+        background: rgba(163, 238, 255, 0.16);
+    }
+
+    .cleaning-table td:last-child,
+    .cleaning-table th:last-child {
+        text-align: center;
+    }
+
+    .cleaning-table td:nth-child(3),
+    .cleaning-table th:nth-child(3),
+    .cleaning-table td:nth-child(4),
+    .cleaning-table th:nth-child(4) {
+        text-align: center;
+    }
+
+    .cleaning-card .badge {
+        padding: 0.5rem 0.95rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-card .bg-success {
+        background: linear-gradient(135deg, #32d583, #16a34a);
+        color: #ffffff;
+    }
+
+    .cleaning-card .bg-danger {
+        background: linear-gradient(135deg, #ff6b81, #dc3545);
+        color: #ffffff;
+    }
+
+    .cleaning-card .btn {
+        min-width: 168px;
+        min-height: 54px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-card .btn-success {
+        background: linear-gradient(135deg, #26d97e, #0f9f61);
+        border: none;
+        color: #fff;
+        box-shadow: 0 14px 24px rgba(15, 159, 97, 0.22);
+    }
+
+    .cleaning-card .btn-outline-success {
+        background: rgba(19, 151, 100, 0.08);
+        border: 1px solid rgba(37, 217, 126, 0.7);
+        color: #73f0b2;
+    }
+
+    .cleaning-card .btn-outline-success:hover,
+    .cleaning-card .btn-outline-success:focus {
+        background: rgba(37, 217, 126, 0.16);
+        border-color: rgba(115, 240, 178, 0.95);
+        color: #ffffff;
+    }
+
+    .cleaning-card .btn-danger {
+        background: rgba(255, 107, 129, 0.14);
+        border: 1px solid rgba(255, 107, 129, 0.55);
+        color: #ffd7dd;
+    }
+
+    .cleaning-card .btn-danger:hover,
+    .cleaning-card .btn-danger:focus {
+        background: rgba(255, 107, 129, 0.24);
+        border-color: rgba(255, 164, 176, 0.75);
+        color: #fff;
+    }
+
+    .cleaning-card .btn-secondary {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.72);
+    }
+
+    .cleaning-note {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.12);
+        color: #b5f4ff;
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+
+    .cleaning-empty {
+        padding: 18px 20px;
+        border-radius: 18px;
+        border: 1px dashed rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(240, 249, 255, 0.82);
+        text-align: center;
+    }
+
+    .cleaning-pagination {
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .cleaning-pagination .cleaning-pagination__link {
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+        border-radius: 14px;
+        background: rgba(6, 24, 44, 0.34);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f8fbff;
+        font-size: 1rem;
+    }
+
+    .cleaning-pagination a.cleaning-pagination__link:hover {
+        background: rgba(21, 101, 192, 0.32);
+        border-color: rgba(88, 166, 255, 0.48);
+        transform: translateY(-1px);
+    }
+
+    .cleaning-pagination .current.cleaning-pagination__link {
+        background: linear-gradient(135deg, #23c8ff 0%, #1184ff 100%);
+        color: #042544;
+        box-shadow: 0 14px 28px rgba(17, 132, 255, 0.28);
+    }
+
+    .cleaning-pagination .disabled.cleaning-pagination__link {
+        opacity: 0.35;
+    }
+
+    @media (max-width: 768px) {
+        .cleaning-card {
+            padding: 22px 16px 18px;
+            border-radius: 22px;
+        }
+
+        .cleaning-card h3 {
+            font-size: 1.45rem;
+        }
+
+        .cleaning-table thead th,
+        .cleaning-table tbody td {
+            padding: 14px 12px;
+            font-size: 0.92rem;
+        }
+
+        .cleaning-card .btn {
+            min-width: 130px;
+            min-height: 46px;
+            font-size: 0.84rem;
+        }
     }
 
     .btn-sm {
@@ -784,7 +1048,7 @@
                         </div>
 
                         <!-- Bloc : Actions recommandées -->
-                        <div class="form-card animate" data-animate="fadeInUp">
+                        <div class="form-card cleaning-card animate" data-animate="fadeInUp">
                             <h3>Actions recommandées pour vous</h3>
                             <p class="form-subtitle">
                                 Recommandations personnalisées sur les actions de nettoyage disponibles.
@@ -792,8 +1056,8 @@
 
                             {% if current_user is not null %}
                                 {% if actions_recommandees is defined and actions_recommandees is not empty %}
-                                    <div class="table-responsive">
-                                        <table class="table table-dark table-hover">
+                                    <div class="table-responsive cleaning-table-shell">
+                                        <table class="table table-dark table-hover cleaning-table">
                                             <thead>
                                                 <tr>
                                                     <th>Lieu</th>
@@ -810,7 +1074,7 @@
                                                         <td>{{ action.lieu }}</td>
                                                         <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
                                                         <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
-                                                        <td>{{ rec.raison }}</td>
+                                                        <td><span class="cleaning-note">{{ rec.raison }}</span></td>
                                                         <td>
                                                             <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
                                                                 <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
@@ -823,23 +1087,24 @@
                                         </table>
                                     </div>
                                 {% else %}
-                                    <p>Aucune recommandation disponible pour le moment.</p>
+                                    <p class="cleaning-empty">Aucune recommandation disponible pour le moment.</p>
                                 {% endif %}
                             {% else %}
-                                <p>Connectez-vous pour recevoir des recommandations personnalisées.</p>
+                                <p class="cleaning-empty">Connectez-vous pour recevoir des recommandations personnalisées.</p>
                             {% endif %}
                         </div>
 
                         <!-- Bloc : Actions disponibles -->
-                        <div class="form-card mt-4 animate" data-animate="fadeInUp">
+                        <div class="form-card cleaning-card mt-4 animate" data-animate="fadeInUp">
                             <h3>Actions disponibles</h3>
                             <p class="form-subtitle">
                                 Consultez les actions de nettoyage disponibles et participez comme bénévole.
                             </p>
 
+                            <div id="cleaning-actions-wrapper" data-cleaning-pagination-root>
                             {% if actions_nettoyage is defined and actions_nettoyage is not empty %}
-                                <div class="table-responsive">
-                                    <table class="table table-dark table-hover">
+                                <div class="table-responsive cleaning-table-shell">
+                                    <table class="table table-dark table-hover cleaning-table">
                                         <thead>
                                             <tr>
                                                 <th>Lieu</th>
@@ -876,7 +1141,7 @@
                                                         {% else %}
                                                             <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
                                                                 <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
-                                                                <button type="submit" class="btn btn-success btn-sm">Participer</button>
+                                                                <button type="submit" class="btn btn-outline-success btn-sm">Participer</button>
                                                             </form>
                                                         {% endif %}
                                                     </td>
@@ -885,21 +1150,26 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <div class="pagination-container mt-4">
+                                    {{ knp_pagination_render(actions_nettoyage, 'home/_pagination.html.twig') }}
+                                </div>
                             {% else %}
-                                <p>Aucune action de nettoyage disponible pour le moment.</p>
+                                <p class="cleaning-empty">Aucune action de nettoyage disponible pour le moment.</p>
                             {% endif %}
+                            </div>
                         </div>
 
                         <!-- Bloc : Mes participations -->
-                        <div class="form-card mt-4 animate" data-animate="fadeInUp">
+                        <div class="form-card cleaning-card mt-4 animate" data-animate="fadeInUp">
                             <h3>Mes actions de nettoyage</h3>
                             <p class="form-subtitle">
                                 Retrouvez les actions de nettoyage auxquelles vous participez déjà.
                             </p>
 
                             {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
-                                <div class="table-responsive">
-                                    <table class="table table-dark table-hover">
+                                <div class="table-responsive cleaning-table-shell">
+                                    <table class="table table-dark table-hover cleaning-table">
                                         <thead>
                                             <tr>
                                                 <th>Lieu</th>
@@ -939,7 +1209,7 @@
                                     </table>
                                 </div>
                             {% else %}
-                                <p>Vous ne participez encore à aucune action de nettoyage.</p>
+                                <p class="cleaning-empty">Vous ne participez encore à aucune action de nettoyage.</p>
                             {% endif %}
                         </div>
 
@@ -996,6 +1266,66 @@
             navBox.classList.toggle('active');
         });
     }
+
+    (function () {
+        var paginationRoot = document.querySelector('[data-cleaning-pagination-root]');
+
+        if (!paginationRoot) {
+            return;
+        }
+
+        function updateUrl(url) {
+            var nextUrl = new URL(url, window.location.origin);
+            nextUrl.searchParams.delete('section');
+            nextUrl.hash = 'slide12';
+            window.history.pushState({}, '', nextUrl.toString());
+        }
+
+        function loadPage(url) {
+            var requestUrl = new URL(url, window.location.origin);
+            requestUrl.searchParams.set('section', 'nettoyage');
+
+            paginationRoot.classList.add('is-loading');
+
+            fetch(requestUrl.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Pagination request failed');
+                    }
+
+                    return response.text();
+                })
+                .then(function (html) {
+                    paginationRoot.innerHTML = html;
+                    updateUrl(url);
+
+                    if (window.location.hash !== '#slide12') {
+                        window.location.hash = 'slide12';
+                    }
+                })
+                .catch(function () {
+                    window.location.href = url;
+                })
+                .finally(function () {
+                    paginationRoot.classList.remove('is-loading');
+                });
+        }
+
+        paginationRoot.addEventListener('click', function (event) {
+            var link = event.target.closest('[data-page-link]');
+
+            if (!link) {
+                return;
+            }
+
+            event.preventDefault();
+            loadPage(link.href);
+        });
+    })();
 
     (function () {
         var FORMS = [

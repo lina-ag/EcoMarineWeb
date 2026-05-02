@@ -11,9 +11,10 @@ use App\Entity\PredictionEchouage;
 use App\Entity\Survzone;
 use App\Entity\Utilisateur;
 use App\Entity\Zonep;
-use App\CleaningBundle\Repository\ActionNettoyageRepository;
-use App\CleaningBundle\Repository\VolontaireRepository;
-use App\CleaningBundle\Service\AiRecommendationService;
+use App\Repository\ActionNettoyageRepository;
+use App\Repository\VolontaireRepository;
+use App\Service\AiRecommendationService;
+use Knp\Component\Pager\PaginatorInterface;
 use App\Form\ActiviteEcologiqueType;
 use App\Form\DetectionDroneType;
 use App\Form\FauneMarineType;
@@ -50,6 +51,7 @@ final class HomeController extends AbstractController
         VolontaireRepository $volontaireRepository,
         UtilisateurRepository $utilisateurRepository,
         AiRecommendationService $aiRecommendationService,
+        PaginatorInterface $paginator,
         SessionInterface $session
     ): Response {
         $form = $this->createForm(UtilisateurType::class, new Utilisateur());
@@ -67,7 +69,16 @@ final class HomeController extends AbstractController
         $missionDroneForm = $this->createForm(MissionDroneType::class, new MissionDrone());
         $detectionDroneForm = $this->createForm(DetectionDroneType::class, new DetectionDrone());
 
-        $actionsNettoyage = $actionNettoyageRepository->findAll();
+        $queryBuilder = $actionNettoyageRepository->createQueryBuilder('a')
+            ->orderBy('a.date_action', 'ASC');
+
+        $actionsNettoyage = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            3
+        );
+
+        $allActionsNettoyage = $actionNettoyageRepository->findAll();
         $mesInscriptionsNettoyage = [];
         $inscriptionsUtilisateur = [];
         $actionsRecommandees = [];
@@ -87,11 +98,18 @@ final class HomeController extends AbstractController
             $inscriptionsUtilisateur = array_values(array_filter($inscriptionsUtilisateur, static fn($id) => $id !== null));
 
             $actionsDisponiblesPourRecommandation = array_values(array_filter(
-                $actionsNettoyage,
+                $allActionsNettoyage,
                 static fn($action) => !$action->estComplete() && !in_array($action->getIdAction(), $inscriptionsUtilisateur, true)
             ));
 
             $actionsRecommandees = $aiRecommendationService->recommendActions($actionsDisponiblesPourRecommandation, $currentUser);
+        }
+
+        if ($request->isXmlHttpRequest() && $request->query->get('section') === 'nettoyage') {
+            return $this->render('home/_actions_nettoyage_list.html.twig', [
+                'actions_nettoyage' => $actionsNettoyage,
+                'inscriptions_utilisateur' => $inscriptionsUtilisateur,
+            ]);
         }
 
         return $this->render('home/index.html.twig', [

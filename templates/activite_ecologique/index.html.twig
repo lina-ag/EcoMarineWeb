@@ -1,52 +1,970 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block page_title %}Activités écologiques{% endblock %}
-{% block navbar_title %}Activités écologiques{% endblock %}
+{% block page_title %}{{ 'activite.title'|trans }}{% endblock %}
+{% block navbar_title %}{{ 'activite.title'|trans }}{% endblock %}
 
 {% block admin_content %}
-    <section class="glass-card table-card">
+    <section class="glass-card table-card reservation-admin-shell reservation-admin-shell-list" style="background: linear-gradient(135deg, rgba(226, 239, 255, 0.6), rgba(209, 230, 255, 0.5)); backdrop-filter: blur(8px);">
         <div class="card-header">
-            <div>
-                <h2 class="card-title">Liste des activités écologiques</h2>
-                <p class="card-subtitle">Suivi des activités enregistrées dans la plateforme.</p>
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">{{ 'activite.panel'|trans }}</span>
+                <h2 class="card-title">{{ 'activite.list_title'|trans }}</h2>
+                <p class="card-subtitle">{{ 'activite.subtitle'|trans }}</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary">Créer une activité</a>
+                {% set target_locale = app.request.locale == 'fr' ? 'en' : 'fr' %}
+                <button 
+                    class="btn btn-secondary reservation-admin-cta" 
+                    title="{{ 'common.switch_language'|trans }}"
+                    data-controller="language-switcher"
+                    data-language-switcher-url-value="{{ path('app_change_locale', {'locale': target_locale}) }}"
+                    data-action="click->language-switcher#switch"
+                    style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(4px);"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>{{ (app.request.locale == 'fr' ? 'EN' : 'FR') }}</span>
+                </button>
+                <a href="{{ path('app_activite_ecologique_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">{{ 'activite.export_pdf'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'activite.create'|trans }}</a>
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="d-flex justify-content-end mb-3">
+            <div class="card weather-widget shadow-sm border-0">
+                <div class="card-body py-3 px-3">
+                    {% if weather.error is defined %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="weather-widget-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 8v5"/>
+                                    <path d="M12 16h.01"/>
+                                </svg>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Weather</div>
+                                <div class="small text-muted">{{ weather.error }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% set condition = weather.condition ?? 'unknown' %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="weather-widget-icon">
+                                {% if condition == 'clear' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="4"/>
+                                        <path d="M12 2v2"/><path d="M12 20v2"/>
+                                        <path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                                        <path d="M2 12h2"/><path d="M20 12h2"/>
+                                        <path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>
+                                    </svg>
+                                {% elseif condition == 'partly_cloudy' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M2 12h2"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19 18a4.5 4.5 0 0 0-1.2-8.8 5.5 5.5 0 0 0-10.6 1.7A3.8 3.8 0 0 0 7.5 18H19z"/>
+                                    </svg>
+                                {% elseif condition == 'cloudy' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 18a4.5 4.5 0 0 0-1.2-8.8 5.5 5.5 0 0 0-10.6 1.7A3.8 3.8 0 0 0 7.5 18H19z"/>
+                                    </svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/>
+                                        <path d="M12 17h.01"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Weather in {{ weather.city ?? 'Monastir' }}</div>
+                                <div class="small text-muted">
+                                    {% if condition == 'clear' %}Clear{% elseif condition == 'partly_cloudy' %}Partly cloudy{% elseif condition == 'cloudy' %}Cloudy{% else %}Unknown{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <div class="h5 mb-0">{{ (weather.temp is defined and weather.temp is not null) ? weather.temp : '—' }}°C</div>
+                                <div class="small text-muted">Humidity: {{ (weather.humidity is defined and weather.humidity is not null) ? weather.humidity : '—' }}%</div>
+                                <div class="small text-muted">Wind: {{ (weather.wind_speed is defined and weather.wind_speed is not null) ? (weather.wind_speed|number_format(1, '.', '')) : '—' }} m/s</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .weather-widget {
+                min-width: 280px;
+                max-width: 420px;
+                background: rgba(255, 255, 255, 0.85);
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                backdrop-filter: blur(8px);
+            }
+
+            .weather-widget-icon {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 16px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(14, 165, 233, 0.18));
+                color: #1d4ed8;
+                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.12);
+            }
+
+            .weather-widget-icon svg {
+                width: 1.65rem;
+                height: 1.65rem;
+            }
+
+            .activity-search-row {
+                display: flex;
+                align-items: center;
+                gap: 0.9rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form {
+                margin-bottom: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1.1rem;
+                padding: 1.1rem;
+                border-radius: 20px;
+                border: 1px solid rgba(191, 219, 254, 0.55);
+                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            .admin-live-form-row {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-form-row--split {
+                padding-top: 0.5rem;
+                border-top: 1px solid rgba(203, 213, 225, 0.3);
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .admin-field-select {
+                max-width: 170px;
+                min-width: 170px;
+            }
+
+            .admin-sort-select {
+                max-width: 190px;
+                margin-left: auto;
+            }
+
+            .admin-result-count {
+                opacity: 0.82;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #334155;
+            }
+
+            .search-box {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 0.95rem;
+                flex: 1;
+                min-width: 320px;
+                padding: 0.85rem 1rem;
+                border-radius: 24px;
+                border: 1px solid rgba(191, 219, 254, 0.9);
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(229, 246, 255, 0.78));
+                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+                transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            }
+
+            .search-box:focus-within {
+                border-color: rgba(59, 130, 246, 0.55);
+                box-shadow: 0 14px 30px rgba(59, 130, 246, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+                transform: translateY(-1px);
+            }
+
+            .search-box .search-icon {
+                flex: 0 0 auto;
+                width: 3.25rem;
+                height: 3.25rem;
+                padding: 0.72rem;
+                border-radius: 18px;
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.18));
+                color: #1d4ed8;
+                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.12);
+            }
+
+            .search-box .search-input {
+                min-width: 0;
+                width: 100%;
+                padding: 0.4rem 3rem 0.4rem 0;
+                border: 0;
+                background: transparent;
+                color: #0f172a;
+                font-size: 0.98rem;
+                font-weight: 500;
+                box-shadow: none;
+                outline: none;
+            }
+
+            .search-box .search-input::placeholder {
+                color: rgba(71, 85, 105, 0.78);
+            }
+
+            .search-icon-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                min-height: 3.25rem;
+                padding: 0 1.2rem;
+                border-radius: 18px;
+                border: 1px solid rgba(59, 130, 246, 0.22);
+                background: linear-gradient(135deg, #1d4ed8, #0f766e);
+                color: #ffffff;
+                box-shadow: 0 12px 24px rgba(29, 78, 216, 0.24), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+                transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+                font-size: 0.9rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+            }
+
+            .search-icon-btn svg {
+                width: 1rem;
+                height: 1rem;
+                transition: transform 0.2s ease;
+            }
+
+            .search-icon-btn:hover,
+            .search-icon-btn:focus-visible {
+                transform: translateY(-2px);
+                box-shadow: 0 16px 28px rgba(29, 78, 216, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+                filter: brightness(1.03);
+            }
+
+            .search-icon-btn:hover svg,
+            .search-icon-btn:focus-visible svg {
+                transform: scale(1.08);
+            }
+
+            .search-icon-btn:focus-visible {
+                outline: 3px solid rgba(96, 165, 250, 0.35);
+                outline-offset: 2px;
+            }
+
+            .voice-btn {
+                position: absolute;
+                right: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                color: #94a3b8;
+                cursor: pointer;
+                transition: color 0.2s, background 0.2s;
+                flex-shrink: 0;
+            }
+
+            .voice-btn:hover {
+                background: rgba(56, 189, 248, 0.1);
+                color: #38bdf8;
+            }
+
+            .voice-btn--active {
+                color: #f87171;
+                background: rgba(248, 113, 113, 0.12);
+                animation: voice-pulse 1.2s ease-in-out infinite;
+            }
+
+            .voice-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .voice-toast {
+                position: fixed;
+                left: 50%;
+                bottom: 24px;
+                transform: translateX(-50%) translateY(20px);
+                padding: 0.85rem 1.1rem;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, 0.92);
+                color: #fff;
+                font-size: 0.92rem;
+                font-weight: 600;
+                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.24s ease, transform 0.24s ease;
+                z-index: 1300;
+            }
+
+            .voice-toast--visible {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .voice-toast--success {
+                background: rgba(5, 150, 105, 0.95);
+            }
+
+            .voice-toast--error {
+                background: rgba(220, 38, 38, 0.95);
+            }
+
+            .voice-toast--info {
+                background: rgba(15, 23, 42, 0.92);
+            }
+
+            @keyframes voice-pulse {
+                0%, 100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.24);
+                }
+                50% {
+                    transform: scale(1.04);
+                    box-shadow: 0 0 0 8px rgba(248, 113, 113, 0);
+                }
+            }
+
+            .search-input {
+                min-height: 3.25rem;
+                padding: 0 0.95rem;
+                border-radius: 18px;
+                border: 1px solid rgba(191, 219, 254, 0.9);
+                background: rgba(255, 255, 255, 0.92);
+                color: #0f172a;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+                font-weight: 600;
+            }
+
+            .search-input:focus {
+                border-color: rgba(59, 130, 246, 0.55);
+                box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+            }
+
+            .quick-filter-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.55rem 1.1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                background: linear-gradient(135deg, rgba(241, 245, 250, 0.85), rgba(226, 232, 240, 0.85));
+                color: #1e293b;
+                font-size: 0.82rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+                white-space: nowrap;
+                box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            }
+
+            .quick-filter-btn:hover,
+            .quick-filter-btn:focus-visible {
+                background: linear-gradient(135deg, rgba(219, 228, 240, 0.95), rgba(203, 213, 225, 0.95));
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+                border-color: rgba(148, 163, 184, 0.5);
+            }
+
+            .quick-filter-btn.active {
+                background: linear-gradient(135deg, rgba(59, 130, 246, 0.92), rgba(37, 99, 235, 0.92));
+                color: #ffffff;
+                border-color: rgba(37, 99, 235, 0.7);
+                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+                font-weight: 700;
+            }
+
+            .quick-filter-btn.active:hover {
+                background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+                transform: translateY(-2px);
+                box-shadow: 0 6px 18px rgba(59, 130, 246, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.22rem 0.62rem;
+                border-radius: 999px;
+                font-size: 0.74rem;
+                font-weight: 700;
+                letter-spacing: 0.01em;
+            }
+
+            .status-badge-active {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .status-badge-completed {
+                background: #dbeafe;
+                color: #1d4ed8;
+            }
+
+            .status-badge-cancelled {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .fill-rate-cell {
+                min-width: 180px;
+            }
+
+            .fill-rate-track {
+                height: 12px;
+                border-radius: 999px;
+                overflow: hidden;
+                background: rgba(148, 163, 184, 0.25);
+                border: 1px solid rgba(148, 163, 184, 0.35);
+            }
+
+            .fill-rate-bar {
+                height: 100%;
+                border-radius: 999px;
+                transition: width 0.4s ease;
+            }
+
+            .fill-rate-good {
+                background: linear-gradient(90deg, #22c55e, #16a34a);
+            }
+
+            .fill-rate-warning {
+                background: linear-gradient(90deg, #f59e0b, #d97706);
+            }
+
+            .fill-rate-critical {
+                background: linear-gradient(90deg, #ef4444, #b91c1c);
+            }
+
+            .fill-rate-value {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #1e3a8a;
+                margin-top: 0.28rem;
+            }
+
+            .list-loading {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                font-size: 0.82rem;
+                color: #1e3a8a;
+                font-weight: 600;
+            }
+
+            .list-loading::before {
+                content: '';
+                width: 0.9rem;
+                height: 0.9rem;
+                border: 2px solid rgba(59, 130, 246, 0.22);
+                border-top-color: #2563eb;
+                border-radius: 50%;
+                animation: spin 0.85s linear infinite;
+            }
+
+            .ux-empty-message {
+                margin: 0.45rem 0 1rem;
+                padding: 0.75rem 0.95rem;
+                border-radius: 10px;
+                border: 1px solid rgba(239, 68, 68, 0.22);
+                background: rgba(254, 242, 242, 0.92);
+                color: #991b1b;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            .list-pagination {
+                margin-top: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+
+            .list-pagination-meta {
+                color: #334155;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            .list-pagination-links {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                flex-wrap: wrap;
+            }
+
+            .page-link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 2.2rem;
+                min-height: 2.2rem;
+                padding: 0 0.7rem;
+                border-radius: 10px;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                background: rgba(255, 255, 255, 0.95);
+                color: #1e293b;
+                font-size: 0.86rem;
+                font-weight: 700;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+
+            .page-link:hover,
+            .page-link:focus-visible {
+                border-color: rgba(59, 130, 246, 0.45);
+                background: rgba(239, 246, 255, 0.95);
+                transform: translateY(-1px);
+            }
+
+            .page-link.active {
+                background: linear-gradient(135deg, #1d4ed8, #0f766e);
+                color: #ffffff;
+                border-color: rgba(29, 78, 216, 0.8);
+                box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25);
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+
+        <div id="activite-live-root">
+        <form id="activite-search-form" method="get" action="{{ path('app_activite_ecologique_index') }}" class="admin-live-form">
+            <div class="activity-search-row">
+                <select id="activite-search-field" name="field" class="search-input admin-field-select">
+                    <option value="all" {{ search_field|default('all') == 'all' ? 'selected' : '' }}>Chercher par: Tous</option>
+                    <option value="id" {{ search_field|default('all') == 'id' ? 'selected' : '' }}>ID</option>
+                    <option value="nom" {{ search_field|default('all') == 'nom' ? 'selected' : '' }}>{{ 'activite.name'|trans }}</option>
+                    <option value="date" {{ search_field|default('all') == 'date' ? 'selected' : '' }}>{{ 'activite.date'|trans }}</option>
+                    <option value="capacite" {{ search_field|default('all') == 'capacite' ? 'selected' : '' }}>{{ 'activite.capacity'|trans }}</option>
+                    <option value="description" {{ search_field|default('all') == 'description' ? 'selected' : '' }}>{{ 'activite.description'|trans }}</option>
+                </select>
+                <div class="admin-live-search-main">
+                    <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input
+                            id="activite-search-input"
+                            type="text"
+                            name="q"
+                            class="search-input"
+                            value="{{ search_term|default('') }}"
+                            placeholder="{{ 'activite.search_placeholder'|trans }}"
+                            autocomplete="on"
+                        >
+                        <button type="button" id="activite-voice-btn" class="voice-btn" title="Recherche vocale" aria-label="Démarrer la recherche vocale">
+                            <svg id="activite-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'activite.search'|trans }}" title="{{ 'activite.search'|trans }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>{{ 'activite.search'|trans }}</span>
+                    </button>
+                </div>
+                <small id="activite-result-count" class="admin-result-count">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
+            </div>
+
+            <div class="admin-live-form-row admin-live-form-row--split">
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'all', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'all' ? 'active' : '' }}" style="margin-right: 0.5rem;" title="Afficher toutes les activités">{{ 'activite.all'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'today', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'today' ? 'active' : '' }}" title="Filtrer les activités du jour">{{ 'activite.today'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'week', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'week' ? 'active' : '' }}" title="Filtrer les activités de cette semaine">{{ 'activite.this_week'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'periode': 'current', 'page': 1})) }}" class="quick-filter-btn {{ periode_filter|default('all') == 'current' ? 'active' : '' }}" title="Filtrer les activités de ce mois">{{ 'activite.this_month'|trans }}</a>
+                <a href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'capacite': 'medium-large', 'page': 1})) }}" class="quick-filter-btn {{ capacite_filter|default('all') == 'medium-large' ? 'active' : '' }}" title="Afficher les activités avec capacité supérieure à 10">{{ 'activite.capacity_over_10'|trans }}</a>
+                <select id="activite-sort-by" name="sort" class="search-input admin-sort-select" onchange="this.form.submit();">
+                    <option value="date_desc" {{ sort_by|default('date_desc') == 'date_desc' ? 'selected' : '' }}>{{ 'activite.sort_date_recent'|trans }}</option>
+                    <option value="date_asc" {{ sort_by|default('date_desc') == 'date_asc' ? 'selected' : '' }}>{{ 'activite.sort_date_old'|trans }}</option>
+                    <option value="id_desc" {{ sort_by|default('date_desc') == 'id_desc' ? 'selected' : '' }}>{{ 'activite.sort_id_desc'|trans }}</option>
+                    <option value="id_asc" {{ sort_by|default('date_desc') == 'id_asc' ? 'selected' : '' }}>{{ 'activite.sort_id_asc'|trans }}</option>
+                    <option value="nom_asc" {{ sort_by|default('date_desc') == 'nom_asc' ? 'selected' : '' }}>{{ 'activite.sort_name_az'|trans }}</option>
+                    <option value="nom_desc" {{ sort_by|default('date_desc') == 'nom_desc' ? 'selected' : '' }}>{{ 'activite.sort_name_za'|trans }}</option>
+                    <option value="capacite_desc" {{ sort_by|default('date_desc') == 'capacite_desc' ? 'selected' : '' }}>{{ 'activite.sort_capacity_max'|trans }}</option>
+                    <option value="capacite_asc" {{ sort_by|default('date_desc') == 'capacite_asc' ? 'selected' : '' }}>{{ 'activite.sort_capacity_min'|trans }}</option>
+                </select>
+            </div>
+        </form>
+
+        <div id="activite-voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
+
+        <div id="activite-empty-message" class="ux-empty-message" style="display: none;">{{ 'activite.empty_message'|trans }}</div>
+
+        <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Id activité</th>
-                        <th>Nom activité</th>
-                        <th>Date activité</th>
-                        <th>Capacité</th>
-                        <th>Description</th>
-                        <th>Actions</th>
+                        <th>{{ 'activite.id'|trans }}</th>
+                        <th>{{ 'activite.name'|trans }}</th>
+                        <th>{{ 'activite.date'|trans }}</th>
+                        <th>{{ 'activite.capacity'|trans }}</th>
+                        <th>{{ 'activite.fill_rate'|trans }}</th>
+                        <th>{{ 'activite.description'|trans }}</th>
+                        <th>{{ 'activite.status'|trans }}</th>
+                        <th>{{ 'activite.actions'|trans }}</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for activite_ecologique in activite_ecologiques %}
-                    <tr>
+                    {% set activiteStatus = activite_ecologique.dateActivite and activite_ecologique.dateActivite|date('Y-m-d') < "now"|date('Y-m-d') ? 'completed' : 'active' %}
+                    {% set booked = 0 %}
+                    {% for reservation in activite_ecologique.reservations %}
+                        {% set booked = booked + reservation.nombrePersonnes|default(0) %}
+                    {% endfor %}
+                    {% set capacity = activite_ecologique.capacite|default(0) %}
+                    {% set rate = capacity > 0 ? (booked / capacity * 100) : 0 %}
+                    {% set rateCapped = rate > 100 ? 100 : rate %}
+                    {% set tone = rate >= 90 ? 'critical' : (rate >= 60 ? 'warning' : 'good') %}
+                    <tr
+                        class="reservation-admin-row"
+                        style="--reservation-row-index: {{ loop.index0 }};"
+                        data-search-id="{{ activite_ecologique.idActivite|e('html_attr') }}"
+                        data-search-nom="{{ activite_ecologique.nomActivite|default('')|e('html_attr') }}"
+                        data-search-date="{{ (activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '')|e('html_attr') }}"
+                        data-search-capacite="{{ activite_ecologique.capacite|e('html_attr') }}"
+                        data-search-description="{{ activite_ecologique.description|default('')|e('html_attr') }}"
+                        data-search-periode="{{ activite_ecologique.dateActivite ? (activite_ecologique.dateActivite|date('Y-m-d') < "now"|date('Y-m-d') ? 'past' : (activite_ecologique.dateActivite|date('Y-m') == "now"|date('Y-m') ? 'current' : 'future')) : 'unknown' }}"
+                        data-search-status="{{ activiteStatus }}"
+                        data-search-values="{{ [
+                            activite_ecologique.idActivite,
+                            activite_ecologique.nomActivite,
+                            activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '',
+                            activite_ecologique.capacite,
+                            activite_ecologique.description
+                        ]|join('|')|lower|e('html_attr') }}"
+                    >
                         <td>{{ activite_ecologique.idActivite }}</td>
                         <td>{{ activite_ecologique.nomActivite }}</td>
                         <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
                         <td>{{ activite_ecologique.capacite }}</td>
-                        <td>{{ activite_ecologique.description }}</td>
+                        <td class="fill-rate-cell">
+                            <div class="fill-rate-track" title="{{ booked }}/{{ capacity }} {{ 'activite.seats_reserved'|trans }}">
+                                <div class="fill-rate-bar fill-rate-{{ tone }}" style="width: {{ rateCapped }}%;"></div>
+                            </div>
+                            <div class="fill-rate-value">{{ booked }}/{{ capacity }}</div>
+                        </td>
                         <td>
-                            <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary">Voir</a>
-                            <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary">Modifier</a>
+                            <div>
+                                {{ activite_ecologique.description|default('') }}
+                            </div>
+                            {% set stars = capacity > 0 ? (5 * booked / capacity) : 0 %}
+                            <div class="reservation-rating" data-rating="{{ stars|number_format(1, '.', '') }}" data-readonly-rating="1" style="margin-top: 0.5em;"></div>
+                        </td>
+                        <td>
+                            {% if activiteStatus == 'active' %}
+                                <span class="status-badge status-badge-active">{{ 'activite.status_active'|trans }}</span>
+                            {% elseif activiteStatus == 'completed' %}
+                                <span class="status-badge status-badge-completed">{{ 'activite.status_completed'|trans }}</span>
+                            {% else %}
+                                <span class="status-badge status-badge-cancelled">{{ 'activite.status_cancelled'|trans }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="reservation-admin-actions">
+                                <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn" title="{{ 'activite.show_activity'|trans }}">{{ 'activite.view'|trans }}</a>
+                                <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary reservation-admin-action-btn" title="{{ 'activite.edit_activity'|trans }}">{{ 'activite.edit'|trans }}</a>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6">Aucun enregistrement trouvé</td>
+                        <td colspan="8">{{ 'activite.no_records'|trans }}</td>
                     </tr>
                 {% endfor %}
+                    <tr id="activite-no-match-row" style="display: none;">
+                        <td colspan="8">{{ 'activite.no_search_results'|trans }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
+
+        <div class="list-pagination">
+            <div class="list-pagination-meta">
+                {% if result_count|default(0) > 0 %}
+                    {{ 'activite.showing'|trans }} {{ page_start|default(0) }}-{{ page_end|default(0) }} {{ 'activite.of'|trans }} {{ result_count|default(0) }} {{ 'activite.results'|trans }}
+                {% else %}
+                    {{ 'activite.no_results'|trans }}
+                {% endif %}
+            </div>
+            {% if total_pages|default(1) > 1 %}
+                <div class="list-pagination-links">
+                    {% if page|default(1) > 1 %}
+                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page - 1})) }}" aria-label="{{ 'activite.previous_page'|trans }}">{{ 'activite.prev'|trans }}</a>
+                    {% endif %}
+
+                    {% for pageNumber in 1..total_pages %}
+                        <a class="page-link {{ pageNumber == page ? 'active' : '' }}" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': pageNumber})) }}">{{ pageNumber }}</a>
+                    {% endfor %}
+
+                    {% if page|default(1) < total_pages %}
+                        <a class="page-link" href="{{ path('app_activite_ecologique_index', app.request.query.all|merge({'page': page + 1})) }}" aria-label="{{ 'activite.next_page'|trans }}">{{ 'activite.next'|trans }}</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        </div>
     </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script>
+        (function initActiviteLiveSearch() {
+            const root = document.getElementById('activite-live-root');
+
+            if (!root) {
+                return;
+            }
+
+            const form = root.querySelector('#activite-search-form');
+
+            if (!form) {
+                return;
+            }
+
+            const voiceBtn = form.querySelector('#activite-voice-btn');
+            const voiceInput = form.querySelector('input[name="q"]');
+            const voiceToast = document.getElementById('activite-voice-toast');
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (voiceBtn && voiceInput && voiceToast) {
+                if (!SpeechRecognition) {
+                    voiceBtn.style.display = 'none';
+                } else {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'fr-FR';
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.maxAlternatives = 1;
+
+                    let isListening = false;
+                    let toastTimer = null;
+
+                    const micSVG = `<svg id="activite-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>`;
+
+                    const stopSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="3"/>
+                        </svg>`;
+
+                    const showToast = function (message, type) {
+                        window.clearTimeout(toastTimer);
+                        voiceToast.textContent = message;
+                        voiceToast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
+                        toastTimer = window.setTimeout(function () {
+                            voiceToast.classList.remove('voice-toast--visible');
+                        }, 2800);
+                    };
+
+                    const startListening = function () {
+                        isListening = true;
+                        voiceBtn.classList.add('voice-btn--active');
+                        voiceBtn.innerHTML = stopSVG;
+                        voiceBtn.setAttribute('aria-label', 'Arrêter la recherche vocale');
+                        showToast('🎙 Parlez maintenant…', 'info');
+                        recognition.start();
+                    };
+
+                    const stopListening = function () {
+                        isListening = false;
+                        voiceBtn.classList.remove('voice-btn--active');
+                        voiceBtn.innerHTML = micSVG;
+                        voiceBtn.setAttribute('aria-label', 'Démarrer la recherche vocale');
+                        recognition.stop();
+                    };
+
+                    voiceBtn.addEventListener('click', function () {
+                        if (isListening) {
+                            stopListening();
+                        } else {
+                            startListening();
+                        }
+                    });
+
+                    recognition.addEventListener('result', function (event) {
+                        const transcript = Array.from(event.results)
+                            .map(function (result) {
+                                return result[0].transcript;
+                            })
+                            .join('');
+
+                        voiceInput.value = transcript;
+
+                        if (event.results[0].isFinal) {
+                            showToast('Recherche : « ' + transcript + ' »', 'success');
+                            form.requestSubmit();
+                        }
+                    });
+
+                    recognition.addEventListener('end', function () {
+                        if (isListening) {
+                            stopListening();
+                        }
+                    });
+
+                    recognition.addEventListener('error', function (event) {
+                        stopListening();
+
+                        const messages = {
+                            'not-allowed': 'Microphone non autorisé. Vérifiez les permissions.',
+                            'no-speech': 'Aucune voix détectée. Réessayez.',
+                            'audio-capture': 'Impossible d\'accéder au microphone.',
+                            'network': 'Erreur réseau lors de la reconnaissance vocale.'
+                        };
+
+                        showToast(messages[event.error] || 'Erreur vocale : ' + event.error, 'error');
+                    });
+                }
+            }
+
+            const queryInput = form.querySelector('input[name="q"]');
+            const trackedFields = [
+                queryInput,
+                form.querySelector('select[name="field"]'),
+                form.querySelector('select[name="sort"]')
+            ].filter(Boolean);
+
+            let submitTimer = null;
+
+            const resetToFirstPage = function () {
+                let pageInput = form.querySelector('input[name="page"]');
+
+                if (!pageInput) {
+                    pageInput = document.createElement('input');
+                    pageInput.type = 'hidden';
+                    pageInput.name = 'page';
+                    form.appendChild(pageInput);
+                }
+
+                pageInput.value = '1';
+            };
+
+            const requestAndSwap = function (url) {
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(function (response) {
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        const parser = new DOMParser();
+                        const nextDoc = parser.parseFromString(html, 'text/html');
+                        const nextRoot = nextDoc.getElementById('activite-live-root');
+
+                        if (!nextRoot) {
+                            window.location.href = url;
+                            return;
+                        }
+
+                        root.innerHTML = nextRoot.innerHTML;
+                        window.history.replaceState({}, '', url);
+                        initActiviteLiveSearch();
+                        if (typeof window.ecomarineRenderRatings === 'function') {
+                            window.ecomarineRenderRatings();
+                        }
+                    })
+                    .catch(function () {
+                        window.location.href = url;
+                    });
+            };
+
+            const submitWithAjax = function () {
+                const params = new URLSearchParams(new FormData(form));
+                const url = form.action + (params.toString() ? ('?' + params.toString()) : '');
+                requestAndSwap(url);
+            };
+
+            const scheduleSubmit = function (delay) {
+                if (submitTimer) {
+                    window.clearTimeout(submitTimer);
+                }
+
+                submitTimer = window.setTimeout(function () {
+                    submitWithAjax();
+                }, delay);
+            };
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                submitWithAjax();
+            });
+
+            root.querySelectorAll('.quick-filter-btn, .page-link').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    requestAndSwap(link.href);
+                });
+            });
+
+            trackedFields.forEach(function (field) {
+                if (field === queryInput) {
+                    field.addEventListener('input', function () {
+                        resetToFirstPage();
+                        scheduleSubmit(320);
+                    });
+
+                    field.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            resetToFirstPage();
+                            scheduleSubmit(0);
+                        }
+                    });
+
+                    return;
+                }
+
+                field.addEventListener('change', function () {
+                    resetToFirstPage();
+                    scheduleSubmit(0);
+                });
+            });
+        })();
+    </script>
 {% endblock %}

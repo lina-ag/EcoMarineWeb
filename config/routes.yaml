@@ -6,6 +6,8 @@ controllers:
 
 cleaning_bundle_controllers:
     resource:
-        path: ../src/CleaningBundle/Controller/
-        namespace: App\CleaningBundle\Controller
+        path: ../src/Controller/
+        namespace: App\Controller
     type: attribute
+
+

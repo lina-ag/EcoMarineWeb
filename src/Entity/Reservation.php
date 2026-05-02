@@ -8,11 +8,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 use App\Repository\ReservationRepository;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 #[ORM\Table(name: 'reservation')]
 class Reservation
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -30,6 +33,17 @@ class Reservation
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins 3 caracteres',
+        maxMessage: 'Le nom ne peut pas depasser 100 caracteres'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/u',
+        message: 'Le nom ne doit contenir que des lettres'
+    )]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -44,6 +58,11 @@ class Reservation
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotNull(message: 'La date est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 'today',
+        message: 'La date doit etre aujourd\'hui ou dans le futur'
+    )]
     private ?\DateTimeInterface $date_reservation = null;
 
     public function getDate_reservation(): ?\DateTimeInterface
@@ -58,6 +77,12 @@ class Reservation
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire')]
+    #[Assert\Email(message: 'Veuillez entrer un email valide')]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: 'L\'email ne peut pas depasser 180 caracteres'
+    )]
     private ?string $email = null;
 
     public function getEmail(): ?string
@@ -72,6 +97,13 @@ class Reservation
     }
 
     #[ORM\Column(type: 'integer', nullable: false)]
+    #[Assert\NotNull(message: 'Le nombre de personnes est obligatoire')]
+    #[Assert\Positive(message: 'Le nombre de personnes doit etre positif')]
+    #[Assert\Range(
+        min: 1,
+        max: 50,
+        notInRangeMessage: 'Le nombre de personnes doit etre entre 1 et 50'
+    )]
     private ?int $nombre_personnes = null;
 
     public function getNombre_personnes(): ?int
@@ -86,7 +118,8 @@ class Reservation
     }
 
     #[ORM\ManyToOne(targetEntity: ActiviteEcologique::class, inversedBy: 'reservations')]
-    #[ORM\JoinColumn(name: 'id_activite', referencedColumnName: 'id_activite')]
+    #[ORM\JoinColumn(name: 'id_activite', referencedColumnName: 'id_activite', nullable: true)]
+    #[Assert\NotNull(message: 'Veuillez selectionner une activite')]
     private ?ActiviteEcologique $activiteEcologique = null;
 
     public function getActiviteEcologique(): ?ActiviteEcologique
@@ -129,4 +162,9 @@ class Reservation
         return $this;
     }
 
+    #[Assert\Callback]
+    public function validateDateMatchesActivity(ExecutionContextInterface $context): void
+    {
+        // Validation gérée dans ReservationType via POST_SUBMIT
+    }
 }

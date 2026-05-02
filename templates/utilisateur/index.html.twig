@@ -35,17 +35,200 @@
         .utilisateurs-compact .data-table td:last-child {
             white-space: nowrap;
         }
+        
+        .alert {
+            max-width: 980px;
+            margin: 0 auto 1rem auto;
+        }
+
+        .utilisateurs-compact .btn-primary {
+            background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+            border: none;
+            color: #fff;
+        }
+
+        .utilisateurs-compact .btn-primary:hover {
+            background: linear-gradient(135deg, #26b0a3, #168a96);
+            transform: translateY(-1px);
+        }
+
+        .utilisateurs-compact .btn-info {
+            background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+            border: none;
+            color: #fff;
+        }
+
+        .utilisateurs-compact .btn-info:hover {
+            background: linear-gradient(135deg, #26b0a3, #168a96);
+        }
+
+        .utilisateurs-compact .btn-warning {
+            background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+            border: none;
+            color: #fff;
+        }
+
+        .utilisateurs-compact .btn-warning:hover {
+            background: linear-gradient(135deg, #26b0a3, #168a96);
+        }
+
+        .utilisateurs-compact .btn-danger {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            border: none;
+            color: #fff;
+        }
+
+        .utilisateurs-compact .btn-danger:hover {
+            background: linear-gradient(135deg, #e6395c, #e04325);
+        }
+
+        .search-panel {
+            max-width: 980px;
+            margin: 0 auto 1rem auto;
+        }
+
+        .search-form .search-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-form .form-control {
+            flex: 1 1 220px;
+            min-width: 180px;
+            padding: 0.75rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            background: none;
+            color: #495057;
+        }
+
+        .search-actions {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+            color: #495057;
+            align-items: center;
+        }
+
+        .search-actions .btn-primary {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+            min-width: auto;
+        }
+
+        .search-actions .btn-reset {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+            min-width: auto;
+            background: linear-gradient(135deg, #26b0a3, #1f8a82);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-actions .btn-reset:hover {
+            background: linear-gradient(135deg, #1f8a82, #17645e);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(26, 176, 163, 0.25);
+        }
+
+        .data-table .no-results td {
+            padding: 1.2rem;
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        @media (max-width: 768px) {
+            .search-form .search-row {
+                flex-direction: column;
+                align-items: stretch;
+                color: #495057;
+            }
+
+            .search-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 30px;
+        }
+
+        .badge.bg-danger {
+            background-color: #fb9666;
+            color: white;
+        }
+
+        .badge.bg-primary {
+            background-color: #1b9aaa;
+            color: white;
+        }
+
+        .badge.bg-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
+    {# Affichage des messages flash #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
     <section class="glass-card utilisateurs-compact">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Utilisateurs</h2>
-                <p class="card-subtitle">Gerer les comptes et informations des utilisateurs.</p>
-            </div>
-            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Create new</a>
+        <div class="card-header" style="display: flex; justify-content: flex-end; padding: 1rem;">
+            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
+        </div>
+
+        <div class="search-panel">
+            <form id="search-form" method="get" action="{{ path('app_utilisateur_index') }}" class="search-form">
+                <div class="search-row">
+                    <input id="user-search" type="search" name="search" value="{{ search|default('') }}" placeholder="Recherche par nom ou prénom" class="form-control">
+                    <select id="role-filter" name="role" class="form-control">
+                        <option value="all"{% if selectedRole is defined and selectedRole == 'all' %} selected{% endif %}>Tous les rôles</option>
+                        {% for roleOption in roles %}
+                            <option value="{{ roleOption.nomRole }}"{% if selectedRole is defined and selectedRole == roleOption.nomRole %} selected{% endif %}>
+                                {% if roleOption.nomRole == 'admin' %}
+                                    Administrateur
+                                {% elseif roleOption.nomRole == 'chercheur' %}
+                                    Chercheur
+                                {% else %}
+                                    Utilisateur
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="search-actions">
+                        <a href="{{ path('app_utilisateur_index') }}" class="btn-reset">Réinitialiser</a>
+                    </div>
+                </div>
+            </form>
         </div>
 
         <div class="table-wrapper">
@@ -54,13 +237,12 @@
                     <tr>
                         <th>Id</th>
                         <th>Nom</th>
-                        <th>Prenom</th>
+                        <th>Prénom</th>
                         <th>Email</th>
-                        <th>Telephone</th>
-                        <th>Role</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
                         <th>Date naissance</th>
-                        <th>Face image</th>
-                        <th>Created</th>
+                        <th>Créé le</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -72,22 +254,85 @@
                         <td>{{ utilisateur.prenom }}</td>
                         <td>{{ utilisateur.email }}</td>
                         <td>{{ utilisateur.telephone }}</td>
-                        <td>{{ utilisateur.role }}</td>
-                        <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('Y-m-d') : '' }}</td>
-                        <td>{{ utilisateur.faceImage }}</td>
-                        <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('Y-m-d H:i') : '' }}</td>
                         <td>
-                            <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.id_utilisateur}) }}" class="btn btn-primary">edit</a>
+                            {% set roleName = utilisateur.roleName %}
+                            {% if roleName == 'admin' %}
+                                <span class="badge bg-danger">Administrateur</span>
+                            {% elseif roleName == 'chercheur' %}
+                                <span class="badge bg-primary">Chercheur</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Utilisateur</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ utilisateur.dateNaissance ? utilisateur.dateNaissance|date('d/m/Y') : '-' }}</td>
+                        <td>{{ utilisateur.createdAt ? utilisateur.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_utilisateur_show', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-info">Voir</a>
+                                <a href="{{ path('app_utilisateur_edit', {'id_utilisateur': utilisateur.idUtilisateur}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <form action="{{ path('app_utilisateur_delete', {'id_utilisateur': utilisateur.idUtilisateur}) }}" method="post" style="display:inline-block" onsubmit="return confirm('Confirmer la suppression de {{ utilisateur.nom }} {{ utilisateur.prenom }} ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.idUtilisateur) }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="10">no records found</td>
+                        <td colspan="9" class="text-center">Aucun utilisateur trouvé</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('user-search');
+            const roleFilter = document.getElementById('role-filter');
+            const searchForm = document.getElementById('search-form');
+            const tableWrapper = document.querySelector('.table-wrapper');
+
+            // Fonction pour faire une recherche dynamique
+            function performSearch() {
+                const searchValue = searchInput.value;
+                const roleValue = roleFilter.value;
+                
+                // Construire l'URL avec les paramètres
+                let url = new URL(searchForm.action);
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                }
+                if (roleValue && roleValue !== 'all') {
+                    url.searchParams.set('role', roleValue);
+                }
+
+                // Faire la requête AJAX
+                fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Créer un élément temporaire pour parser le HTML
+                    const parser = new DOMParser();
+                    const newDoc = parser.parseFromString(html, 'text/html');
+                    
+                    // Extraire la nouvelle table
+                    const newTable = newDoc.querySelector('.table-wrapper');
+                    if (newTable) {
+                        // Remplacer la table existante
+                        tableWrapper.innerHTML = newTable.innerHTML;
+                    }
+                })
+                .catch(error => console.error('Erreur lors de la recherche:', error));
+            }
+
+            // Ajouter les écouteurs d'événements
+            searchInput.addEventListener('input', performSearch);
+            roleFilter.addEventListener('change', performSearch);
+        });
+    </script>
 {% endblock %}

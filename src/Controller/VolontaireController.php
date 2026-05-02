@@ -108,3 +108,4 @@ final class VolontaireController extends AbstractController
         return $this->redirectToRoute('app_volontaire_index');
     }
 }
+

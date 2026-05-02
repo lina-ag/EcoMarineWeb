@@ -21,7 +21,9 @@
                         <th>Id</th>
                         <th>Date</th>
                         <th>Lieu</th>
+
                         <th>Limite bénévoles</th>
+
                         <th>Participants</th>
                         <th>Statut</th>
                         <th>Actions</th>
@@ -33,7 +35,10 @@
                         <td>{{ action_nettoyage.idAction }}</td>
                         <td>{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('Y-m-d') : '' }}</td>
                         <td>{{ action_nettoyage.lieu }}</td>
+
+
                         <td>{{ action_nettoyage.limiteBenevoles }}</td>
+
                         <td>{{ action_nettoyage.nombreVolontaires }}</td>
                         <td>
                             {% if action_nettoyage.estComplete %}
@@ -54,6 +59,10 @@
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <div class="pagination-container mt-4">
+            {{ knp_pagination_render(action_nettoyages) }}
         </div>
     </section>
 {% endblock %}

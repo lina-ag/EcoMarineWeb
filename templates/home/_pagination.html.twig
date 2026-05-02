@@ -1,0 +1,37 @@
+{% if pageCount > 1 %}
+    <nav class="pagination cleaning-pagination" aria-label="Pagination des actions de nettoyage">
+        {% if previous is defined %}
+            <a href="{{ path(route, query|merge({(pageParameterName): previous, section: 'nettoyage', _fragment: 'slide12'})) }}"
+               class="cleaning-pagination__link"
+               data-page-link
+               aria-label="Page précédente">
+                &lt;
+            </a>
+        {% else %}
+            <span class="disabled cleaning-pagination__link" aria-hidden="true">&lt;</span>
+        {% endif %}
+
+        {% for page in pagesInRange %}
+            {% if page != current %}
+                <a href="{{ path(route, query|merge({(pageParameterName): page, section: 'nettoyage', _fragment: 'slide12'})) }}"
+                   class="cleaning-pagination__link"
+                   data-page-link>
+                    {{ page }}
+                </a>
+            {% else %}
+                <span class="current cleaning-pagination__link" aria-current="page">{{ page }}</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if next is defined %}
+            <a href="{{ path(route, query|merge({(pageParameterName): next, section: 'nettoyage', _fragment: 'slide12'})) }}"
+               class="cleaning-pagination__link"
+               data-page-link
+               aria-label="Page suivante">
+                &gt;
+            </a>
+        {% else %}
+            <span class="disabled cleaning-pagination__link" aria-hidden="true">&gt;</span>
+        {% endif %}
+    </nav>
+{% endif %}

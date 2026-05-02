@@ -18,10 +18,10 @@ services:
     exclude:
       - "../src/DependencyInjection/"
       - "../src/Entity/"
-      - "../src/CleaningBundle/Entity/"
+      - "../src/Entity/"
       - "../src/Kernel.php"
 
-  App\CleaningBundle\Service\AiRecommendationService:
+  App\Service\AiRecommendationService:
     bind:
       $openAiApiKey: "%env(OPENAI_API_KEY)%"
 
@@ -39,3 +39,4 @@ services:
 
   # Service de prédiction
   App\Service\PredictionService: ~
+

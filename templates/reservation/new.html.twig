@@ -3,14 +3,26 @@
 {% block title %}Nouvelle réservation{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
+    <section class="glass-card reservation-glass-card reservation-admin-shell reservation-admin-shell-form">
         <div class="card-header">
-            <div>
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">Reservation Panel</span>
                 <h2 class="card-title">Créer une réservation</h2>
                 <p class="card-subtitle">Renseignez les informations du visiteur et de l'activité.</p>
             </div>
         </div>
 
         {{ include('reservation/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+
+        {% if app.request.method == 'POST' %}
+            <div style="background:red;color:white;padding:1rem;margin-top:1rem;">
+                {{ form_errors(form) }}
+                {% for child in form %}
+                    {% if not child.vars.valid %}
+                        <p>{{ child.vars.name }}: {{ form_errors(child) }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </section>
 {% endblock %}
