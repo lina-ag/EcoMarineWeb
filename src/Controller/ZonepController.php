@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Zonep;
 use App\Form\ZonepType;
 use App\Repository\ZonepRepository;
+use App\Service\ZoneRisqueAI;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,7 +39,7 @@ final class ZonepController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         $sortBy = $request->query->get('tri', 'idZone');
-        $order = $request->query->get('sens', 'ASC');
+        $order  = $request->query->get('sens', 'ASC');
         $search = trim((string) $request->query->get('search', ''));
         $status = trim((string) $request->query->get('status', ''));
 
@@ -54,9 +55,7 @@ final class ZonepController extends AbstractController
             ->tileLayer(new TileLayer(
                 url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                options: [
-                    'maxZoom' => 19,
-                ]
+                options: ['maxZoom' => 19]
             ))
             ->attributionControlOptions(new AttributionControlOptions(ControlPosition::BOTTOM_RIGHT))
             ->zoomControlOptions(new ZoomControlOptions(ControlPosition::TOP_RIGHT));
@@ -69,16 +68,20 @@ final class ZonepController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             return $this->render('zonep/_results.html.twig', [
                 'zoneps' => $zoneps,
+                'sortBy' => $sortBy,
+                'order' => $order,
+                'search' => $search,
+                'status' => $status,
             ]);
         }
 
         return $this->render('zonep/index.html.twig', [
             'zoneps' => $zoneps,
             'sortBy' => $sortBy,
-            'order' => $order,
+            'order'  => $order,
             'search' => $search,
             'status' => $status,
-            'map' => $map,
+            'map'    => $map,
         ]);
     }
 
@@ -86,88 +89,30 @@ final class ZonepController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $zonep = new Zonep();
-        $form = $this->createForm(ZonepType::class, $zonep);
+        $form  = $this->createForm(ZonepType::class, $zonep);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($zonep);
             $entityManager->flush();
-
             return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('zonep/new.html.twig', [
             'zonep' => $zonep,
-            'form' => $form,
+            'form'  => $form,
         ]);
-    }
-
-    #[Route('/{idZone}', name: 'app_zonep_show', methods: ['GET'], requirements: ['idZone' => '\d+'])]
-    public function show(ZonepRepository $zonepRepository, int $idZone): Response
-    {
-        $zonep = $zonepRepository->find($idZone);
-
-        if (!$zonep) {
-            throw $this->createNotFoundException('Zone introuvable.');
-        }
-
-        return $this->render('zonep/show.html.twig', [
-            'zonep' => $zonep,
-        ]);
-    }
-
-    #[Route('/{idZone}/edit', name: 'app_zonep_edit', methods: ['GET', 'POST'], requirements: ['idZone' => '\d+'])]
-    public function edit(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
-    {
-        $zonep = $zonepRepository->find($idZone);
-
-        if (!$zonep) {
-            throw $this->createNotFoundException('Zone introuvable.');
-        }
-
-        $form = $this->createForm(ZonepType::class, $zonep);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('zonep/edit.html.twig', [
-            'zonep' => $zonep,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{idZone}/delete', name: 'app_zonep_delete', methods: ['POST'], requirements: ['idZone' => '\d+'])]
-    public function delete(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
-    {
-        $zonep = $zonepRepository->find($idZone);
-
-        if ($zonep && $this->isCsrfTokenValid('delete'.$zonep->getIdZone(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($zonep);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/export/pdf', name: 'app_zonep_export_pdf', methods: ['GET'])]
     public function exportPdf(ZonepRepository $zonepRepository, Pdf $pdf): Response
     {
         $zoneps = $zonepRepository->findAll();
-
-        $html = $this->renderView('zonep/pdf.html.twig', [
-            'zoneps' => $zoneps,
-        ]);
+        $html   = $this->renderView('zonep/pdf.html.twig', ['zoneps' => $zoneps]);
 
         try {
             return new PdfResponse(
-                $pdf->getOutputFromHtml($html, [
-                    'orientation' => 'Landscape',
-                    'encoding' => 'utf-8',
-                ]),
+                $pdf->getOutputFromHtml($html, ['orientation' => 'Landscape', 'encoding' => 'utf-8']),
                 'zones_'.date('Y-m-d').'.pdf'
             );
         } catch (\Throwable $exception) {
@@ -178,10 +123,9 @@ final class ZonepController extends AbstractController
     #[Route('/export/excel', name: 'app_zonep_export_excel', methods: ['GET'])]
     public function exportExcel(ZonepRepository $zonepRepository): StreamedResponse
     {
-        $zoneps = $zonepRepository->findAll();
-
+        $zoneps      = $zonepRepository->findAll();
         $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $sheet       = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Zones');
 
         $sheet->setCellValue('A1', 'Rapport des zones de protection marine');
@@ -199,7 +143,6 @@ final class ZonepController extends AbstractController
         $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         $rowIndex = 5;
-
         foreach ($zoneps as $zonep) {
             $sheet->setCellValue("A{$rowIndex}", $zonep->getIdZone());
             $sheet->setCellValue("B{$rowIndex}", $zonep->getNomZone());
@@ -219,9 +162,94 @@ final class ZonepController extends AbstractController
         return new StreamedResponse(function () use ($writer): void {
             $writer->save('php://output');
         }, Response::HTTP_OK, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => sprintf('attachment; filename="zones_%s.xlsx"', (new \DateTimeImmutable())->format('Y-m-d')),
-            'Cache-Control' => 'max-age=0, must-revalidate, no-cache, no-store, private',
+            'Cache-Control'       => 'max-age=0, must-revalidate, no-cache, no-store, private',
+        ]);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // ⚠️  ROUTES AVEC {idZone} — les routes statiques D'ABORD,
+    //     puis les routes dynamiques comme /{idZone}
+    // ══════════════════════════════════════════════════════════
+
+    #[Route('/{idZone}/analyse-risque', name: 'app_zonep_analyse_risque', methods: ['GET', 'POST'], requirements: ['idZone' => '\d+'])]
+    public function analyseRisque(
+        Request         $request,
+        ZonepRepository $zonepRepository,
+        int             $idZone,
+        ZoneRisqueAI    $ai
+    ): Response {
+        $zonep = $zonepRepository->find($idZone);
+
+        if (!$zonep) {
+            throw $this->createNotFoundException('Zone introuvable.');
+        }
+
+        $resultat = null;
+
+        if ($request->isMethod('POST')) {
+            $resultat = $ai->predireRisque(
+                (float) $request->request->get('temperature', 20),
+                (int)   $request->request->get('activite_humaine', 0),
+                (int)   $request->request->get('pollution', 0),
+                (int)   $request->request->get('biodiversite', 4)
+            );
+        }
+
+        return $this->render('zonep/analyse_risque.html.twig', [
+            'zonep'    => $zonep,
+            'resultat' => $resultat,
+        ]);
+    }
+
+    #[Route('/{idZone}/edit', name: 'app_zonep_edit', methods: ['GET', 'POST'], requirements: ['idZone' => '\d+'])]
+    public function edit(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
+    {
+        $zonep = $zonepRepository->find($idZone);
+
+        if (!$zonep) {
+            throw $this->createNotFoundException('Zone introuvable.');
+        }
+
+        $form = $this->createForm(ZonepType::class, $zonep);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('zonep/edit.html.twig', [
+            'zonep' => $zonep,
+            'form'  => $form,
+        ]);
+    }
+
+    #[Route('/{idZone}/delete', name: 'app_zonep_delete', methods: ['POST'], requirements: ['idZone' => '\d+'])]
+    public function delete(Request $request, ZonepRepository $zonepRepository, int $idZone, EntityManagerInterface $entityManager): Response
+    {
+        $zonep = $zonepRepository->find($idZone);
+
+        if ($zonep && $this->isCsrfTokenValid('delete'.$zonep->getIdZone(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($zonep);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_zonep_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{idZone}', name: 'app_zonep_show', methods: ['GET'], requirements: ['idZone' => '\d+'])]
+    public function show(ZonepRepository $zonepRepository, int $idZone): Response
+    {
+        $zonep = $zonepRepository->find($idZone);
+
+        if (!$zonep) {
+            throw $this->createNotFoundException('Zone introuvable.');
+        }
+
+        return $this->render('zonep/show.html.twig', [
+            'zonep' => $zonep,
         ]);
     }
 
@@ -229,7 +257,7 @@ final class ZonepController extends AbstractController
     {
         $options = new Options();
         $options->set('defaultFont', 'Arial');
-        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isHtml5ParserEnabled', false);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
@@ -240,7 +268,7 @@ final class ZonepController extends AbstractController
             $dompdf->output(),
             Response::HTTP_OK,
             [
-                'Content-Type' => 'application/pdf',
+                'Content-Type'        => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]
         );

@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle activite ecologique{% endblock %}
+
+{% block body %}
+    {% include 'home/_front_form_theme.html.twig' %}
+
+    <video autoplay muted loop playsinline class="front-video-bg">
+        <source src="/assets/images/video-bg.mp4" type="video/mp4">
+    </video>
+    <div class="front-video-overlay"></div>
+
+    <div class="front-page-shell">
+        {% include 'home/_front_navbar.html.twig' %}
+
+        <section class="front-form-shell">
+            <div class="card-header">
+                <div class="reservation-admin-header">
+                    <span class="reservation-admin-kicker">Activity Panel</span>
+                    <h2 class="card-title">Creer une activite ecologique</h2>
+                    <p class="card-subtitle">Renseignez les informations de l'activite avant l'enregistrement.</p>
+                </div>
+            </div>
+
+            {{ include('activite_ecologique/_form.html.twig', {'button_label': 'Enregistrer', 'show_back_button': false}) }}
+        </section>
+    </div>
+{% endblock %}

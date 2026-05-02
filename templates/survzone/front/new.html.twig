@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'survzone.new_title'|trans }}{% endblock %}
+
+{% block body %}
+    {% include 'home/_front_form_theme.html.twig' %}
+
+    <video autoplay muted loop playsinline class="front-video-bg">
+        <source src="/assets/images/video-bg.mp4" type="video/mp4">
+    </video>
+    <div class="front-video-overlay"></div>
+
+    <div class="front-page-shell">
+        {% include 'home/_front_navbar.html.twig' %}
+
+        <section class="front-form-shell">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">{{ 'survzone.new_title'|trans }}</h2>
+                    <p class="card-subtitle">{{ 'survzone.new_subtitle'|trans }}</p>
+                </div>
+            </div>
+
+            {{ include('survzone/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+        </section>
+    </div>
+{% endblock %}

@@ -45,6 +45,7 @@
             "branch": "main",
             "version": "5.0",
             "ref": "46c9cd2c1e07f0fcfd97e96f12b03b2e0845c4cd"
+
         },
         "files": [
             "./config/packages/fos_elastica.yaml"
@@ -60,6 +61,7 @@
             "branch": "main",
             "version": "1.5",
             "ref": "c81bdcf4a9d4e7b1959071457f9608631865d381"
+        }
         },
         "files": [
             "./config/packages/knp_snappy.yaml"

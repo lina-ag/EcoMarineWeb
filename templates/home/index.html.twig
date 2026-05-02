@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}EcoMarine - Écotourisme à Kuriat{% endblock %}
+{% block title %}EcoMarine - Ecotourisme a Kuriat{% endblock %}
 
 {% block body %}
 
@@ -23,42 +23,6 @@
 {% endfor %}
 
 <style>
-    #nav-form-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        background: transparent;
-        color: #ffffff;
-        font-weight: 500;
-        font-size: 0.9rem;
-        letter-spacing: 0.01em;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.3s ease;
-        vertical-align: middle;
-        flex-shrink: 0;
-        border: none;
-        padding: 0.5rem 0.8rem;
-        border-radius: 4px;
-    }
-    #nav-form-btn:hover,
-    #nav-form-btn:focus-visible {
-        background: rgba(255, 255, 255, 0.1);
-        transform: none;
-        filter: none;
-        box-shadow: none;
-        outline: none;
-    }
-    #nav-form-badge {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        padding: 0.08rem 0.5rem;
-        font-size: 0.7rem;
-        font-weight: 500;
-        margin-left: 0.2rem;
-    }
-    
-    /* Styles pour une meilleure organisation de la navbar */
     .navbar {
         display: flex;
         align-items: center;
@@ -66,26 +30,26 @@
         flex-wrap: wrap;
         padding: 0.5rem 1rem;
     }
-    
+
     .navigation-row {
         display: flex;
         align-items: center;
         flex: 1;
         justify-content: flex-end;
     }
-    
+
     #navigation {
         display: flex;
         align-items: center;
         width: auto;
     }
-    
+
     .nav-box {
         display: flex;
         align-items: center;
         gap: 0.2rem;
     }
-    
+
     .navigation-menu {
         display: flex;
         align-items: center;
@@ -95,11 +59,11 @@
         gap: 0.2rem;
         flex-wrap: wrap;
     }
-    
+
     .navigation-menu li {
         margin: 0;
     }
-    
+
     .navigation-menu li a {
         display: inline-block;
         padding: 0.5rem 0.8rem;
@@ -109,11 +73,27 @@
         font-weight: 500;
         border-radius: 4px;
     }
-    
+
     .navigation-menu li a:hover {
         background: rgba(255, 255, 255, 0.1);
     }
-    
+
+    .navigation-menu li .nav-action-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .navigation-menu li .nav-action-link:hover {
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-1px);
+    }
+
     .navbar-toggle {
         display: none;
         background: none;
@@ -122,12 +102,12 @@
         font-size: 1.5rem;
         cursor: pointer;
     }
-    
+
     @media (max-width: 992px) {
         .navbar-toggle {
             display: block;
         }
-        
+
         .nav-box {
             display: none;
             position: absolute;
@@ -139,31 +119,26 @@
             padding: 1rem;
             z-index: 1000;
         }
-        
+
         .nav-box.active {
             display: flex;
         }
-        
+
         .navigation-menu {
             flex-direction: column;
             width: 100%;
             text-align: center;
         }
-        
+
         .navigation-menu li {
             width: 100%;
         }
-        
+
         .navigation-menu li a {
             display: block;
             padding: 0.8rem;
         }
-        
-        #nav-form-btn {
-            margin: 0.5rem 0;
-            width: 100%;
-            justify-content: center;
-        }
+
     }
 </style>
 
@@ -191,16 +166,31 @@
                         <div class="nav-box navbar-collapse">
                             <ul class="navigation-menu nav navbar-nav navbars" id="nav">
                                 <li data-menuanchor="slide01" class="active"><a href="#slide01">Accueil</a></li>
-                                <li data-menuanchor="slide02"><a href="#slide02">À Propos</a></li>
-                                <li data-menuanchor="slide03"><a href="#slide03">Activités</a></li>
+                                <li data-menuanchor="slide02"><a href="#slide02">A Propos</a></li>
+                                <li data-menuanchor="slide03"><a href="#slide03">Activites</a></li>
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
-                                <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
+                                <li data-menuanchor="slide06"><a href="#slide06">Temoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
-                                <li><button id="nav-form-btn" type="button" aria-label="Formulaire suivant">
-                                    <span>📋</span>
-                                    <span id="nav-form-label">Réservations</span>
-                                    <span id="nav-form-badge">1/10</span>
-                                </button></li>
+                                <li>
+                                    <button type="button" class="nav-action-link" data-nav-url="{{ path('app_home_zonep_new') }}">
+                                        Zonep
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-action-link" data-nav-url="{{ path('app_home_survzone_new') }}">
+                                        Survzone
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-action-link" data-nav-url="{{ path('app_home_activite_ecologique_new') }}">
+                                        Activite
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-action-link" data-nav-url="{{ path('app_home_reservation_new') }}">
+                                        Reservation
+                                    </button>
+                                </li>
                             </ul>
                         </div>
                     </nav>
@@ -215,25 +205,23 @@
 
     <div id="fullpage" class="fullpage-default">
 
-        <!-- SLIDE 01 — Accueil -->
         <div class="section animated-row" data-section="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
             <div class="section-inner">
                 <div class="welcome-box">
                     <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
                     <h1 class="welcome-title animate" data-animate="fadeInUp">EcoMarine</h1>
                     <p class="animate" data-animate="fadeInUp">
-                        Explorez l'écotourisme marin autour de l'île de Kuriat, Monastir.
-                        Réservez vos activités, plongées et excursions en préservant la biodiversité marine.
+                        Explorez l'ecotourisme marin autour de l'ile de Kuriat, Monastir.
+                        Reservez vos activites, plongees et excursions en preservant la biodiversite marine.
                     </p>
                     <div class="scroll-down next-section animate" data-animate="fadeInUp">
-                        <img src="/assets/images/mouse-scroll.png" alt="Défiler">
-                        <span>Défiler</span>
+                        <img src="/assets/images/mouse-scroll.png" alt="Defiler">
+                        <span>Defiler</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 02 — À Propos -->
         <div class="section animated-row" data-section="slide02">
             <div class="section-inner">
                 <div class="about-section">
@@ -243,12 +231,12 @@
                                 <div class="col-md-6">
                                     <div class="about-contentbox">
                                         <div class="animate" data-animate="fadeInUp">
-                                            <span>À Propos de Nous</span>
+                                            <span>A Propos de Nous</span>
                                             <h2>Qui sommes-nous ?</h2>
                                             <p>
-                                                EcoMarine est une plateforme dédiée à la recherche marine et à l'écotourisme
-                                                responsable autour de l'île de Kuriat. Nous connectons les visiteurs passionnés
-                                                de nature avec des expériences uniques tout en protégeant l'écosystème marin.
+                                                EcoMarine est une plateforme dediee a la recherche marine et a l'ecotourisme
+                                                responsable autour de l'ile de Kuriat. Nous connectons les visiteurs passionnes
+                                                de nature avec des experiences uniques tout en protegeant l'ecosysteme marin.
                                             </p>
                                         </div>
                                         <div class="facts-list owl-carousel">
@@ -267,13 +255,13 @@
                                             <div class="item animate" data-animate="fadeInUp">
                                                 <div class="counter-box">
                                                     <i class="fa fa-leaf counter-icon" aria-hidden="true"></i>
-                                                    <span class="count-number">15</span> Espèces protégées
+                                                    <span class="count-number">15</span> Especes protegees
                                                 </div>
                                             </div>
                                             <div class="item animate" data-animate="fadeInUp">
                                                 <div class="counter-box">
                                                     <i class="fa fa-star counter-icon" aria-hidden="true"></i>
-                                                    <span class="count-number">5</span> Années d'expérience
+                                                    <span class="count-number">5</span> Annees d'experience
                                                 </div>
                                             </div>
                                         </div>
@@ -291,13 +279,12 @@
             </div>
         </div>
 
-        <!-- SLIDE 03 — Activités -->
         <div class="section animated-row" data-section="slide03">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
                         <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nos Activités</span>
+                            <span>Nos Activites</span>
                             <h2>Que proposons-nous ?</h2>
                         </div>
                         <div class="services-section">
@@ -306,42 +293,42 @@
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-ship" aria-hidden="true"></i></span>
                                         <h3>Excursions en mer</h3>
-                                        <p>Partez découvrir les fonds marins de Kuriat lors de sorties en bateau encadrées par nos experts.</p>
+                                        <p>Partez decouvrir les fonds marins de Kuriat lors de sorties en bateau encadrees par nos experts.</p>
                                     </div>
                                 </div>
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-life-ring" aria-hidden="true"></i></span>
-                                        <h3>Plongée sous-marine</h3>
-                                        <p>Explorez les récifs et grottes sous-marines avec nos moniteurs diplômés d'État.</p>
+                                        <h3>Plongee sous-marine</h3>
+                                        <p>Explorez les recifs et grottes sous-marines avec nos moniteurs diplomes d'Etat.</p>
                                     </div>
                                 </div>
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-camera" aria-hidden="true"></i></span>
-                                        <h3>Photo & Vidéo marine</h3>
-                                        <p>Immortalisez vos découvertes avec notre matériel de prise de vue sous-marine.</p>
+                                        <h3>Photo et video marine</h3>
+                                        <p>Immortalisez vos decouvertes avec notre materiel de prise de vue sous-marine.</p>
                                     </div>
                                 </div>
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-leaf" aria-hidden="true"></i></span>
                                         <h3>Recherche scientifique</h3>
-                                        <p>Participez à nos programmes de suivi des tortues marines et de protection des coraux.</p>
+                                        <p>Participez a nos programmes de suivi des tortues marines et de protection des coraux.</p>
                                     </div>
                                 </div>
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span>
-                                        <h3>Randonnées côtières</h3>
-                                        <p>Découvrez la faune et la flore de l'île de Kuriat lors de balades guidées sur le littoral.</p>
+                                        <h3>Randonnees cotieres</h3>
+                                        <p>Decouvrez la faune et la flore de l'ile de Kuriat lors de balades guidees sur le littoral.</p>
                                     </div>
                                 </div>
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
-                                        <h3>Réservations en ligne</h3>
-                                        <p>Réservez facilement vos activités via notre plateforme sécurisée, 24h/24.</p>
+                                        <h3>Reservations en ligne</h3>
+                                        <p>Informez-vous sur nos experiences marines et contactez l'equipe pour organiser votre visite.</p>
                                     </div>
                                 </div>
                             </div>
@@ -351,7 +338,6 @@
             </div>
         </div>
 
-        <!-- SLIDE 05 — Galerie -->
         <div class="section animated-row" data-section="slide05">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -365,11 +351,11 @@
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
                                         <div class="thumb">
-                                            <img src="/assets/images/item-5.jpeg" alt="Plongée à Kuriat">
+                                            <img src="/assets/images/item-5.jpeg" alt="Plongee a Kuriat">
                                         </div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
-                                            <h4>Plongée à Kuriat</h4>
-                                            <p>Une immersion unique dans les eaux cristallines de l'île de Kuriat.</p>
+                                            <h4>Plongee a Kuriat</h4>
+                                            <p>Une immersion unique dans les eaux cristallines de l'ile de Kuriat.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -391,7 +377,7 @@
                                         </div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Excursion en mer</h4>
-                                            <p>Découverte des côtes de Monastir à bord de nos embarcations.</p>
+                                            <p>Decouverte des cotes de Monastir a bord de nos embarcations.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -402,7 +388,7 @@
                                         </div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Faune marine</h4>
-                                            <p>Richesse et diversité des espèces marines méditerranéennes.</p>
+                                            <p>Richesse et diversite des especes marines mediterraneennes.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -413,7 +399,7 @@
                                         </div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Coucher de soleil</h4>
-                                            <p>Des paysages à couper le souffle depuis les rivages de Kuriat.</p>
+                                            <p>Des paysages a couper le souffle depuis les rivages de Kuriat.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -424,13 +410,12 @@
             </div>
         </div>
 
-        <!-- SLIDE 06 — Témoignages -->
         <div class="section animated-row" data-section="slide06">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
                         <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Témoignages</span>
+                            <span>Temoignages</span>
                             <h2>Ce qu'ils disent</h2>
                         </div>
                         <div class="col-md-8 offset-md-2">
@@ -443,7 +428,7 @@
                                             </div>
                                             <div class="testimonial-content">
                                                 <h4>Yasmine B.</h4>
-                                                <p>"Une expérience inoubliable ! L'équipe EcoMarine est passionnée et très professionnelle. Je recommande vivement."</p>
+                                                <p>"Une experience inoubliable ! L'equipe EcoMarine est passionnee et tres professionnelle. Je recommande vivement."</p>
                                                 <span>Biologiste marine</span>
                                             </div>
                                         </div>
@@ -455,7 +440,7 @@
                                             </div>
                                             <div class="testimonial-content">
                                                 <h4>Karim M.</h4>
-                                                <p>"La plongée à Kuriat était magique. Voir les tortues dans leur milieu naturel est une expérience unique."</p>
+                                                <p>"La plongee a Kuriat etait magique. Voir les tortues dans leur milieu naturel est une experience unique."</p>
                                                 <span>Photographe nature</span>
                                             </div>
                                         </div>
@@ -467,8 +452,8 @@
                                             </div>
                                             <div class="testimonial-content">
                                                 <h4>Sofia L.</h4>
-                                                <p>"Parfait pour une escapade écologique. La réservation en ligne est simple et l'accueil chaleureux."</p>
-                                                <span>Éco-touriste passionnée</span>
+                                                <p>"Parfait pour une escapade ecologique. L'accueil est chaleureux et les sorties sont tres bien organisees."</p>
+                                                <span>Eco-touriste passionnee</span>
                                             </div>
                                         </div>
                                     </div>
@@ -480,7 +465,6 @@
             </div>
         </div>
 
-        <!-- SLIDE 07 — Contact -->
         <div class="section animated-row" data-section="slide07" data-anchor="slide07">
             <div class="section-inner">
                 <div class="row justify-content-center">
@@ -494,7 +478,7 @@
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
                                     <div class="contact-box">
                                         <div class="contact-row">
-                                            <i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie
+                                            <i class="fa fa-map-marker"></i> Ile de Kuriat, Monastir, Tunisie
                                         </div>
                                         <div class="contact-row">
                                             <i class="fa fa-phone"></i> +216 73 000 000
@@ -505,48 +489,13 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
-                                    <form id="ajax-contact" method="post" action="#">
-                                        <div class="input-field">
-                                            <input type="text" class="form-control" name="name" id="name" required placeholder="Votre nom">
+                                    <div class="contact-box">
+                                        <div class="contact-row">
+                                            <i class="fa fa-clock-o"></i> Lundi - Samedi : 08:00 - 18:00
                                         </div>
-                                        <div class="input-field">
-                                            <input type="email" class="form-control" name="email" id="email" required placeholder="Votre email">
+                                        <div class="contact-row">
+                                            <i class="fa fa-globe"></i> Suivez nos actualites sur nos reseaux sociaux
                                         </div>
-                                        <div class="input-field">
-                                            <textarea class="form-control" name="message" id="message" required placeholder="Votre message"></textarea>
-                                        </div>
-                                        <button class="btn" type="submit">Envoyer</button>
-                                    </form>
-                                    <div id="form-messages" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 08 — Réservations -->
-        <div class="section animated-row" data-section="slide08" data-anchor="slide08">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Réservez maintenant</span>
-                            <h2>Planifiez votre expérience</h2>
-                        </div>
-                        <div class="reservations-section">
-                            <div class="row">
-                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
-                                    <div class="form-card">
-                                        <h3>Faire une réservation</h3>
-                                        <p class="form-subtitle">Réservez votre place pour une activité</p>
-                                        {{ include('reservation/_form.html.twig', {
-                                            'form': form_reservation,
-                                            'button_label': 'Réserver',
-                                            'form_action': path('app_reservation_new', {'source': 'front'}),
-                                            'show_back_button': false
-                                        }) }}
                                     </div>
                                 </div>
                             </div>
@@ -556,229 +505,7 @@
             </div>
         </div>
 
-        <!-- SLIDE 09 — Activités Écologiques -->
-        <div class="section animated-row" data-section="slide09" data-anchor="slide09">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Activités Écologiques</span>
-                            <h2>Proposer une activité écologique</h2>
-                        </div>
-                        <div class="reservations-section">
-                            <div class="row">
-                                <div class="col-md-7 offset-md-2 animate" data-animate="fadeInUp">
-                                    <div class="form-card form-card-activity">
-                                        <h3>Créer une activité écologique</h3>
-                                        <p class="form-subtitle">Renseignez les détails de votre activité</p>
-                                        {{ include('activite_ecologique/_form.html.twig', {
-                                            'form': form_activite,
-                                            'button_label': 'Créer l\'activité',
-                                            'form_action': path('app_activite_ecologique_new', {'source': 'front'}),
-                                            'show_back_button': false
-                                        }) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 11 — Zones Protégées -->
-        <div class="section animated-row" data-section="slide11" data-anchor="slide11">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Gérer les zones</span>
-                            <h2>Ajouter une zone protégée</h2>
-                        </div>
-                        <div class="reservations-section">
-                            <div class="row">
-                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
-                                    <div class="form-card">
-                                        <h3>Créer une zone protégée</h3>
-                                        <p class="form-subtitle">Renseignez les informations de la nouvelle zone</p>
-                                        {{ include('zonep/_form.html.twig', {
-                                            'form': form_zonep,
-                                            'button_label': 'Créer la zone',
-                                            'form_action': path('app_zonep_new'),
-                                            'show_back_button': false
-                                        }) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 10 — Surveillance -->
-        <div class="section animated-row" data-section="slide10" data-anchor="slide10">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Suivi terrain</span>
-                            <h2>Ajouter une surveillance de zone</h2>
-                        </div>
-                        <div class="reservations-section">
-                            <div class="row">
-                                <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
-                                    <div class="form-card">
-                                        <h3>Créer une fiche de surveillance</h3>
-                                        <p class="form-subtitle">Enregistrez la date, la zone et vos observations</p>
-                                        {{ include('survzone/_form.html.twig', {
-                                            'form': form_survzone,
-                                            'button_label': 'Créer la surveillance',
-                                            'form_action': path('app_survzone_new'),
-                                            'show_back_button': false
-                                        }) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 209b — Nouvelle Activité Écologique -->
-        <div class="section animated-row" data-section="slide209b" data-anchor="slide209b">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle activité</span>
-                            <h2>Ajouter une activité écologique</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('activite_ecologique/_form.html.twig', {
-                                'form': activiteForm,
-                                'button_label': 'Ajouter l\'activité',
-                                'form_action': path('app_activite_ecologique_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 210 — Faune Marine -->
-        <div class="section animated-row" data-section="slide210" data-anchor="slide210">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle observation</span>
-                            <h2>Signaler une faune marine</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('faune_marine/_form.html.twig', {
-                                'form': fauneMarineForm,
-                                'button_label': 'Ajouter la faune',
-                                'form_action': path('app_faune_marine_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 211 — Observation -->
-        <div class="section animated-row" data-section="slide211" data-anchor="slide211">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle observation</span>
-                            <h2>Documenter une observation</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('observation/_form.html.twig', {
-                                'form': observationForm,
-                                'button_label': 'Enregistrer l\'observation',
-                                'form_action': path('app_observation_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 212 — Prédiction d'Échouage -->
-        <div class="section animated-row" data-section="slide212" data-anchor="slide212">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Prédiction</span>
-                            <h2>Ajouter une prédiction d'échouage</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('prediction_echouage/_form.html.twig', {
-                                'form': predictionForm,
-                                'button_label': 'Ajouter la prédiction',
-                                'form_action': path('app_prediction_echouage_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 213 — Mission Drone -->
-        <div class="section animated-row" data-section="slide213" data-anchor="slide213">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Surveillance aérienne</span>
-                            <h2>Planifier une mission drone</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('mission_drone/_form.html.twig', {
-                                'form': missionDroneForm,
-                                'button_label': 'Créer la mission',
-                                'form_action': path('app_mission_drone_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 214 — Détection Drone -->
-        <div class="section animated-row" data-section="slide214" data-anchor="slide214">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Résultats IA</span>
-                            <h2>Ajouter une détection drone</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('detection_drone/_form.html.twig', {
-                                'form': detectionDroneForm,
-                                'button_label': 'Enregistrer la détection',
-                                'form_action': path('app_detection_drone_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>{# fin #fullpage #}
+    </div>
 
     <div id="social-icons">
         <div class="text-right">
@@ -791,59 +518,18 @@
         </div>
     </div>
 
-</div>{# fin #video #}
+</div>
 
 <script>
-// Menu toggle pour mobile
 document.querySelector('.navbar-toggle').addEventListener('click', function() {
     document.querySelector('.nav-box').classList.toggle('active');
 });
 
-(function () {
-    var FORMS = [
-        { anchor: 'slide08',   label: 'Réservations' },
-        { anchor: 'slide09',   label: 'Activité Éco.' },
-        { anchor: 'slide11',   label: 'Zone Protégée' },
-        { anchor: 'slide10',   label: 'Surveillance' },
-        { anchor: 'slide209b', label: 'Nvl. Activité' },
-        { anchor: 'slide210',  label: 'Faune Marine' },
-        { anchor: 'slide211',  label: 'Observation' },
-        { anchor: 'slide212',  label: 'Prédiction' },
-        { anchor: 'slide213',  label: 'Mission Drone' },
-        { anchor: 'slide214',  label: 'Détection Drone' }
-    ];
-
-    var btn     = document.getElementById('nav-form-btn');
-    var labelEl = document.getElementById('nav-form-label');
-    var badgeEl = document.getElementById('nav-form-badge');
-    var total   = FORMS.length;
-    var nextIdx = 0;
-
-    if (!btn) return;
-
-    function getCurrentFormIndex() {
-        var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
-        for (var i = 0; i < total; i++) {
-            if (FORMS[i].anchor === hash) return i;
-        }
-        return -1;
-    }
-
-    function updateBtn() {
-        var idx = getCurrentFormIndex();
-        nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
-        labelEl.textContent = FORMS[nextIdx].label;
-        badgeEl.textContent = (nextIdx + 1) + '/' + total;
-    }
-
-    btn.addEventListener('click', function () {
-        window.location.hash = '#' + FORMS[nextIdx].anchor;
-        setTimeout(updateBtn, 80);
+document.querySelectorAll('[data-nav-url]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        window.location.href = button.getAttribute('data-nav-url');
     });
-
-    window.addEventListener('hashchange', updateBtn);
-    updateBtn();
-})();
+});
 </script>
 
 {% endblock %}
