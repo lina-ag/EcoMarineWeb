@@ -42,8 +42,8 @@ class UtilisateurType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'exemple@gmail.com',
-                    'pattern' => '.*@gmail\.com$',
-                    'title' => 'L\'email doit être une adresse Gmail'
+                    'pattern' => '.*@(gmail)\.com$',
+                    'title' => 'L\'email doit être une adresse gmail (@gmail.com )'
                 ]
             ])
             ->add('mot_de_passe', PasswordType::class, [

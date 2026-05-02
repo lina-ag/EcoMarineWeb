@@ -35,7 +35,7 @@
         .utilisateurs-compact .data-table td:last-child {
             white-space: nowrap;
         }
-        
+
         .alert {
             max-width: 980px;
             margin: 0 auto 1rem auto;
@@ -46,6 +46,8 @@
             border: none;
             color: #fff;
             width: 70px;
+
+            width: 92px;
             height: 50px;
             padding: 0;
             display: flex;
@@ -54,6 +56,8 @@
             margin-right: 0.3cm;
             border-radius: 8px;
             font-size: 10px;
+
+            font-size: 12px;
         }
 
         .utilisateurs-compact .btn-primary {
@@ -152,6 +156,11 @@
             box-shadow: 0 2px 8px rgba(26, 176, 163, 0.25);
         }
 
+        .search-form.is-loading .form-control,
+        .search-form.is-loading .btn-reset {
+            opacity: 0.7;
+        }
+
         .data-table .no-results td {
             padding: 1.2rem;
             background: #f8f9fa;
@@ -198,12 +207,52 @@
             color: white;
         }
 
+
         .badge.bg-blocked {
             background-color: #ff416c;
             color: white;
         }
 
         /* Pagination KnpPaginator */
+        .pagination {
+            display: flex;
+            gap: 6px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination span.current {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background-color: #495057 !important;
+            color: #fff !important;
+            font-weight: 600;
+            border: 1px solid #495057;
+        }
+
+        .pagination span.page a,
+        .pagination span.next a,
+        .pagination span.last a,
+        .pagination span.previous a,
+        .pagination span.first a {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: #495057 !important;
+            background-color: #fff !important;
+            border: 1px solid #495057 !important;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+
+        .badge.bg-blocked {
+            background-color: #ff416c;
+            color: white;
+        }
+
         .pagination {
             display: flex;
             gap: 6px;
@@ -247,6 +296,7 @@
         }
 
         /* Ligne bloquée */
+
         tr.blocked-row {
             background-color: rgba(255, 65, 108, 0.12) !important;
             border-left: 4px solid #ff416c;
@@ -255,7 +305,6 @@
 {% endblock %}
 
 {% block body %}
-    {# Affichage des messages flash #}
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ message }}
@@ -276,14 +325,16 @@
                 📥Excel
             </a>
             <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">Créer un utilisateur</a>
+            <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">📥 Excel</a>
+            <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">➕ Creer un utilisateur</a>
         </div>
 
         <div class="search-panel">
             <form id="search-form" method="get" action="{{ path('app_utilisateur_index') }}" class="search-form">
                 <div class="search-row">
-                    <input id="user-search" type="search" name="search" value="{{ search|default('') }}" placeholder="Recherche par nom ou prénom" class="form-control">
+                    <input id="user-search" type="search" name="search" value="{{ search|default('') }}" placeholder="Recherche par nom ou prenom" class="form-control">
                     <select id="role-filter" name="role" class="form-control">
-                        <option value="all"{% if selectedRole is defined and selectedRole == 'all' %} selected{% endif %}>Tous les rôles</option>
+                        <option value="all"{% if selectedRole is defined and selectedRole == 'all' %} selected{% endif %}>Tous les roles</option>
                         {% for roleOption in roles %}
                             <option value="{{ roleOption.nomRole }}"{% if selectedRole is defined and selectedRole == roleOption.nomRole %} selected{% endif %}>
                                 {% if roleOption.nomRole == 'admin' %}
@@ -297,11 +348,12 @@
                         {% endfor %}
                     </select>
                     <div class="search-actions">
-                        <a href="{{ path('app_utilisateur_index') }}" class="btn-reset">Réinitialiser</a>
+                        <a href="{{ path('app_utilisateur_index') }}" id="reset-search" class="btn-reset">🔄 Reinitialiser</a>
                     </div>
                 </div>
             </form>
         </div>
+
 
         <div class="table-wrapper">
             <table class="data-table">
@@ -386,6 +438,14 @@
         // ── Bloquer / Débloquer via API ──
         async function toggleBlock(id, action) {
             const msg = action === 'block' ? '🚫 Bloquer cet utilisateur ?' : '✅ Débloquer cet utilisateur ?';
+
+        {% include 'utilisateur/_results.html.twig' %}
+    </section>
+
+    <script>
+        async function toggleBlock(id, action) {
+            const msg = action === 'block' ? 'Bloquer cet utilisateur ?' : 'Debloquer cet utilisateur ?';
+
             if (!confirm(msg)) return;
 
             try {
@@ -395,6 +455,7 @@
                 if (data.success) {
                     location.reload();
                 } else {
+
                     alert('❌ ' + data.message);
                 }
             } catch (error) {
@@ -403,11 +464,23 @@
         }
 
         // ── Recherche dynamique ──
+
+                    alert(data.message || 'Action impossible');
+                }
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+
+
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('user-search');
             const roleFilter = document.getElementById('role-filter');
             const searchForm = document.getElementById('search-form');
-            const tableWrapper = document.querySelector('.table-wrapper');
+            const resetButton = document.getElementById('reset-search');
+            let debounceTimer = null;
+            let activeRequest = null;
+
 
             function performSearch() {
                 const searchValue = searchInput.value;
@@ -432,6 +505,93 @@
 
             searchInput.addEventListener('input', performSearch);
             roleFilter.addEventListener('change', performSearch);
+            function buildUrl(page = 1) {
+                const url = new URL(searchForm.action, window.location.origin);
+                const searchValue = searchInput.value.trim();
+                const roleValue = roleFilter.value;
+
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                }
+
+                if (roleValue && roleValue !== 'all') {
+                    url.searchParams.set('role', roleValue);
+                }
+
+                if (page > 1) {
+                    url.searchParams.set('page', page);
+                }
+
+                return url;
+            }
+
+            async function performSearch(page = 1) {
+                const url = buildUrl(page);
+
+                if (activeRequest) {
+                    activeRequest.abort();
+                }
+
+                activeRequest = new AbortController();
+                searchForm.classList.add('is-loading');
+
+                try {
+                    const response = await fetch(url.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        signal: activeRequest.signal
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Reponse invalide du serveur');
+                    }
+
+                    const html = await response.text();
+                    const currentResults = document.getElementById('users-results');
+
+                    if (currentResults) {
+                        currentResults.outerHTML = html;
+                        history.replaceState({}, '', url);
+                        bindPaginationLinks();
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error('Erreur lors de la recherche:', error);
+                    }
+                } finally {
+                    searchForm.classList.remove('is-loading');
+                }
+            }
+
+            function scheduleSearch() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => performSearch(1), 250);
+            }
+
+            function bindPaginationLinks() {
+                const paginationLinks = document.querySelectorAll('#users-results .pagination a');
+
+                paginationLinks.forEach(link => {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const pageUrl = new URL(this.href, window.location.origin);
+                        const page = parseInt(pageUrl.searchParams.get('page') || '1', 10);
+                        performSearch(page);
+                    });
+                });
+            }
+
+            searchInput.addEventListener('input', scheduleSearch);
+            roleFilter.addEventListener('change', () => performSearch(1));
+            searchForm.addEventListener('submit', event => event.preventDefault());
+
+            resetButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                searchInput.value = '';
+                roleFilter.value = 'all';
+                performSearch(1);
+            });
+
+            bindPaginationLinks();
         });
     </script>
 {% endblock %}

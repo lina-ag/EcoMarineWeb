@@ -17,14 +17,18 @@
             box-shadow: 0 24px 60px rgba(0,0,0,0.18);
             backdrop-filter: blur(18px);
             border-radius: 24px; padding: 34px 32px;
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
         }
-        .auth-card h2 { margin-bottom:1rem; font-size:2rem; font-weight:700; color:#fff; }
-        .auth-card > p { color:rgba(255,255,255,0.82); margin-bottom:1.8rem; }
+        .auth-card h2 { margin-bottom:1rem; font-size:2rem; font-weight:700; color:#fff; width:100%; text-align:center; }
+        .auth-card > p { color:rgba(255,255,255,0.82); margin-bottom:1.8rem; width:100%; text-align:center; }
+        .auth-card form { width:100%; }
         .auth-card .form-control {
             background: rgba(255,255,255,0.12);
             border: 1px solid rgba(255,255,255,0.28);
             color: #fff; box-shadow: none;
             border-radius: 14px; padding: 14px 16px; margin-bottom: 1rem;
+            width:100%; text-align:left;
         }
         .auth-card .form-control::placeholder { color: rgba(255,255,255,0.5); }
         .auth-card .form-control:focus {
@@ -32,14 +36,16 @@
             box-shadow: 0 0 0 0.2rem rgba(173,214,255,0.25);
             background: rgba(255,255,255,0.16); color: #fff;
         }
-        .auth-card label { display:block; margin-bottom:0.4rem; color:rgba(255,255,255,0.88); font-weight:500; }
-        .auth-card .form-label { color:rgba(255,255,255,0.88) !important; font-weight:500; }
+        .auth-card label { display:block; margin-bottom:0.4rem; color:rgba(255,255,255,0.88); font-weight:500; text-align:center; width:100%; }
+        .auth-card .form-label { color:rgba(255,255,255,0.88) !important; font-weight:500; text-align:center; width:100%; }
         .auth-card select.form-control option { background:#1a3a4a; color:#fff; }
         .auth-card .invalid-feedback { color:#ff8080; }
-        .auth-card .btn { border-radius:14px; padding:12px 18px; font-weight:700; letter-spacing:0.02em; }
+        .auth-card .btn { border-radius:14px; padding:12px 18px; font-weight:700; letter-spacing:0.02em; width:100%; text-align:center; }
         .auth-card .btn-success { background:#00c774; border-color:#00c774; color:#fff; }
         .auth-card .btn-success:hover { background:#1cff9d; border-color:#1cff9d; transform:translateY(-2px); }
+        .auth-card .text-center { width:100%; text-align:center; }
         .auth-card .text-center a { color:#fff; text-decoration:underline; }
+        .auth-card .alert { width:100%; text-align:center; }
         .video-bg { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
 
         /* Section visage */

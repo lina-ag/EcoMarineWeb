@@ -30,6 +30,11 @@ class Zonep
         return $this->idZone;
     }
 
+    public function __toString(): string
+    {
+        return $this->nomZone ?? sprintf('Zone #%d', $this->idZone ?? 0);
+    }
+
     public function setIdZone(int $idZone): self
     {
         $this->idZone = $idZone;

@@ -43,8 +43,8 @@ class SignUpType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'exemple@gmail.com',
-                    'pattern' => '.*@gmail\.com$',
-                    'title' => 'L\'email doit être une adresse Gmail'
+                    'pattern' => '.*@(gmail)\.com$',
+                    'title' => 'L\'email doit être une adresse Gmail (@gmail.com)'
                 ]
             ])
             ->add('mot_de_passe', PasswordType::class, [

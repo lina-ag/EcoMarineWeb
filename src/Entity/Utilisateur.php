@@ -30,8 +30,8 @@ class Utilisateur
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     #[Assert\Regex(
-        pattern: "/@gmail\.com$/",
-        message: "L'email doit être une adresse Gmail (@gmail.com)"
+        pattern: "/@(gmail)\.com$/",
+        message: "L'email doit être une adresse gmail (@gmail.com)"
     )]
     private ?string $email = null;
 
