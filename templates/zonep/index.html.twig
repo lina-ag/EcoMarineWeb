@@ -75,11 +75,7 @@
 
     {{ include('zonep/_results.html.twig') }}
 
-    <div
-        class="zonep-map-panel"
-        data-controller="zonep-map"
-        data-zonep-map-default-style-value="satellite"
-    >
+    <div class="zonep-map-panel">
         <div class="zonep-map-toolbar">
             <div>
                 <h3 class="zonep-map-title">{{ 'zonep.map.title'|trans }}</h3>
@@ -121,7 +117,12 @@
         </div>
 
         <div id="map-container" class="zonep-map-canvas">
-            {{ render_map(map, {'style': 'height: 400px; width: 100%;'}) }}
+            {{ ux_map(map, {
+                style: 'height: 400px; width: 100%;',
+                class: 'zonep-map-element',
+                'data-controller': 'zonep-map',
+                'data-zonep-map-default-style-value': 'satellite'
+            }) }}
         </div>
     </div>
 </section>
@@ -486,6 +487,7 @@
     }
 
     .zonep-map-canvas > div { height: 100%; width: 100%; }
+    .zonep-map-element { height: 100%; width: 100%; }
 
     /* ── Responsive ────────────────────────────────────────── */
     @media (max-width: 768px) {

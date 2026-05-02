@@ -9,7 +9,7 @@
     <div class="card-header">
         <div>
             <h2 class="card-title">👤 Utilisateur #{{ utilisateur.idUtilisateur }}</h2>
-            <p class="card-subtitle">Détails du compte utilisateur</p>
+            <p class="card-subtitle">Details du compte utilisateur</p>
         </div>
     </div>
 
@@ -25,7 +25,7 @@
                     <td>{{ utilisateur.nom }}</td>
                 </tr>
                 <tr>
-                    <th>Prénom</th>
+                    <th>Prenom</th>
                     <td>{{ utilisateur.prenom }}</td>
                 </tr>
                 <tr>
@@ -39,11 +39,11 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Téléphone</th>
+                    <th>Telephone</th>
                     <td>{{ utilisateur.telephone }}</td>
                 </tr>
                 <tr>
-                    <th>Rôle</th>
+                    <th>Role</th>
                     <td>
                         {% if utilisateur.role == 'admin' %}
                             <span class="badge role-admin">Admin</span>
@@ -71,22 +71,17 @@
 </section>
 
 <style>
-
-/* ===== VARIABLES THEME ===== */
 :root {
     --bg-card: #ffffff;
     --text-main: #1a1a1a;
     --text-muted: #555;
     --border-color: rgba(0,0,0,0.1);
-
     --primary: #1b9aaa;
     --primary-light: #2ec4b6;
-
     --danger: #ff4b2b;
     --danger-light: rgba(255,75,43,0.1);
 }
 
-/* 🌙 DARK MODE */
 body.dark-mode {
     --bg-card: rgba(255,255,255,0.05);
     --text-main: #ffffff;
@@ -94,7 +89,6 @@ body.dark-mode {
     --border-color: rgba(255,255,255,0.1);
 }
 
-/* ===== TABLE ===== */
 .custom-table th {
     color: var(--primary);
 }
@@ -107,12 +101,10 @@ body.dark-mode {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* ===== PASSWORD ===== */
 .password-hidden {
     color: var(--text-muted);
 }
 
-/* ===== BADGES ===== */
 .badge {
     padding: 5px 10px;
     border-radius: 8px;
@@ -133,7 +125,6 @@ body.dark-mode {
     background: linear-gradient(135deg, var(--primary-light), var(--primary));
 }
 
-/* ===== BUTTONS ===== */
 .btn {
     padding: 10px 20px;
     border-radius: 10px;
@@ -142,7 +133,6 @@ body.dark-mode {
     transition: 0.3s;
 }
 
-/* PRIMARY */
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-light), var(--primary));
     color: #fff;
@@ -152,7 +142,6 @@ body.dark-mode {
     transform: translateY(-2px);
 }
 
-/* SECONDARY */
 .btn-secondary {
     background: var(--bg-card);
     color: var(--text-main);
@@ -163,20 +152,17 @@ body.dark-mode {
     background: rgba(0,0,0,0.05);
 }
 
-/* DELETE */
 form button.btn-danger {
     background: linear-gradient(135deg, #ff416c, #ff4b2b);
     color: white;
 }
 
-/* ===== CARD ===== */
 .user-show {
     background: var(--bg-card);
     color: var(--text-main);
     border: 1px solid var(--border-color);
 }
 
-/* ===== TEXT ===== */
 .card-title {
     color: var(--text-main);
 }
@@ -185,7 +171,6 @@ form button.btn-danger {
     color: var(--text-muted);
 }
 
-/* ===== RESPONSIVE ===== */
 @media(max-width:768px){
     .btn-group {
         flex-direction: column;

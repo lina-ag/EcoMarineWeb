@@ -1,8 +1,10 @@
 
 import '@hotwired/turbo';
 import app from './bootstrap.js';
+import LeafletMapController from '@symfony/ux-leaflet-map';
 import ZonepMapController from './controllers/zonep_map_controller.js';
 
+app.register('symfony--ux-leaflet-map--map', LeafletMapController);
 app.register('zonep-map', ZonepMapController);
 
 import { trans } from './translator.js';

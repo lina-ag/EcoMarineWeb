@@ -73,11 +73,37 @@ if ($blockedCountryRepo->isCountryBlocked($location['country_code'])) {
         $form = $this->createForm(SignUpType::class, $user);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires avant de vous inscrire.');
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $user->setMotDePasse(password_hash($user->getMotDePasse(), PASSWORD_BCRYPT));
             $user->setCreatedAt(new \DateTime());
 
             $imageBase64 = $request->request->get('face_image_data');
+
+            if (
+                !$user->getNom() ||
+                !$user->getPrenom() ||
+                !$user->getEmail() ||
+                !$user->getMotDePasse() ||
+                !$user->getTelephone() ||
+                !$user->getRole() ||
+                !$user->getDateNaissance()
+            ) {
+                $this->addFlash('error', 'Tous les champs sont obligatoires.');
+                return $this->render('security/signUp.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            if ($user->getRoleName() === 'chercheur' && !$imageBase64) {
+                $this->addFlash('error', 'Veuillez remplir tous les champs et capturer votre visage avant de vous inscrire.');
+                return $this->render('security/signUp.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
 
             if ($user->getRoleName() === 'chercheur' && $imageBase64) {
     $encoding = $faceService->extractEncoding($imageBase64);
@@ -123,14 +149,14 @@ $em->flush();
             $password = $request->request->get('password');
 
             // Admin spécial
-            if ($email === 'admin@outlook.com' && $password === 'admin') {
+            if ($email === 'admin@gmail.com' && $password === 'admin') {
                 $adminUser = $em->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
                 if ($adminUser) {
                     $session->set('user', $adminUser);
                 } else {
                     $adminRole = $em->getRepository(Role::class)->findOneBy(['nomRole' => 'admin']);
                     $admin = new Utilisateur();
-                    $admin->setEmail('admin@outlook.com');
+                    $admin->setEmail('admin@gmail.com');
                     $admin->setMotDePasse(password_hash('admin', PASSWORD_BCRYPT));
                     $admin->setNom('Admin');
                     $admin->setPrenom('Admin');
