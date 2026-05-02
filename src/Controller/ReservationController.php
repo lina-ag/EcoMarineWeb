@@ -134,7 +134,7 @@ final class ReservationController extends AbstractController
         });
 
         $page = max(1, (int) $request->query->get('page', 1));
-        $perPage = 10;
+        $perPage = 3;
         $totalItems = count($reservations);
         $totalPages = max(1, (int) ceil($totalItems / $perPage));
         $currentPage = min($page, $totalPages);
