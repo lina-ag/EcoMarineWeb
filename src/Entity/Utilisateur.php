@@ -69,8 +69,35 @@ class Utilisateur
     #[ORM\Column(type: "datetime")]
     private ?\DateTimeInterface $created_at = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isBlocked = false;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $blockedAt = null;
+
     // ==================== GETTERS & SETTERS ====================
-    
+
+    public function isBlocked(): bool
+    {
+        return $this->isBlocked;
+    }
+
+    public function setIsBlocked(bool $isBlocked): self
+    {
+        $this->isBlocked = $isBlocked;
+        return $this;
+    }
+
+    public function getBlockedAt(): ?\DateTimeInterface
+    {
+        return $this->blockedAt;
+    }
+
+    public function setBlockedAt(?\DateTimeInterface $blockedAt): self
+    {
+        $this->blockedAt = $blockedAt;
+        return $this;
+    }
 
     public function getIdUtilisateur(): ?int
     {

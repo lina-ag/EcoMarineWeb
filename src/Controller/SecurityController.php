@@ -9,7 +9,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Utilisateur;
 use App\Entity\Role;
 use App\Form\SignUpType;
+use App\Repository\BlockedCountryRepository;
 use App\Service\FaceRecognitionService;
+use App\Service\GeoIpService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -32,7 +34,9 @@ final class SecurityController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         SessionInterface $session,
-        FaceRecognitionService $faceService
+        FaceRecognitionService $faceService,
+        GeoIpService $geoIpService,
+        BlockedCountryRepository $blockedCountryRepo
     ): Response {
         $user = new Utilisateur();
 
@@ -41,14 +45,57 @@ final class SecurityController extends AbstractController
             $user->setRole($defaultRole);
         }
 
+        $ip = $request->getClientIp();
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            $ip = '41.226.0.1';
+        }
+
+        $location = $geoIpService->getCountryFromIp($ip);
+        if (!$location || !isset($location['country_code'])) {
+            $this->addFlash('error', 'Impossible de detecter votre localisation.');
+            return $this->redirectToRoute('app_signIn');
+        }
+
+        if ($blockedCountryRepo->isCountryBlocked($location['country_code'])) {
+            $countryName = $location['country_name'] ?? $location['country_code'];
+            $this->addFlash('error', sprintf("L'inscription est bloquee depuis votre pays (%s).", $countryName));
+            return $this->redirectToRoute('app_signIn');
+        }
+
         $form = $this->createForm(SignUpType::class, $user);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires avant de vous inscrire.');
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user->setMotDePasse(password_hash($user->getMotDePasse(), PASSWORD_BCRYPT));
             $user->setCreatedAt(new \DateTime());
 
             $imageBase64 = $request->request->get('face_image_data');
+
+            if (
+                !$user->getNom() ||
+                !$user->getPrenom() ||
+                !$user->getEmail() ||
+                !$user->getMotDePasse() ||
+                !$user->getTelephone() ||
+                !$user->getRole() ||
+                !$user->getDateNaissance()
+            ) {
+                $this->addFlash('error', 'Tous les champs sont obligatoires.');
+                return $this->render('security/signUp.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            if ($user->getRoleName() === 'chercheur' && !$imageBase64) {
+                $this->addFlash('error', 'Veuillez remplir tous les champs et capturer votre visage avant de vous inscrire.');
+                return $this->render('security/signUp.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
 
             if ($user->getRoleName() === 'chercheur' && $imageBase64) {
     $encoding = $faceService->extractEncoding($imageBase64);
@@ -119,6 +166,11 @@ $em->flush();
 
             if (!$user) {
                 $this->addFlash('error', 'Email incorrect');
+                return $this->redirectToRoute('app_signIn');
+            }
+
+            if ($user->isBlocked()) {
+                $this->addFlash('error', 'Votre compte a ete bloque. Contactez l\'administrateur.');
                 return $this->redirectToRoute('app_signIn');
             }
 

@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des pays bloqués{% endblock %}
+
+{% block body %}
+<section class="glass-card">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; padding:1rem;">
+        <h2 style="margin:0;">🌍 Pays bloqués</h2>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    {# Formulaire bloquer un pays #}
+    <div style="padding:20px; background:rgba(46,196,182,0.1); border-radius:12px; margin:20px;">
+        <h4>➕ Bloquer un nouveau pays</h4>
+        <form method="post" action="{{ path('admin_block_country') }}" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <input type="text" name="country_code" placeholder="Code (ex: FR)" maxlength="2"
+                   style="padding:10px; border-radius:8px; border:1px solid #ccc; width:120px;" required>
+            <input type="text" name="country_name" placeholder="Nom du pays"
+                   style="padding:10px; border-radius:8px; border:1px solid #ccc; flex:1;" required>
+            <input type="text" name="reason" placeholder="Raison (optionnel)"
+                   style="padding:10px; border-radius:8px; border:1px solid #ccc; flex:1;">
+            <button type="submit"
+                    style="background:linear-gradient(135deg,#ff416c,#ff4b2b); color:white;
+                           border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">
+                🚫 Bloquer
+            </button>
+        </form>
+    </div>
+
+    {# Liste des pays bloqués #}
+    <div style="padding:20px;">
+        <table class="data-table" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Pays</th>
+                    <th>Raison</th>
+                    <th>Bloqué le</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for country in countries %}
+                <tr>
+                    <td><strong>{{ country.countryCode }}</strong></td>
+                    <td>{{ country.countryName }}</td>
+                    <td>{{ country.reason ?? '-' }}</td>
+                    <td>{{ country.blockedAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <form method="post" action="{{ path('admin_unblock_country', {'code': country.countryCode}) }}"
+                              onsubmit="return confirm('Débloquer {{ country.countryName }} ?')">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit"
+                                    style="background:linear-gradient(135deg,#28a745,#1e7e34); color:white;
+                                           border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                ✅ Débloquer
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:20px; color:#6c757d;">
+                        Aucun pays bloqué
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

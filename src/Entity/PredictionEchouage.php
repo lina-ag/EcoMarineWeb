@@ -212,12 +212,12 @@ class PredictionEchouage
         return $this;
     }
 
-    public function getTemperatureEau(): ?string
+    public function getTemperatureEau(): ?float
     {
         return $this->temperature_eau;
     }
 
-    public function setTemperatureEau(?string $temperature_eau): static
+    public function setTemperatureEau(?float $temperature_eau): static
     {
         $this->temperature_eau = $temperature_eau;
 

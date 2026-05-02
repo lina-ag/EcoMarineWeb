@@ -18,11 +18,11 @@
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,300,400,500,700,900" rel="stylesheet">
 
     {% block stylesheets %}
-        {% if current_route in ['app_home', 'app_front_calendar'] %}
+        {% if current_route in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new', 'app_front_calendar'] %}
             <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
             <link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.css">
 
-            {% if current_route == 'app_home' %}
+            {% if current_route in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new'] %}
                 <link rel="stylesheet" type="text/css" href="/assets/css/fullpage.min.css">
                 <link rel="stylesheet" type="text/css" href="/assets/css/owl.carousel.css">
                 <link rel="stylesheet" href="/assets/css/animate.css">
@@ -138,9 +138,9 @@
     <title>{% block title %}EcoMarine{% endblock %}</title>
 </head>
 
-<body class="{% if current_route == 'app_home' %}home-page{% elseif current_route in ['app_signIn', 'app_signUp'] %}auth-page{% endif %}">
+<body class="{% if current_route in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new'] %}home-page{% elseif current_route in ['app_signIn', 'app_signUp'] %}auth-page{% endif %}">
 
-{% if current_route not in ['app_home', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
+{% if current_route not in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
 
     <div class="background"></div>
     <div class="orb orb-1"></div>
@@ -172,7 +172,7 @@
 
 {% block body %}{% endblock %}
 
-{% if current_route not in ['app_home', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
+{% if current_route not in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new', 'app_front_calendar', 'app_signIn', 'app_signUp'] %}
 
     <link rel="stylesheet" href="/assets/styles/app.css?v=backend">
 
@@ -197,7 +197,7 @@
 {% endif %}
 
 {% block javascripts %}
-    {% if current_route == 'app_home' %}
+    {% if current_route in ['app_home', 'app_home_zonep_new', 'app_home_survzone_new', 'app_home_activite_ecologique_new', 'app_home_reservation_new'] %}
         <script src="/assets/js/jquery.js"></script>
         <script src="/assets/js/bootstrap.min.js"></script>
         <script src="/assets/js/fullpage.min.js"></script>
@@ -212,7 +212,8 @@
 
 
 
-   
+    {{ importmap('app') }}
+
 {% endblock %}
 
 </body>
