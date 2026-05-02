@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
     "content-hash": "a9c96ad09020b5f2f6fb0af8e3402889",
+
     "packages": [
         {
             "name": "94noni/highcharts-bundle",

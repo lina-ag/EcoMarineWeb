@@ -15,6 +15,7 @@
         "knplabs/knp-paginator-bundle": "^6.10",
         "knplabs/knp-snappy-bundle": "*",
         "masterminds/html5": "^2.10",
+
         "friendsofsymfony/elastica-bundle": "*",
         "php-ai/php-ml": "^0.10.0",
         "phpdocumentor/reflection-docblock": "^5.2",

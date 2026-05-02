@@ -71,6 +71,15 @@
             background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
             border: none;
             color: #fff;
+            width: 92px;
+            height: 50px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.3cm;
+            border-radius: 8px;
+            font-size: 12px;
         }
 
         .utilisateurs-compact .btn-info:hover {
@@ -128,12 +137,6 @@
             align-items: center;
         }
 
-        .search-actions .btn-primary {
-            padding: 0.35rem 0.7rem;
-            font-size: 0.75rem;
-            min-width: auto;
-        }
-
         .search-actions .btn-reset {
             padding: 0.35rem 0.7rem;
             font-size: 0.75rem;
@@ -144,36 +147,19 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .search-actions .btn-reset:hover {
             background: linear-gradient(135deg, #1f8a82, #17645e);
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(26, 176, 163, 0.25);
+            color: white;
         }
 
         .search-form.is-loading .form-control,
         .search-form.is-loading .btn-reset {
             opacity: 0.7;
-        }
-
-        .data-table .no-results td {
-            padding: 1.2rem;
-            background: #f8f9fa;
-            color: #495057;
-        }
-
-        @media (max-width: 768px) {
-            .search-form .search-row {
-                flex-direction: column;
-                align-items: stretch;
-                color: #495057;
-            }
-
-            .search-actions {
-                width: 100%;
-                justify-content: stretch;
-            }
         }
 
         .badge {
@@ -254,6 +240,18 @@
             background-color: rgba(255, 65, 108, 0.12) !important;
             border-left: 4px solid #ff416c;
         }
+
+        @media (max-width: 768px) {
+            .search-form .search-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+        }
     </style>
 {% endblock %}
 
@@ -275,6 +273,7 @@
     <section class="glass-card utilisateurs-compact">
         <div class="card-header">
             <a href="{{ path('app_utilisateur_export_excel') }}" class="btn btn-success">📥 Excel</a>
+            <a href="{{ path('admin_rapport_index') }}" class="btn btn-info">📊 Rapport</a>
             <a href="{{ path('app_utilisateur_new') }}" class="btn btn-primary">➕ Creer un utilisateur</a>
         </div>
 
