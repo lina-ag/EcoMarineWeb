@@ -74,6 +74,25 @@ final class HomeController extends AbstractController
         $queryBuilder = $actionNettoyageRepository->createQueryBuilder('a')
             ->orderBy('a.date_action', 'ASC');
 
+        $selectedLieu = trim((string) $request->query->get('cleaning_lieu', ''));
+        $selectedDate = trim((string) $request->query->get('cleaning_date', ''));
+
+        if ($selectedLieu !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(a.lieu) = LOWER(:cleaningLieu)')
+                ->setParameter('cleaningLieu', $selectedLieu);
+        }
+
+        if ($selectedDate !== '') {
+            $dateFilter = \DateTimeImmutable::createFromFormat('Y-m-d', $selectedDate);
+
+            if ($dateFilter instanceof \DateTimeImmutable) {
+                $queryBuilder
+                    ->andWhere('a.date_action = :cleaningDate')
+                    ->setParameter('cleaningDate', $dateFilter->format('Y-m-d'));
+            }
+        }
+
         $actionsNettoyage = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -81,10 +100,29 @@ final class HomeController extends AbstractController
         );
 
         $allActionsNettoyage = $actionNettoyageRepository->findAll();
+        $availableLieux = [];
+        $availableDates = [];
+        $allMesInscriptionsNettoyage = [];
         $mesInscriptionsNettoyage = [];
         $inscriptionsUtilisateur = [];
         $actionsRecommandees = [];
         $currentUser = $session->get('user');
+
+        foreach ($allActionsNettoyage as $actionNettoyage) {
+            $lieu = trim((string) $actionNettoyage->getLieu());
+            $dateAction = $actionNettoyage->getDateAction();
+
+            if ($lieu !== '') {
+                $availableLieux[mb_strtolower($lieu)] = $lieu;
+            }
+
+            if ($dateAction instanceof \DateTimeInterface) {
+                $availableDates[$dateAction->format('Y-m-d')] = $dateAction;
+            }
+        }
+
+        natcasesort($availableLieux);
+        ksort($availableDates);
 
         if (!$currentUser instanceof Utilisateur && $this->getUser() instanceof Utilisateur) {
             $currentUser = $this->getUser();
@@ -92,10 +130,13 @@ final class HomeController extends AbstractController
 
         if ($currentUser instanceof Utilisateur) {
             $currentUser = $utilisateurRepository->find($currentUser->getIdUtilisateur()) ?? $currentUser;
-            $mesInscriptionsNettoyage = $volontaireRepository->findBy(['utilisateur' => $currentUser]);
+            $allMesInscriptionsNettoyage = $volontaireRepository->findBy(
+                ['utilisateur' => $currentUser],
+                ['id_volontaire' => 'DESC']
+            );
             $inscriptionsUtilisateur = array_map(
                 static fn($volontaire) => $volontaire->getIdAction()?->getIdAction(),
-                $mesInscriptionsNettoyage
+                $allMesInscriptionsNettoyage
             );
             $inscriptionsUtilisateur = array_values(array_filter($inscriptionsUtilisateur, static fn($id) => $id !== null));
 
@@ -107,7 +148,24 @@ final class HomeController extends AbstractController
             $actionsRecommandees = $aiRecommendationService->recommendActions($actionsDisponiblesPourRecommandation, $currentUser);
         }
 
+        $mesInscriptionsNettoyage = $paginator->paginate(
+            $allMesInscriptionsNettoyage,
+            $request->query->getInt('my_cleaning_page', 1),
+            3,
+            [
+                'pageParameterName' => 'my_cleaning_page',
+            ]
+        );
+
         if ($request->isXmlHttpRequest() && $request->query->get('section') === 'nettoyage') {
+            $subsection = (string) $request->query->get('subsection', 'available');
+
+            if ($subsection === 'my') {
+                return $this->render('home/_my_actions_nettoyage_list.html.twig', [
+                    'mes_inscriptions_nettoyage' => $mesInscriptionsNettoyage,
+                ]);
+            }
+
             return $this->render('home/_actions_nettoyage_list.html.twig', [
                 'actions_nettoyage' => $actionsNettoyage,
                 'inscriptions_utilisateur' => $inscriptionsUtilisateur,
@@ -142,6 +200,10 @@ final class HomeController extends AbstractController
             'inscriptions_utilisateur' => $inscriptionsUtilisateur,
             'mes_inscriptions_nettoyage' => $mesInscriptionsNettoyage,
             'current_user' => $currentUser,
+            'cleaning_filter_lieu' => $selectedLieu,
+            'cleaning_filter_date' => $selectedDate,
+            'cleaning_available_lieux' => array_values($availableLieux),
+            'cleaning_available_dates' => array_values($availableDates),
         ]);
     }
 

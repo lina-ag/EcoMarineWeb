@@ -1,7 +1,7 @@
 {% if pageCount > 1 %}
-    <nav class="pagination cleaning-pagination" aria-label="Pagination des actions de nettoyage">
+    <nav class="pagination cleaning-pagination" aria-label="Pagination de mes actions de nettoyage">
         {% if previous is defined %}
-            <a href="{{ path(route, query|merge({(pageParameterName): previous, section: 'nettoyage', _fragment: 'slide12'})) }}"
+            <a href="{{ path(route, query|merge({(pageParameterName): previous, section: 'nettoyage', subsection: 'my', _fragment: 'slide12'})) }}"
                class="cleaning-pagination__link"
                data-page-link
                aria-label="Page précédente">
@@ -13,7 +13,7 @@
 
         {% for page in pagesInRange %}
             {% if page != current %}
-                <a href="{{ path(route, query|merge({(pageParameterName): page, section: 'nettoyage', _fragment: 'slide12'})) }}"
+                <a href="{{ path(route, query|merge({(pageParameterName): page, section: 'nettoyage', subsection: 'my', _fragment: 'slide12'})) }}"
                    class="cleaning-pagination__link"
                    data-page-link>
                     {{ page }}
@@ -24,7 +24,7 @@
         {% endfor %}
 
         {% if next is defined %}
-            <a href="{{ path(route, query|merge({(pageParameterName): next, section: 'nettoyage', _fragment: 'slide12'})) }}"
+            <a href="{{ path(route, query|merge({(pageParameterName): next, section: 'nettoyage', subsection: 'my', _fragment: 'slide12'})) }}"
                class="cleaning-pagination__link"
                data-page-link
                aria-label="Page suivante">

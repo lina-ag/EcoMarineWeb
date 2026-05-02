@@ -271,8 +271,8 @@
         border-radius: 24px;
         border: 1px solid rgba(178, 245, 255, 0.24);
         background:
-            linear-gradient(180deg, rgba(26, 126, 173, 0.22), rgba(31, 194, 214, 0.16)),
-            rgba(255, 255, 255, 0.1);
+            linear-gradient(180deg, rgba(38, 118, 146, 0.24), rgba(34, 166, 179, 0.18)),
+            rgba(42, 103, 126, 0.12);
         box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.12),
             0 16px 34px rgba(4, 59, 94, 0.16);
@@ -291,7 +291,7 @@
     .cleaning-table thead th {
         padding: 18px 20px;
         border: none;
-        background: linear-gradient(180deg, rgba(16, 113, 162, 0.5), rgba(33, 154, 190, 0.28));
+        background: linear-gradient(180deg, rgba(28, 118, 145, 0.52), rgba(34, 170, 192, 0.3));
         color: #ffffff;
         font-size: 0.98rem;
         font-weight: 700;
@@ -304,8 +304,8 @@
         padding: 20px;
         border: none;
         border-top: 1px solid rgba(192, 244, 255, 0.16);
-        background: rgba(235, 251, 255, 0.06);
-        color: rgba(245, 252, 255, 0.98);
+        background: rgba(52, 110, 132, 0.16);
+        color: rgba(247, 252, 255, 0.98);
         font-size: 1.02rem;
         vertical-align: middle;
     }
@@ -315,15 +315,15 @@
     }
 
     .cleaning-table tbody tr:nth-child(even) td {
-        background: rgba(183, 239, 255, 0.1);
+        background: rgba(61, 126, 150, 0.2);
     }
 
     .cleaning-table tbody tr:hover {
-        background: rgba(126, 220, 255, 0.14);
+        background: rgba(54, 182, 212, 0.18);
     }
 
     .cleaning-table tbody tr:hover td {
-        background: rgba(163, 238, 255, 0.16);
+        background: rgba(79, 173, 198, 0.24);
     }
 
     .cleaning-table td:last-child,
@@ -373,35 +373,35 @@
     }
 
     .cleaning-card .btn-outline-success {
-        background: rgba(19, 151, 100, 0.08);
-        border: 1px solid rgba(37, 217, 126, 0.7);
-        color: #73f0b2;
+        background: rgba(29, 141, 112, 0.18);
+        border: 1px solid rgba(52, 211, 153, 0.7);
+        color: #d1fae5;
     }
 
     .cleaning-card .btn-outline-success:hover,
     .cleaning-card .btn-outline-success:focus {
-        background: rgba(37, 217, 126, 0.16);
+        background: rgba(37, 217, 126, 0.26);
         border-color: rgba(115, 240, 178, 0.95);
         color: #ffffff;
     }
 
     .cleaning-card .btn-danger {
-        background: rgba(255, 107, 129, 0.14);
-        border: 1px solid rgba(255, 107, 129, 0.55);
-        color: #ffd7dd;
+        background: rgba(153, 57, 76, 0.2);
+        border: 1px solid rgba(251, 113, 133, 0.62);
+        color: #ffe4e6;
     }
 
     .cleaning-card .btn-danger:hover,
     .cleaning-card .btn-danger:focus {
-        background: rgba(255, 107, 129, 0.24);
+        background: rgba(255, 134, 159, 0.28);
         border-color: rgba(255, 164, 176, 0.75);
         color: #fff;
     }
 
     .cleaning-card .btn-secondary {
-        background: rgba(255, 255, 255, 0.16);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        color: rgba(255, 255, 255, 0.72);
+        background: rgba(111, 139, 155, 0.22);
+        border: 1px solid rgba(186, 208, 219, 0.2);
+        color: rgba(241, 245, 249, 0.82);
     }
 
     .cleaning-note {
@@ -409,10 +409,99 @@
         align-items: center;
         padding: 8px 14px;
         border-radius: 999px;
-        background: rgba(34, 211, 238, 0.12);
-        color: #b5f4ff;
+        background: linear-gradient(135deg, rgba(47, 162, 195, 0.22), rgba(77, 124, 232, 0.18));
+        color: #e0f2fe;
         font-size: 0.84rem;
         font-weight: 600;
+    }
+
+    .cleaning-filters {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        align-items: end;
+        margin-bottom: 22px;
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(191, 245, 255, 0.16);
+        background: rgba(229, 249, 255, 0.08);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .cleaning-filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cleaning-filter-label {
+        color: rgba(233, 248, 255, 0.92);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-filter-control {
+        width: 100%;
+        min-height: 50px;
+        padding: 0 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(167, 239, 255, 0.25);
+        background: rgba(7, 35, 56, 0.48);
+        color: #f6fcff;
+        font-size: 0.96rem;
+        outline: none;
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cleaning-filter-control:focus {
+        border-color: rgba(73, 212, 255, 0.76);
+        background: rgba(10, 48, 76, 0.68);
+        box-shadow: 0 0 0 3px rgba(35, 200, 255, 0.14);
+    }
+
+    .cleaning-filter-control option {
+        background: #113450;
+        color: #f6fcff;
+    }
+
+    .cleaning-filter-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .cleaning-filter-actions .btn {
+        min-width: 0;
+        min-height: 50px;
+        padding: 0 18px;
+        border-radius: 14px;
+    }
+
+    .cleaning-filter-reset {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(174, 236, 255, 0.24);
+        background: rgba(255, 255, 255, 0.08);
+        color: #f6fcff;
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .cleaning-filter-reset:hover,
+    .cleaning-filter-reset:focus {
+        background: rgba(255, 255, 255, 0.14);
+        color: #ffffff;
+        text-decoration: none;
     }
 
     .cleaning-empty {
@@ -425,19 +514,31 @@
     }
 
     .cleaning-pagination {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 10px;
         margin-top: 22px;
     }
 
     .cleaning-pagination .cleaning-pagination__link {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
         min-width: 44px;
         height: 44px;
         padding: 0 12px;
+        margin: 0;
         border-radius: 14px;
         background: rgba(6, 24, 44, 0.34);
         border: 1px solid rgba(255, 255, 255, 0.12);
         color: #f8fbff;
         font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
     }
 
     .cleaning-pagination a.cleaning-pagination__link:hover {
@@ -476,6 +577,21 @@
             min-width: 130px;
             min-height: 46px;
             font-size: 0.84rem;
+        }
+
+        .cleaning-filters {
+            grid-template-columns: 1fr;
+            padding: 16px;
+        }
+
+        .cleaning-filter-actions {
+            justify-content: stretch;
+            flex-direction: column;
+        }
+
+        .cleaning-filter-actions .btn,
+        .cleaning-filter-reset {
+            width: 100%;
         }
     }
 
@@ -1101,62 +1217,55 @@
                                 Consultez les actions de nettoyage disponibles et participez comme bénévole.
                             </p>
 
+                            <form method="get"
+                                  action="{{ path('app_home') }}"
+                                  class="cleaning-filters"
+                                  data-cleaning-filter-form>
+                                <input type="hidden" name="_fragment" value="slide12">
+
+                                <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningLieu">Filtrer par lieu</label>
+                                    <select id="cleaningLieu" name="cleaning_lieu" class="cleaning-filter-control">
+                                        <option value="">Tous les lieux</option>
+                                        {% for lieu in cleaning_available_lieux|default([]) %}
+                                            <option value="{{ lieu }}" {% if cleaning_filter_lieu|default('') == lieu %}selected{% endif %}>
+                                                {{ lieu }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningDate">Filtrer par date</label>
+                                    <select id="cleaningDate" name="cleaning_date" class="cleaning-filter-control">
+                                        <option value="">Toutes les dates</option>
+                                        {% for availableDate in cleaning_available_dates|default([]) %}
+                                            {% set optionValue = availableDate|date('Y-m-d') %}
+                                            <option value="{{ optionValue }}" {% if cleaning_filter_date|default('') == optionValue %}selected{% endif %}>
+                                                {{ availableDate|date('d/m/Y') }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
+                                    <span class="cleaning-filter-label">Aperçu</span>
+                                    <div class="cleaning-note">Choisissez un lieu, une date, ou les deux.</div>
+                                </div>
+
+                                <div class="cleaning-filter-actions">
+                                    <button type="submit" class="btn btn-success btn-sm">Filtrer</button>
+                                    <a href="{{ path('app_home', {'_fragment': 'slide12'}) }}"
+                                       class="cleaning-filter-reset"
+                                       data-cleaning-filter-reset>Réinitialiser</a>
+                                </div>
+                            </form>
+
                             <div id="cleaning-actions-wrapper" data-cleaning-pagination-root>
-                            {% if actions_nettoyage is defined and actions_nettoyage is not empty %}
-                                <div class="table-responsive cleaning-table-shell">
-                                    <table class="table table-dark table-hover cleaning-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Lieu</th>
-                                                <th>Date</th>
-                                                <th>Places</th>
-                                                <th>Statut</th>
-                                                <th>Participation</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {% for action in actions_nettoyage %}
-                                                {% set dejaInscrit = inscriptions_utilisateur is defined and action.getIdAction() in inscriptions_utilisateur %}
-
-                                                <tr>
-                                                    <td>{{ action.lieu }}</td>
-                                                    <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
-                                                    <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
-                                                    <td>
-                                                        {% if action.estComplete() %}
-                                                            <span class="badge bg-danger">Complet</span>
-                                                        {% else %}
-                                                            <span class="badge bg-success">Disponible</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>
-                                                        {% if dejaInscrit %}
-                                                            <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
-                                                                <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
-                                                            </form>
-                                                        {% elseif action.estComplete() %}
-                                                            <button class="btn btn-secondary btn-sm" disabled>Complet</button>
-                                                        {% else %}
-                                                            <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
-                                                                <button type="submit" class="btn btn-outline-success btn-sm">Participer</button>
-                                                            </form>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div class="pagination-container mt-4">
-                                    {{ knp_pagination_render(actions_nettoyage, 'home/_pagination.html.twig') }}
-                                </div>
-                            {% else %}
-                                <p class="cleaning-empty">Aucune action de nettoyage disponible pour le moment.</p>
-                            {% endif %}
+                                {{ include('home/_actions_nettoyage_list.html.twig', {
+                                    actions_nettoyage: actions_nettoyage,
+                                    inscriptions_utilisateur: inscriptions_utilisateur
+                                }) }}
                             </div>
                         </div>
 
@@ -1167,50 +1276,11 @@
                                 Retrouvez les actions de nettoyage auxquelles vous participez déjà.
                             </p>
 
-                            {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
-                                <div class="table-responsive cleaning-table-shell">
-                                    <table class="table table-dark table-hover cleaning-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Lieu</th>
-                                                <th>Date</th>
-                                                <th>Places</th>
-                                                <th>Statut</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {% for inscription in mes_inscriptions_nettoyage %}
-                                                {% set action = inscription.getIdAction() %}
-
-                                                {% if action %}
-                                                    <tr>
-                                                        <td>{{ action.lieu }}</td>
-                                                        <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
-                                                        <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
-                                                        <td>
-                                                            {% if action.estComplete() %}
-                                                                <span class="badge bg-danger">Complet</span>
-                                                            {% else %}
-                                                                <span class="badge bg-success">Disponible</span>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>
-                                                            <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
-                                                                <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
-                                                                <button type="submit" class="btn btn-danger btn-sm">Annuler ma participation</button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <p class="cleaning-empty">Vous ne participez encore à aucune action de nettoyage.</p>
-                            {% endif %}
+                            <div id="my-cleaning-actions-wrapper" data-cleaning-pagination-root data-cleaning-subsection="my">
+                                {{ include('home/_my_actions_nettoyage_list.html.twig', {
+                                    mes_inscriptions_nettoyage: mes_inscriptions_nettoyage
+                                }) }}
+                            </div>
                         </div>
 
                     </div>
@@ -1268,9 +1338,10 @@
     }
 
     (function () {
-        var paginationRoot = document.querySelector('[data-cleaning-pagination-root]');
+        var filterForm = document.querySelector('[data-cleaning-filter-form]');
+        var paginationRoots = document.querySelectorAll('[data-cleaning-pagination-root]');
 
-        if (!paginationRoot) {
+        if (!paginationRoots.length) {
             return;
         }
 
@@ -1281,11 +1352,36 @@
             window.history.pushState({}, '', nextUrl.toString());
         }
 
-        function loadPage(url) {
-            var requestUrl = new URL(url, window.location.origin);
-            requestUrl.searchParams.set('section', 'nettoyage');
+        function buildFilterUrl() {
+            if (!filterForm) {
+                return null;
+            }
 
-            paginationRoot.classList.add('is-loading');
+            var action = filterForm.getAttribute('action') || window.location.pathname;
+            var nextUrl = new URL(action, window.location.origin);
+            var formData = new FormData(filterForm);
+
+            formData.forEach(function (value, key) {
+                if (key === '_fragment' || value === null || String(value).trim() === '') {
+                    return;
+                }
+
+                nextUrl.searchParams.set(key, value);
+            });
+
+            nextUrl.hash = 'slide12';
+
+            return nextUrl.toString();
+        }
+
+        function loadPage(root, url) {
+            var requestUrl = new URL(url, window.location.origin);
+            var subsection = root.getAttribute('data-cleaning-subsection') || 'available';
+
+            requestUrl.searchParams.set('section', 'nettoyage');
+            requestUrl.searchParams.set('subsection', subsection);
+
+            root.classList.add('is-loading');
 
             fetch(requestUrl.toString(), {
                 headers: {
@@ -1300,7 +1396,7 @@
                     return response.text();
                 })
                 .then(function (html) {
-                    paginationRoot.innerHTML = html;
+                    root.innerHTML = html;
                     updateUrl(url);
 
                     if (window.location.hash !== '#slide12') {
@@ -1311,20 +1407,56 @@
                     window.location.href = url;
                 })
                 .finally(function () {
-                    paginationRoot.classList.remove('is-loading');
+                    root.classList.remove('is-loading');
                 });
         }
 
-        paginationRoot.addEventListener('click', function (event) {
-            var link = event.target.closest('[data-page-link]');
+        paginationRoots.forEach(function (root) {
+            root.addEventListener('click', function (event) {
+                var link = event.target.closest('[data-page-link]');
 
-            if (!link) {
-                return;
-            }
+                if (!link) {
+                    return;
+                }
 
-            event.preventDefault();
-            loadPage(link.href);
+                event.preventDefault();
+                loadPage(root, link.href);
+            });
         });
+
+        if (filterForm) {
+            filterForm.addEventListener('submit', function (event) {
+                var targetUrl;
+
+                event.preventDefault();
+                targetUrl = buildFilterUrl();
+
+                if (targetUrl) {
+                    paginationRoots.forEach(function (root) {
+                        if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                            loadPage(root, targetUrl);
+                        }
+                    });
+                }
+            });
+
+            filterForm.addEventListener('click', function (event) {
+                var resetLink = event.target.closest('[data-cleaning-filter-reset]');
+
+                if (!resetLink) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                filterForm.reset();
+                paginationRoots.forEach(function (root) {
+                    if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                        loadPage(root, resetLink.href);
+                    }
+                });
+            });
+        }
     })();
 
     (function () {

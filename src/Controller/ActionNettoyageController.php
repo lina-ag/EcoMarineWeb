@@ -19,11 +19,99 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/action-nettoyage')]
 final class ActionNettoyageController extends AbstractController
 {
+    #[Route('/dashboard', name: 'app_action_nettoyage_dashboard', methods: ['GET'])]
+    public function dashboard(
+        ActionNettoyageRepository $actionNettoyageRepository,
+        VolontaireRepository $volontaireRepository
+    ): Response {
+        $actions = $actionNettoyageRepository->findAll();
+        $today = new \DateTimeImmutable('today');
+
+        $totalActions = count($actions);
+        $totalVolontaires = $volontaireRepository->count([]);
+        $actionsCompletes = 0;
+        $actionsDisponibles = 0;
+        $actionsAVenir = 0;
+        $actionsPassees = 0;
+
+        foreach ($actions as $action) {
+            $isComplete = $action->estComplete();
+            $actionDate = $this->extractActionDate($action);
+
+            if ($isComplete) {
+                ++$actionsCompletes;
+            } else {
+                ++$actionsDisponibles;
+            }
+
+            if ($actionDate instanceof \DateTimeInterface) {
+                $normalizedActionDate = \DateTimeImmutable::createFromFormat('Y-m-d', $actionDate->format('Y-m-d'));
+
+                if ($normalizedActionDate instanceof \DateTimeImmutable && $normalizedActionDate >= $today) {
+                    ++$actionsAVenir;
+                } elseif ($normalizedActionDate instanceof \DateTimeImmutable) {
+                    ++$actionsPassees;
+                }
+            }
+        }
+
+        return $this->render('action_nettoyage/dashboard.html.twig', [
+            'stats' => [
+                'total_actions' => $totalActions,
+                'total_volontaires' => $totalVolontaires,
+                'actions_completes' => $actionsCompletes,
+                'actions_disponibles' => $actionsDisponibles,
+                'actions_a_venir' => $actionsAVenir,
+                'actions_passees' => $actionsPassees,
+            ],
+        ]);
+    }
+
     #[Route('', name: 'app_action_nettoyage_index', methods: ['GET'])]
     public function index(Request $request, ActionNettoyageRepository $repository, PaginatorInterface $paginator): Response
     {
+        $selectedLieu = trim((string) $request->query->get('lieu', ''));
+        $selectedDate = trim((string) $request->query->get('date_action', ''));
+        $selectedStatut = trim((string) $request->query->get('statut', ''));
+
         $queryBuilder = $repository->createQueryBuilder('a')
             ->orderBy('a.date_action', 'ASC');
+
+        if ($selectedLieu !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(a.lieu) LIKE LOWER(:lieu)')
+                ->setParameter('lieu', '%' . $selectedLieu . '%');
+        }
+
+        if ($selectedDate !== '') {
+            $dateFilter = \DateTimeImmutable::createFromFormat('Y-m-d', $selectedDate);
+
+            if ($dateFilter instanceof \DateTimeImmutable) {
+                $queryBuilder
+                    ->andWhere('a.date_action = :dateAction')
+                    ->setParameter('dateAction', $dateFilter->format('Y-m-d'));
+            }
+        }
+
+        if (in_array($selectedStatut, ['complete', 'disponible'], true)) {
+            if ($selectedStatut === 'complete') {
+                $queryBuilder->andWhere('
+                    (
+                        SELECT COUNT(v_complete.id_volontaire)
+                        FROM App\Entity\Volontaire v_complete
+                        WHERE v_complete.id_action = a
+                    ) >= a.limiteBenevoles
+                ');
+            } else {
+                $queryBuilder->andWhere('
+                    (
+                        SELECT COUNT(v_disponible.id_volontaire)
+                        FROM App\Entity\Volontaire v_disponible
+                        WHERE v_disponible.id_action = a
+                    ) < a.limiteBenevoles
+                ');
+            }
+        }
 
         $pagination = $paginator->paginate(
             $queryBuilder,
@@ -31,8 +119,17 @@ final class ActionNettoyageController extends AbstractController
             3
         );
 
+        if ($request->isXmlHttpRequest() && $request->query->get('section') === 'admin_action_nettoyage') {
+            return $this->render('action_nettoyage/_list.html.twig', [
+                'action_nettoyages' => $pagination,
+            ]);
+        }
+
         return $this->render('action_nettoyage/index.html.twig', [
             'action_nettoyages' => $pagination,
+            'filter_lieu' => $selectedLieu,
+            'filter_date_action' => $selectedDate,
+            'filter_statut' => $selectedStatut,
         ]);
     }
 
@@ -232,5 +329,18 @@ final class ActionNettoyageController extends AbstractController
         return $this->redirectToRoute('app_home', [
             '_fragment' => 'slide09',
         ]);
+    }
+
+    private function extractActionDate(ActionNettoyage $actionNettoyage): ?\DateTimeInterface
+    {
+        if (method_exists($actionNettoyage, 'getDateAction')) {
+            return $actionNettoyage->getDateAction();
+        }
+
+        if (method_exists($actionNettoyage, 'getDate_action')) {
+            return $actionNettoyage->getDate_action();
+        }
+
+        return null;
     }
 }

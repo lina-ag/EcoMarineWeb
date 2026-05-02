@@ -6,6 +6,7 @@ use App\Entity\Volontaire;
 use App\Form\VolontaireType;
 use App\Repository\VolontaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,10 +17,21 @@ use Symfony\Component\Routing\Attribute\Route;
 final class VolontaireController extends AbstractController
 {
     #[Route('', name: 'app_volontaire_index', methods: ['GET'])]
-    public function index(VolontaireRepository $repository): Response
+    public function index(Request $request, VolontaireRepository $repository, PaginatorInterface $paginator): Response
     {
+        $queryBuilder = $repository->createQueryBuilder('v')
+            ->leftJoin('v.id_action', 'a')
+            ->addSelect('a')
+            ->orderBy('v.id_volontaire', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            3
+        );
+
         return $this->render('volontaire/index.html.twig', [
-            'volontaires' => $repository->findAll(),
+            'volontaires' => $pagination,
         ]);
     }
 
@@ -108,4 +120,3 @@ final class VolontaireController extends AbstractController
         return $this->redirectToRoute('app_volontaire_index');
     }
 }
-

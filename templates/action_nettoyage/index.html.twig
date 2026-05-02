@@ -4,6 +4,71 @@
 {% block page_title %}Actions de nettoyage{% endblock %}
 {% block navbar_title %}Gestion des actions de nettoyage{% endblock %}
 
+{% block admin_stylesheets %}
+    <style>
+        .admin-filter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+            padding: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 22px;
+            background: rgba(15, 23, 42, 0.16);
+        }
+
+        .admin-filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .admin-filter-label {
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .admin-filter-control {
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.22);
+            color: #e2e8f0;
+        }
+
+        .admin-filter-actions {
+            display: flex;
+            align-items: end;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        #admin-cleaning-list-wrapper.is-loading {
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        @media (max-width: 992px) {
+            .admin-filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-filter-actions {
+                justify-content: stretch;
+                flex-direction: column;
+            }
+
+            .admin-filter-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block admin_content %}
     <section class="glass-card">
         <div class="card-header">
@@ -11,58 +76,160 @@
                 <h2 class="card-title">Actions de nettoyage</h2>
                 <p class="card-subtitle">Planification et suivi des actions de nettoyage.</p>
             </div>
-            <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Create new</a>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ path('app_action_nettoyage_dashboard') }}" class="btn btn-secondary">Dashboard</a>
+                <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Create new</a>
+            </div>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Date</th>
-                        <th>Lieu</th>
+        <form method="get" action="{{ path('app_action_nettoyage_index') }}" class="admin-filter-grid" data-admin-cleaning-filter-form>
+            <div class="admin-filter-field">
+                <label for="filterLieu" class="admin-filter-label">Lieu</label>
+                <input
+                    id="filterLieu"
+                    type="text"
+                    name="lieu"
+                    class="admin-filter-control"
+                    value="{{ filter_lieu|default('') }}"
+                    placeholder="Ex: Monastir"
+                >
+            </div>
 
-                        <th>Limite bénévoles</th>
+            <div class="admin-filter-field">
+                <label for="filterDateAction" class="admin-filter-label">Date</label>
+                <input
+                    id="filterDateAction"
+                    type="date"
+                    name="date_action"
+                    class="admin-filter-control"
+                    value="{{ filter_date_action|default('') }}"
+                >
+            </div>
 
-                        <th>Participants</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for action_nettoyage in action_nettoyages %}
-                    <tr>
-                        <td>{{ action_nettoyage.idAction }}</td>
-                        <td>{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('Y-m-d') : '' }}</td>
-                        <td>{{ action_nettoyage.lieu }}</td>
+            <div class="admin-filter-field">
+                <label for="filterStatut" class="admin-filter-label">Statut</label>
+                <select id="filterStatut" name="statut" class="admin-filter-control">
+                    <option value="">Tous</option>
+                    <option value="disponible" {% if filter_statut|default('') == 'disponible' %}selected{% endif %}>Disponible</option>
+                    <option value="complete" {% if filter_statut|default('') == 'complete' %}selected{% endif %}>Complete</option>
+                </select>
+            </div>
 
+            <div class="admin-filter-actions">
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <a href="{{ path('app_action_nettoyage_index') }}" class="btn btn-secondary" data-admin-cleaning-reset>Reinitialiser</a>
+            </div>
+        </form>
 
-                        <td>{{ action_nettoyage.limiteBenevoles }}</td>
-
-                        <td>{{ action_nettoyage.nombreVolontaires }}</td>
-                        <td>
-                            {% if action_nettoyage.estComplete %}
-                                <span class="status-badge pending">Complète</span>
-                            {% else %}
-                                <span class="status-badge completed">Disponible</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="7">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="pagination-container mt-4">
-            {{ knp_pagination_render(action_nettoyages) }}
+        <div id="admin-cleaning-list-wrapper" data-admin-cleaning-root>
+            {{ include('action_nettoyage/_list.html.twig', {
+                action_nettoyages: action_nettoyages
+            }) }}
         </div>
     </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    <script>
+        (function () {
+            var listRoot = document.querySelector('[data-admin-cleaning-root]');
+            var filterForm = document.querySelector('[data-admin-cleaning-filter-form]');
+
+            if (!listRoot) {
+                return;
+            }
+
+            function updateUrl(url) {
+                var nextUrl = new URL(url, window.location.origin);
+                nextUrl.searchParams.delete('section');
+                window.history.pushState({}, '', nextUrl.toString());
+            }
+
+            function buildFilterUrl() {
+                if (!filterForm) {
+                    return null;
+                }
+
+                var action = filterForm.getAttribute('action') || window.location.pathname;
+                var nextUrl = new URL(action, window.location.origin);
+                var formData = new FormData(filterForm);
+
+                formData.forEach(function (value, key) {
+                    if (value === null || String(value).trim() === '') {
+                        return;
+                    }
+
+                    nextUrl.searchParams.set(key, value);
+                });
+
+                return nextUrl.toString();
+            }
+
+            function loadPage(url) {
+                var requestUrl = new URL(url, window.location.origin);
+                requestUrl.searchParams.set('section', 'admin_action_nettoyage');
+
+                listRoot.classList.add('is-loading');
+
+                fetch(requestUrl.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Admin pagination request failed');
+                        }
+
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        listRoot.innerHTML = html;
+                        updateUrl(url);
+                    })
+                    .catch(function () {
+                        window.location.href = url;
+                    })
+                    .finally(function () {
+                        listRoot.classList.remove('is-loading');
+                    });
+            }
+
+            listRoot.addEventListener('click', function (event) {
+                var link = event.target.closest('.admin-compact-pagination__link[href]');
+
+                if (!link) {
+                    return;
+                }
+
+                event.preventDefault();
+                loadPage(link.href);
+            });
+
+            if (filterForm) {
+                filterForm.addEventListener('submit', function (event) {
+                    var targetUrl;
+
+                    event.preventDefault();
+                    targetUrl = buildFilterUrl();
+
+                    if (targetUrl) {
+                        loadPage(targetUrl);
+                    }
+                });
+
+                filterForm.addEventListener('click', function (event) {
+                    var resetLink = event.target.closest('[data-admin-cleaning-reset]');
+
+                    if (!resetLink) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    filterForm.reset();
+                    loadPage(resetLink.href);
+                });
+            }
+        })();
+    </script>
 {% endblock %}

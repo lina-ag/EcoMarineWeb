@@ -1,0 +1,127 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Tableau de bord nettoyage{% endblock %}
+{% block page_title %}Dashboard nettoyage{% endblock %}
+{% block navbar_title %}Statistiques des actions de nettoyage{% endblock %}
+
+{% block admin_stylesheets %}
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        .stat-card {
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 24px;
+            background: rgba(15, 23, 42, 0.24);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-card .card-body {
+            padding: 24px;
+        }
+
+        .stat-label {
+            margin: 0 0 8px;
+            color: rgba(226, 232, 240, 0.82);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            margin: 0;
+            color: #f8fafc;
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-accent {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.14);
+            color: #67e8f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <section class="glass-card">
+        <div class="dashboard-actions">
+            <div>
+                <h2 class="card-title">Vue d'ensemble des actions de nettoyage</h2>
+                <p class="card-subtitle">Suivi rapide des actions, des volontaires et de leur disponibilité.</p>
+            </div>
+            <a href="{{ path('app_action_nettoyage_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Total actions</p>
+                    <p class="stat-value">{{ stats.total_actions }}</p>
+                    <span class="stat-accent">Toutes les actions créées</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Total volontaires</p>
+                    <p class="stat-value">{{ stats.total_volontaires }}</p>
+                    <span class="stat-accent">Inscriptions enregistrées</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Actions complètes</p>
+                    <p class="stat-value">{{ stats.actions_completes }}</p>
+                    <span class="stat-accent">Capacité atteinte</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Actions disponibles</p>
+                    <p class="stat-value">{{ stats.actions_disponibles }}</p>
+                    <span class="stat-accent">Encore ouvertes aux volontaires</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Actions à venir</p>
+                    <p class="stat-value">{{ stats.actions_a_venir }}</p>
+                    <span class="stat-accent">Aujourd'hui et plus tard</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Actions passées</p>
+                    <p class="stat-value">{{ stats.actions_passees }}</p>
+                    <span class="stat-accent">Déjà terminées</span>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

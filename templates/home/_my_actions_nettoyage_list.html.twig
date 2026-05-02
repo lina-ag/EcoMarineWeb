@@ -1,0 +1,50 @@
+<div id="my-cleaning-actions-panel" class="cleaning-actions-panel" data-pagination-panel>
+    {% if mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
+        <div class="table-responsive cleaning-table-shell">
+            <table class="table table-dark table-hover cleaning-table">
+                <thead>
+                    <tr>
+                        <th>Lieu</th>
+                        <th>Date</th>
+                        <th>Places</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for inscription in mes_inscriptions_nettoyage %}
+                        {% set action = inscription.getIdAction() %}
+
+                        {% if action %}
+                            <tr>
+                                <td>{{ action.lieu }}</td>
+                                <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
+                                <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
+                                <td>
+                                    {% if action.estComplete() %}
+                                        <span class="badge bg-danger">Complet</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Disponible</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Annuler ma participation</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container mt-4">
+            {{ knp_pagination_render(mes_inscriptions_nettoyage, 'home/_pagination_my_actions.html.twig') }}
+        </div>
+    {% else %}
+        <p class="cleaning-empty">Vous ne participez encore à aucune action de nettoyage.</p>
+    {% endif %}
+</div>

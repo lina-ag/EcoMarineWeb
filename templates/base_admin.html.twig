@@ -14,6 +14,55 @@
 
     <link rel="stylesheet" href="/assets_admin/templatemo-glass-admin-style.css">
     <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+    <style>
+        .admin-compact-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .admin-compact-pagination .admin-compact-pagination__link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            height: 44px;
+            padding: 0 12px;
+            margin: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(15, 23, 42, 0.22);
+            color: #dbeafe;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .admin-compact-pagination a.admin-compact-pagination__link:hover {
+            background: rgba(56, 189, 248, 0.14);
+            border-color: rgba(56, 189, 248, 0.32);
+            color: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        .admin-compact-pagination .current.admin-compact-pagination__link {
+            background: linear-gradient(135deg, #23c8ff 0%, #1184ff 100%);
+            border-color: transparent;
+            color: #082f49;
+            box-shadow: 0 10px 22px rgba(14, 165, 233, 0.24);
+        }
+
+        .admin-compact-pagination .disabled.admin-compact-pagination__link {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+    </style>
     {% block admin_stylesheets %}{% endblock %}
 </head>
 <body>
