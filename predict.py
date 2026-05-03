@@ -1,51 +1,45 @@
-import sys
-import pickle
 import json
+import pickle
+import sys
 from pathlib import Path
-import pandas as pd
 
-# ─── ARGUMENTS depuis Symfony ────────────────────────────────────────────────
+try:
+    import pandas as pd
+except Exception:
+    pd = None
+
+
 # python predict.py <mois> <jour_semaine> <capacite> <type_activite>
 if len(sys.argv) != 5:
     print(json.dumps({"error": "Arguments manquants"}))
     sys.exit(1)
 
-mois          = int(sys.argv[1])
-jour_semaine  = int(sys.argv[2])
-capacite      = int(sys.argv[3])
+mois = int(sys.argv[1])
+jour_semaine = int(sys.argv[2])
+capacite = int(sys.argv[3])
 type_activite = sys.argv[4].strip().lower()
 
 base_dir = Path(__file__).resolve().parent
-
-# ─── CHARGEMENT DU MODÈLE ────────────────────────────────────────────────────
-with open(base_dir / 'model.pkl', 'rb') as f:
-    model = pickle.load(f)
-
-with open(base_dir / 'label_encoder.pkl', 'rb') as f:
-    le = pickle.load(f)
-
-# Load features from model metadata if available
 meta_path = base_dir / 'model_meta.json'
-if meta_path.exists():
+
+
+def load_meta():
+    if not meta_path.exists():
+        return {}
+
     try:
-        with open(meta_path, 'r', encoding='utf-8') as mf:
-            meta = json.load(mf)
-            features = meta.get('features', ['mois', 'jour_semaine', 'capacite', 'type_activite_enc'])
+        with open(meta_path, 'r', encoding='utf-8') as meta_file:
+            return json.load(meta_file)
     except Exception:
-        features = ['mois', 'jour_semaine', 'capacite', 'type_activite_enc']
-else:
-    features = ['mois', 'jour_semaine', 'capacite', 'type_activite_enc']
+        return {}
+
+
+meta = load_meta()
+features = meta.get('features', ['mois', 'jour_semaine', 'capacite', 'type_activite_enc'])
+
 
 def resolve_expected_demand(type_value: str, month_value: int, day_value: int) -> float:
-    """Estimate expected attendance from stored historical averages."""
-    demand_stats = {}
-    if meta_path.exists():
-        try:
-            with open(meta_path, 'r', encoding='utf-8') as mf:
-                demand_stats = json.load(mf).get('demand_stats', {}) or {}
-        except Exception:
-            demand_stats = {}
-
+    demand_stats = meta.get('demand_stats', {}) or {}
     type_key = (type_value or '').strip().lower()
     candidates = [
         ('type_month_day_avg', f'{type_key}|{month_value}|{day_value}'),
@@ -66,16 +60,9 @@ def resolve_expected_demand(type_value: str, month_value: int, day_value: int) -
     except (TypeError, ValueError):
         return 0.0
 
-def resolve_expected_capacity(type_value: str, month_value: int, day_value: int) -> float:
-    """Estimate a realistic capacity from historical activity capacities."""
-    capacity_stats = {}
-    if meta_path.exists():
-        try:
-            with open(meta_path, 'r', encoding='utf-8') as mf:
-                capacity_stats = json.load(mf).get('capacity_stats', {}) or {}
-        except Exception:
-            capacity_stats = {}
 
+def resolve_expected_capacity(type_value: str, month_value: int, day_value: int) -> float:
+    capacity_stats = meta.get('capacity_stats', {}) or {}
     type_key = (type_value or '').strip().lower()
     candidates = [
         ('type_month_day_avg', f'{type_key}|{month_value}|{day_value}'),
@@ -97,55 +84,80 @@ def resolve_expected_capacity(type_value: str, month_value: int, day_value: int)
         value = float(capacity_stats.get('global_avg', 0))
         return value if value > 0 else 1.0
     except (TypeError, ValueError):
-        return 0.0
+        return 1.0
 
-# ─── ENCODAGE DU TYPE ────────────────────────────────────────────────────────
-classes = list(le.classes_)
+
+model = None
+label_encoder = None
+model_error = None
+
+try:
+    with open(base_dir / 'model.pkl', 'rb') as model_file:
+        model = pickle.load(model_file)
+except Exception as exc:
+    model_error = str(exc)
+
+try:
+    with open(base_dir / 'label_encoder.pkl', 'rb') as encoder_file:
+        label_encoder = pickle.load(encoder_file)
+except Exception:
+    label_encoder = None
+
+classes = list(getattr(label_encoder, 'classes_', [])) if label_encoder is not None else []
 if type_activite in classes:
-    type_enc = le.transform([type_activite])[0]
+    type_enc = label_encoder.transform([type_activite])[0]
 else:
-    # Type inconnu → on prend la classe la plus fréquente (index 0)
     type_enc = 0
 
-# ─── PRÉDICTION ──────────────────────────────────────────────────────────────
-X = pd.DataFrame([[mois, jour_semaine, capacite, type_enc]], columns=features)
-prediction    = model.predict(X)[0]
-probabilites  = model.predict_proba(X)[0]
+model_risk = 0.0
 
-# Variable risk driven by historical capacity, with the tree probability as a weak signal.
+if model is not None and pd is not None:
+    try:
+        sample = pd.DataFrame([[mois, jour_semaine, capacite, type_enc]], columns=features)
+        probabilities = model.predict_proba(sample)[0]
+        if len(probabilities) > 1:
+            model_risk = round(float(probabilities[1]) * 100.0, 1)
+    except Exception as exc:
+        model_error = str(exc)
+
 expected_capacity = resolve_expected_capacity(type_activite, mois, jour_semaine)
+expected_demand = resolve_expected_demand(type_activite, mois, jour_semaine)
 capacity = max(capacite, 1)
 target_capacity = max(1.0, expected_capacity)
 deviation_pct = abs(capacity - target_capacity) / max(capacity, target_capacity) * 100.0
-model_risk = round(float(probabilites[1]) * 100.0, 1) if len(probabilites) > 1 else 0.0
 risque_pct = round(min(100.0, (deviation_pct * 0.9) + (model_risk * 0.1)), 1)
 
 cap_optimale = max(1, int(round(target_capacity)))
-
 optimal_deviation_pct = abs(cap_optimale - target_capacity) / max(cap_optimale, target_capacity) * 100.0 if target_capacity else 0.0
 risque_optimal = round(min(100.0, (optimal_deviation_pct * 0.9) + (model_risk * 0.1)), 1)
 
-# ─── RÉSULTAT JSON ───────────────────────────────────────────────────────────
 if risque_pct >= 70:
-    niveau  = "eleve"
-    message = f"⚠️ Risque élevé ({risque_pct}%) que cette activité parte sous-remplie. Pensez à réduire la capacité ou changer la date."
+    niveau = "eleve"
+    message = f"Risque eleve ({risque_pct}%) que cette activite parte sous-remplie. Pensez a reduire la capacite ou changer la date."
     couleur = "danger"
 elif risque_pct >= 40:
-    niveau  = "moyen"
-    message = f"🟡 Risque modéré ({risque_pct}%). Cette activité pourrait ne pas atteindre la moitié de sa capacité."
+    niveau = "moyen"
+    message = f"Risque modere ({risque_pct}%). Cette activite pourrait ne pas atteindre la moitie de sa capacite."
     couleur = "warning"
 else:
-    niveau  = "faible"
-    message = f"✅ Faible risque ({risque_pct}%). Cette activité devrait bien se remplir !"
+    niveau = "faible"
+    message = f"Faible risque ({risque_pct}%). Cette activite devrait bien se remplir."
     couleur = "success"
 
-print(json.dumps({
+result = {
     "risque_pct": risque_pct,
-    "niveau":     niveau,
-    "message":    message,
-    "couleur":    couleur
-    ,"capacite_optimale": cap_optimale,
+    "niveau": niveau,
+    "message": message,
+    "couleur": couleur,
+    "capacite_optimale": cap_optimale,
     "risque_optimale": risque_optimal,
     "capacite_historique_estimee": round(target_capacity, 1),
-    "ecart_pourcent": round(deviation_pct, 1)
-}))
+    "demande_historique_estimee": round(expected_demand, 1),
+    "ecart_pourcent": round(deviation_pct, 1),
+    "modele_disponible": model is not None and pd is not None,
+}
+
+if model_error:
+    result["modele_info"] = model_error
+
+print(json.dumps(result))
