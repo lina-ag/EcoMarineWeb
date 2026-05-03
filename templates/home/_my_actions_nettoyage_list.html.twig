@@ -1,0 +1,42 @@
+{% if app.user is null %}
+    <p class="cleaning-empty">Connectez-vous pour consulter vos participations.</p>
+{% elseif mes_inscriptions_nettoyage is defined and mes_inscriptions_nettoyage is not empty %}
+    <div class="table-responsive cleaning-table-shell">
+        <table class="table table-dark table-hover cleaning-table">
+            <thead>
+                <tr>
+                    <th>Lieu</th>
+                    <th>Date</th>
+                    <th>Contact</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscription in mes_inscriptions_nettoyage %}
+                    {% set action = inscription.getIdAction() %}
+                    <tr>
+                        <td>{{ action ? action.lieu : 'Non defini' }}</td>
+                        <td>{{ action and action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non definie' }}</td>
+                        <td>{{ inscription.contact }}</td>
+                        <td>
+                            {% if action %}
+                                <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm">Annuler</button>
+                                </form>
+                            {% else %}
+                                <span class="cleaning-note">Action indisponible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="cleaning-pagination">
+        {{ knp_pagination_render(mes_inscriptions_nettoyage) }}
+    </div>
+{% else %}
+    <p class="cleaning-empty">Vous ne participez a aucune action de nettoyage pour le moment.</p>
+{% endif %}

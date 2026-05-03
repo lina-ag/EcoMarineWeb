@@ -27,7 +27,7 @@ final class NettoyageParticipationController extends AbstractController
         if (!$utilisateur instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté pour participer à une action de nettoyage.');
 
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_signIn');
         }
 
         if (!$this->isCsrfTokenValid('participer' . $actionNettoyage->getIdAction(), $request->request->get('_token'))) {
@@ -99,7 +99,7 @@ final class NettoyageParticipationController extends AbstractController
         if (!$utilisateur instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté.');
 
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_signIn');
         }
 
         if (!$this->isCsrfTokenValid('annuler_participation' . $actionNettoyage->getIdAction(), $request->request->get('_token'))) {

@@ -4,15 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
     face_upload_dir: '%kernel.project_dir%/public/uploads/faces'
-<<<<<<< HEAD
     google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
-=======
->>>>>>> e675b83f9cb232b107624a7e53c1d24cab4292ae
     python_face_service_url: 'http://localhost:5000'
-
-
 
 services:
   # default configuration for services in *this* file
@@ -45,24 +39,13 @@ services:
     arguments:
       $groqApiKey: "%env(GROQ_API_KEY)%"
 
-  # Service météorologique
-  App\Service\WeatherService:
-    arguments:
-      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
-
   App\Service\WeatherServices:
     arguments:
       $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
 
-  # Service de prédiction
+  # Service de prÃ©diction
   App\Service\PredictionService: ~
 
-<<<<<<< HEAD
-    # Service de prédiction
-    App\Service\PredictionService: ~
-
-    App\Service\FaceRecognitionService:
-        arguments:
-            $pythonFaceServiceUrl: '%python_face_service_url%'
-=======
->>>>>>> 800fcd70a75778815110f929a4830304f8d0c140
+  App\Service\FaceRecognitionService:
+    arguments:
+      $pythonFaceServiceUrl: '%python_face_service_url%'
