@@ -1,11 +1,43 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gestion des dechets{% endblock %}
+{% block title %}Gestion des dechets
+</div>
+{% endblock %}
 
 {% block body %}
 <link rel="stylesheet" href="/assets_admin/module-plage.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+<section class="dechet-video-hero">
+    <video class="dechet-video-bg" autoplay muted loop playsinline>
+        <source src="/videos/dechet-hero.mp4" type="video/mp4">
+    </video>
+
+    <div class="dechet-video-overlay"></div>
+
+    <div class="dechet-video-content">
+    <span class="dechet-video-badge">GESTION INTELLIGENTE DES DÃ‰CHETS</span>
+
+    <h1>Signaler, analyser et protÃ©ger le littoral</h1>
+
+    <p>
+    Photo, carte, mÃ©tÃ©o, IA, biodiversitÃ© et contexte Ã©vÃ©nementiel rÃ©unis
+    dans une seule expÃ©rience moderne.
+</p>
+
+    <div class="dechet-video-actions">
+        <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">
+            + Ajouter un signalement
+        </a>
+
+        <a href="#dechet-main-content" class="btn btn-outline-light">
+            Explorer le module
+        </a>
+    </div>
+</div>
+</section>
+
+<div id="dechet-main-content">
 <section class="module-shell">
     <div class="top-utility-bar">
         <div class="top-tabs">
@@ -510,4 +542,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+</div>
 {% endblock %}
