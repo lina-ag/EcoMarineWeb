@@ -212,7 +212,26 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: imageData })
             })
-            .then(response => response.json())
+            .then(async (response) => {
+                const raw = await response.text();
+                let data = {};
+
+                try {
+                    data = raw ? JSON.parse(raw) : {};
+                } catch (error) {
+                    if (!response.ok) {
+                        throw new Error('Le serveur backend a repondu avec le statut ' + response.status + '.');
+                    }
+
+                    throw new Error('Reponse backend invalide.');
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || ('Le serveur backend a repondu avec le statut ' + response.status + '.'));
+                }
+
+                return data;
+            })
             .then(data => {
                 if (data.success) {
                     resultDiv.innerHTML = '<div class="result-message success">✅ Connexion réussie ! Redirection...</div>';
@@ -228,7 +247,10 @@
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                resultDiv.innerHTML = '<div class="result-message error">❌ Erreur lors de la reconnaissance. Veuillez réessayer.</div>';
+                const message = error?.message?.includes('statut 502')
+                    ? 'Le backend Symfony est indisponible pour le moment (502). Verifiez le serveur PHP.'
+                    : (error?.message || 'Erreur lors de la reconnaissance. Veuillez reessayer.');
+                resultDiv.innerHTML = '<div class="result-message error">❌ ' + message + '</div>';
                 captureBtn.disabled = false;
                 captureBtn.textContent = '🔍 Scanner mon visage';
             });

@@ -47,3 +47,7 @@ services:
 
     # Service de prédiction
     App\Service\PredictionService: ~
+
+    App\Service\FaceRecognitionService:
+        arguments:
+            $pythonFaceServiceUrl: '%python_face_service_url%'

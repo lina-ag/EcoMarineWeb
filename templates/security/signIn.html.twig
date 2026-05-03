@@ -386,7 +386,26 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ image: imageData })
         })
-        .then(res => res.json())
+        .then(async (res) => {
+            const raw = await res.text();
+            let data = {};
+
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch (error) {
+                if (!res.ok) {
+                    throw new Error('Le serveur backend a repondu avec le statut ' + res.status + '.');
+                }
+
+                throw new Error('Reponse backend invalide.');
+            }
+
+            if (!res.ok) {
+                throw new Error(data.message || ('Le serveur backend a repondu avec le statut ' + res.status + '.'));
+            }
+
+            return data;
+        })
         .then(data => {
             if (data.success) {
                 setMessage('success', data.message || 'Connexion reussie. Redirection...');
@@ -398,8 +417,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 captureFaceBtn.disabled = false;
             }
         })
-        .catch(() => {
-            setMessage('error', 'Erreur lors de la reconnaissance. Reessayez.');
+        .catch((error) => {
+            const message = error?.message?.includes('statut 502')
+                ? 'Le backend Symfony est indisponible pour le moment (502). Verifiez le serveur PHP.'
+                : (error?.message || 'Erreur lors de la reconnaissance. Reessayez.');
+            setMessage('error', message);
             captureFaceBtn.disabled = false;
         });
     });
