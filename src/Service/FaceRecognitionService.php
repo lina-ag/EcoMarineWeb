@@ -77,17 +77,7 @@ class FaceRecognitionService
                 $dbEncoding = json_decode($storedRaw, true);
                 if (!is_array($dbEncoding)) continue;
 
-                $compare = $this->httpClient->request('POST', self::PYTHON_API . '/compare_faces', [
-                    'json' => [
-                        'encoding1' => $loginEncoding,
-                        'encoding2' => $dbEncoding,
-                    ],
-                    'timeout' => 30,
-                ]);
-
-                $compareResult = $compare->toArray();
-
-                if ($compareResult['match']) {
+                if ($this->isFaceMatch($loginEncoding, $dbEncoding)) {
                     return $user;
                 }
             }
@@ -98,6 +88,41 @@ class FaceRecognitionService
             $this->logger->error('Erreur recognizeFace : ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Compare deux encodages localement pour éviter un appel HTTP par utilisateur.
+     *
+     * @param array<int, float|int|string> $encoding1
+     * @param array<int, float|int|string> $encoding2
+     */
+    private function isFaceMatch(array $encoding1, array $encoding2): bool
+    {
+        if (count($encoding1) === 0 || count($encoding1) !== count($encoding2)) {
+            return false;
+        }
+
+        $dotProduct = 0.0;
+        $norm1 = 0.0;
+        $norm2 = 0.0;
+
+        foreach ($encoding1 as $index => $value1) {
+            $value2 = (float) ($encoding2[$index] ?? 0);
+            $float1 = (float) $value1;
+
+            $dotProduct += $float1 * $value2;
+            $norm1 += $float1 * $float1;
+            $norm2 += $value2 * $value2;
+        }
+
+        $denominator = sqrt($norm1) * sqrt($norm2);
+        if ($denominator <= 0.0) {
+            return false;
+        }
+
+        $cosineDistance = 1 - ($dotProduct / $denominator);
+
+        return $cosineDistance < 0.4;
     }
 
     /**

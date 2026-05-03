@@ -6,10 +6,7 @@
 parameters:
 
     face_upload_dir: '%kernel.project_dir%/public/uploads/faces'
-<<<<<<< HEAD
     google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
-=======
->>>>>>> e675b83f9cb232b107624a7e53c1d24cab4292ae
     python_face_service_url: 'http://localhost:5000'
 
 

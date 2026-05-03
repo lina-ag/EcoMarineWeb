@@ -1,0 +1,419 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block page_title %}DNA Activité{% endblock %}
+{% block navbar_title %}Analyse DNA activité{% endblock %}
+
+{% block admin_stylesheets %}
+    {{ parent() }}
+    <style>
+        .dna-hero {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.12));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dna-hero h1 {
+            font-size: 2.2rem;
+            margin: 0 0 0.5rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dna-hero-subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .dna-badge-main {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .dna-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dna-card {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.8));
+            border-radius: 16px;
+            padding: 1.4rem;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(4px);
+        }
+
+        .dna-card-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .dna-card-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        .dna-card-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .dna-card-meta {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 0.6rem;
+            line-height: 1.4;
+        }
+
+        .dna-summary {
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.12));
+            border-radius: 14px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dna-section {
+            margin-bottom: 2rem;
+        }
+
+        .dna-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .dna-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 1rem;
+        }
+
+        .dna-panel {
+            border: 1px solid rgba(148, 163, 184, 0.34);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.78);
+            padding: 1rem;
+        }
+
+        .dna-panel h3 {
+            font-size: 1rem;
+            margin: 0 0 0.7rem;
+            color: #0f172a;
+        }
+
+        .dna-empty {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .similar-activities {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .similar-card {
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 12px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+
+        .similar-card:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .similar-card-name {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.4rem;
+        }
+
+        .similar-card-dna {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .similar-card-stats {
+            font-size: 0.8rem;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dna-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <section class="glass-card">
+        <div style="margin-bottom: 1rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-outline-secondary">← Retour à la liste</a>
+            <a href="{{ path('app_activite_ecologique_dna_pdf', {'id_activite': activite_ecologique.idActivite}) }}" class="btn btn-primary" style="background: linear-gradient(135deg, #1d4ed8, #0f766e); border:none; box-shadow: 0 10px 24px rgba(29, 78, 216, 0.22);">⬇️ Exporter le PDF DNA</a>
+        </div>
+
+        {# ── HERO SECTION ────────────────────────────────────────────────── #}
+        <div class="dna-hero">
+            <h1>
+                🧬 DNA de "{{ activite_ecologique.nomActivite }}"
+            </h1>
+            <p class="dna-hero-subtitle">Activité #{{ activite_ecologique.idActivite }} — Analyse comportementale des réservations</p>
+            
+            {% if dna %}
+                <div style="background: rgba(0,0,0,0.05); border-radius: 8px; padding: 0.8rem; display: inline-block; margin-top: 1rem;">
+                    <strong style="color: #0f172a;">Profil DNA:</strong> {{ dna.dna_label }}
+                </div>
+            {% endif %}
+        </div>
+
+        {# ── MAIN METRICS GRID ────────────────────────────────────────────────────── #}
+        <div class="dna-grid">
+            {# 👥 Profil dominant #}
+            <div class="dna-card">
+                <div class="dna-card-icon">👥</div>
+                <div class="dna-card-label">Profil dominant</div>
+                <div class="dna-card-value">
+                    {% if dna and dna.min_groupe and dna.max_groupe %}
+                        {{ dna.min_groupe|round }} à {{ dna.max_groupe|round }} pers.
+                    {% elseif avg_group > 0 %}
+                        ~{{ avg_group }} pers.
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="dna-card-meta">
+                    groupes de réservations
+                </div>
+            </div>
+
+            {# 📅 Délai moyen #}
+            <div class="dna-card">
+                <div class="dna-card-icon">📅</div>
+                <div class="dna-card-label">Réservée à l'avance</div>
+                <div class="dna-card-value">
+                    {% if dna and dna.avg_delai > 0 %}
+                        {{ dna.avg_delai|round }} jours
+                    {% elseif avg_lead_time > 0 %}
+                        {{ avg_lead_time|round }} jours
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="dna-card-meta">
+                    {% if min_lead_time is not null and max_lead_time is not null %}
+                        entre {{ min_lead_time }}j et {{ max_lead_time }}j
+                    {% endif %}
+                </div>
+            </div>
+
+            {# 🕐 Pic de réservation #}
+            <div class="dna-card">
+                <div class="dna-card-icon">🕐</div>
+                <div class="dna-card-label">Pic de réservation</div>
+                <div class="dna-card-value">
+                    {% if dna and dna.jour_pic %}
+                        {{ dna.jour_pic }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="dna-card-meta">
+                    jour de la semaine préféré
+                </div>
+            </div>
+
+            {# 🔁 Taux de retour #}
+            <div class="dna-card">
+                <div class="dna-card-icon">🔁</div>
+                <div class="dna-card-label">Taux de retour</div>
+                <div class="dna-card-value">
+                    {{ taux_retour|round }}%
+                </div>
+                <div class="dna-card-meta">
+                    clients fidèles ({{ unique_visitors }} visiteurs uniques)
+                </div>
+            </div>
+
+            {# 🌡️ Sensibilité saisonnière #}
+            <div class="dna-card">
+                <div class="dna-card-icon">🌡️</div>
+                <div class="dna-card-label">Sensibilité saisonnière</div>
+                <div class="dna-card-value">
+                    {% if dna and dna.sensibilite_saisonniere %}
+                        × {{ dna.sensibilite_saisonniere }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="dna-card-meta">
+                    ratio été vs hiver
+                </div>
+            </div>
+
+            {# ⚡ Vitesse de remplissage #}
+            <div class="dna-card">
+                <div class="dna-card-icon">⚡</div>
+                <div class="dna-card-label">Vitesse de remplissage</div>
+                <div class="dna-card-value">
+                    {% if dna and dna.vitesse_remplissage %}
+                        {{ dna.vitesse_remplissage }}
+                    {% else %}
+                        Moyen
+                    {% endif %}
+                </div>
+                <div class="dna-card-meta">
+                    {{ fill_rate }}% remplie
+                </div>
+            </div>
+        </div>
+
+        {# ── SUMMARY INSIGHTS ────────────────────────────────────────────── #}
+        <div class="dna-summary">
+            <strong>📊 Lecture du profil:</strong> {{ profile_summary }}
+            <div style="margin-top: 0.8rem; font-size: 0.9rem; color: #475569; line-height: 1.5;">
+                ✓ {{ total_reservations }} réservations enregistrées
+                ✓ {{ total_people }} personnes au total
+                ✓ Capacité de l'activité: {{ activite_ecologique.capacite }} personnes
+            </div>
+        </div>
+
+        {# ── SIMILAR ACTIVITIES SECTION ─────────────────────────────────── #}
+        {% if similar_activities is not empty %}
+            <div class="dna-section">
+                <div class="dna-section-title">
+                    🔗 Activités avec le même ADN
+                </div>
+                <p style="color: #64748b; margin-bottom: 1rem;">
+                    Ces activités partagent le même profil comportemental. Si une nouvelle activité est similaire, elle devrait performer de la même manière.
+                </p>
+                <div class="similar-activities">
+                    {% for similar in similar_activities %}
+                        <div class="similar-card">
+                            <div class="similar-card-name">
+                                {{ similar.activity.nomActivite }}
+                            </div>
+                            {% if similar.dna %}
+                                <span class="similar-card-dna bg-{{ similar.dna.dna_color }} text-white">
+                                    {{ similar.dna.dna_label }}
+                                </span>
+                            {% endif %}
+                            <div class="similar-card-stats">
+                                <div>👥 {{ similar.dna.avg_groupe|round(1) }} pers. / réservation</div>
+                                <div>📅 {{ similar.dna.avg_delai|round }} jours d'avance</div>
+                                <div>📊 {{ similar.dna.taux }}% rempli</div>
+                                <div>🔗 {{ similar.dna.nb_reservations }} réservations</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# ── DATA TABLE SECTION ──────────────────────────────────────────── #}
+        <div class="dna-layout">
+            <div class="dna-panel">
+                <h3>📋 Historique des réservations</h3>
+                {% if recent_reservations is not empty %}
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date réservation</th>
+                                    <th>Email</th>
+                                    <th>Pers.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in recent_reservations %}
+                                    <tr>
+                                        <td>{{ reservation.idReservation }}</td>
+                                        <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '—' }}</td>
+                                        <td style="font-size: 0.85rem; word-break: break-all;">{{ reservation.email }}</td>
+                                        <td>{{ reservation.nombrePersonnes }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="dna-empty">Aucune réservation enregistrée pour cette activité.</p>
+                {% endif %}
+            </div>
+
+            <div class="dna-panel">
+                <h3>📈 Distribution mensuelle</h3>
+                {% if monthly_bookings is not empty %}
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mois</th>
+                                    <th>Participants</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month, people in monthly_bookings %}
+                                    <tr>
+                                        <td>{{ month }}</td>
+                                        <td>{{ people }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="dna-empty">Pas de distribution disponible.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── BUTTONS ────────────────────────────────────────────────────── #}
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">← Retour liste</a>
+            <a href="{{ path('app_activite_ecologique_dna_pdf', {'id_activite': activite_ecologique.idActivite}) }}" class="btn btn-primary" style="background: linear-gradient(135deg, #1d4ed8, #0f766e); border:none; box-shadow: 0 10px 24px rgba(29, 78, 216, 0.22);">⬇️ Export PDF</a>
+            <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary">Voir fiche activité</a>
+        </div>
+    </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+{% endblock %}
+

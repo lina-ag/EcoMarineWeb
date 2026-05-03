@@ -86,6 +86,22 @@
 
 {# Graphiques #}
 
+<section class="content-grid" style="margin-bottom: 1.4rem;">
+    <div class="glass-card chart-card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Réservations par activité</h2>
+                <p class="card-subtitle">Répartition globale des réservations sur l'ensemble de la plateforme</p>
+            </div>
+        </div>
+        <div class="chart-wrapper" style="min-height: 340px;">
+            <div style="height: 340px; max-width: 820px; margin: 0 auto;">
+                {{ render_chart(reservationActivityChart, {'controller': '@symfony/ux-chartjs/chart'}) }}
+            </div>
+        </div>
+    </div>
+</section>
+
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">

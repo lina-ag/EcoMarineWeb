@@ -17,6 +17,8 @@ use App\Repository\VolontaireRepository;
 use App\Repository\ZonePlageRepository;
 use App\Repository\SurvzoneRepository;
 use App\Repository\ZonepRepository;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -40,6 +42,7 @@ final class AdminController extends AbstractController
         ZonePlageRepository $zonePlageRepository,
         ZonepRepository $zonepRepository,
         SurvzoneRepository $survzoneRepository,
+        ChartBuilderInterface $chartBuilder,
     ): Response {
         $now = new \DateTimeImmutable('now');
         $startCurrentMonth = $now->modify('first day of this month')->setTime(0, 0);
@@ -87,6 +90,7 @@ final class AdminController extends AbstractController
         $wasteByZone = $this->buildWasteByZoneChart($dechetRepository);
         $reservationsByMonth = $this->buildMonthlyCountSeries($reservationRepository, 'r', 'date_reservation');
         $observationsByMonth = $this->buildMonthlyCountSeries($observationRepository, 'o', 'date_observation');
+        $reservationActivityChart = $this->buildReservationActivityChart($reservationRepository, $chartBuilder);
 
         $domainBlocks = [
             [
@@ -170,9 +174,71 @@ final class AdminController extends AbstractController
                 'zones_by_status' => $zonesByStatus,
                 'most_surveilled_zones' => $mostSurveilledZones,
             ],
+            'reservationActivityChart' => $reservationActivityChart,
             'domain_blocks' => $domainBlocks,
             'zones_without_surveillance' => $zonesWithoutSurveillance,
         ]);
+    }
+
+    private function buildReservationActivityChart(ReservationRepository $reservationRepository, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $reservations = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.activiteEcologique', 'a')
+            ->addSelect('a')
+            ->getQuery()
+            ->getResult();
+
+        $activityCounts = [];
+
+        foreach ($reservations as $reservation) {
+            $activityName = trim((string) ($reservation->getActiviteEcologique()?->getNomActivite() ?? 'Sans activité'));
+            if ($activityName === '') {
+                $activityName = 'Sans activité';
+            }
+
+            $activityCounts[$activityName] = ($activityCounts[$activityName] ?? 0) + 1;
+        }
+
+        arsort($activityCounts);
+        $activityCounts = array_slice($activityCounts, 0, 8, true);
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $chart->setData([
+            'labels' => array_keys($activityCounts),
+            'datasets' => [[
+                'label' => 'Réservations par activité',
+                'data' => array_values($activityCounts),
+                'backgroundColor' => [
+                    '#0f766e',
+                    '#2563eb',
+                    '#7c3aed',
+                    '#f59e0b',
+                    '#14b8a6',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#22c55e',
+                ],
+                'borderColor' => '#ffffff',
+                'borderWidth' => 2,
+                'hoverOffset' => 10,
+            ]],
+        ]);
+        $chart->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => [
+                        'usePointStyle' => true,
+                        'padding' => 16,
+                    ],
+                ],
+            ],
+            'cutout' => '62%',
+        ]);
+
+        return $chart;
     }
 
     private function buildZonesByStatus(ZonepRepository $zonepRepository): array

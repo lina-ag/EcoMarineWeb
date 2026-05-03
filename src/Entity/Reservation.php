@@ -167,4 +167,18 @@ class Reservation
     {
         // Validation gérée dans ReservationType via POST_SUBMIT
     }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $quiz_badge = null;
+
+    public function getQuizBadge(): ?string
+    {
+        return $this->quiz_badge;
+    }
+
+    public function setQuizBadge(?string $quiz_badge): self
+    {
+        $this->quiz_badge = $quiz_badge;
+        return $this;
+    }
 }

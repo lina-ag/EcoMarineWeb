@@ -521,6 +521,57 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser fullpage.js
+    var fullpageInstance = new fullPage('#fullpage', {
+        licenseKey: 'gpl',
+        navigation: false,
+        navigationPosition: 'right',
+        scrollingSpeed: 700,
+        activeSection: 'slide01',
+        easingcss3: 'ease-in-out',
+        css3: true,
+        scrollBar: false,
+        autoScrolling: true,
+        fitToSection: true,
+        fitToSectionDelay: 600,
+        easing: 'easeInOutCubic',
+        easingcss3: 'ease-in-out',
+        loopBottom: false,
+        loopTop: false,
+        loopHorizontal: true,
+        continuousVertical: false,
+        continuousHorizontal: false,
+        scrollHorizontally: false,
+        interlockedSlides: false,
+        dragAndMove: false,
+        offsetSections: false,
+        resetSliders: false,
+        fadingEffect: false,
+        normalScrollElements: '.owl-carousel, .table-responsive',
+        touchSensitivity: 15,
+        bigSectionsDestination: null,
+        onLeave: function(origin, destination, direction) {
+            // Cacher le preloader quand on quitte la première section
+        },
+        afterLoad: function(origin, destination, direction) {
+            // Cacher le preloader après le chargement
+            var preloader = document.querySelector('.preloader');
+            if (preloader) {
+                preloader.style.display = 'none';
+            }
+        }
+    });
+    
+    // Cacher le preloader immédiatement
+    setTimeout(function() {
+        var preloader = document.querySelector('.preloader');
+        if (preloader) {
+            preloader.style.display = 'none';
+        }
+    }, 500);
+});
+
 document.querySelector('.navbar-toggle').addEventListener('click', function() {
     document.querySelector('.nav-box').classList.toggle('active');
 });

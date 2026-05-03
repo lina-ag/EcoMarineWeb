@@ -33,8 +33,7 @@
                 </button>
                 <a href="{{ path('app_front_calendar') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.see_calendar'|trans }}</a>
                 <a href="{{ path('app_reservation_export_pdf') }}" class="btn btn-secondary reservation-admin-cta">{{ 'reservation.export_pdf'|trans }}</a>
-                <button type="button" id="reservation-ai-report-btn" class="btn btn-secondary reservation-admin-cta" data-report-url="{{ path('app_reservation_report_ai') }}">Rapport IA</button>
-                <button type="button" id="reservation-ai-report-pdf-btn" class="btn btn-secondary reservation-admin-cta" data-pdf-url="{{ path('app_reservation_report_ai_pdf') }}">PDF IA</button>
+                <button type="button" id="reservation-ai-report-btn" class="btn btn-secondary reservation-admin-cta" data-page-url="{{ path('app_reservation_report_ai_page') }}">Rapport IA</button>
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'reservation.create'|trans }}</a>
             </div>
         </div>
@@ -43,122 +42,32 @@
         </svg>
 
 
-        <div class="reservation-chart-panel" style="margin: 1rem 0 1.1rem; padding: 1rem; border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.65); background: rgba(255, 255, 255, 0.82); box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);">
-            <div style="display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
-                <div>
-                    <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a;">Réservations par activité</h3>
-                    <p style="margin: 0.25rem 0 0; color: #475569; font-size: 0.9rem;">Vue rapide des réservations actuellement filtrées.</p>
-                </div>
-                <span style="display: inline-flex; align-items: center; padding: 0.35rem 0.7rem; border-radius: 999px; background: rgba(37, 99, 235, 0.12); color: #1d4ed8; font-weight: 700; font-size: 0.82rem;">UX Chart.js</span>
-            </div>
-            <div style="height: 280px;">
-                {{ render_chart(reservationActivityChart, {'controller': '@symfony/ux-chartjs/chart'}) }}
-            </div>
-        </div>
-
-        <div id="reservation-ai-report-panel" style="display:none; margin: 0 0 1.1rem; padding: 1rem 1.1rem; border-radius: 20px; border: 1px solid rgba(191, 219, 254, 0.65); background: rgba(255, 255, 255, 0.88); box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);">
-            <div style="display:flex; justify-content:space-between; gap:0.75rem; align-items:center; flex-wrap:wrap; margin-bottom:0.75rem;">
-                <div>
-                    <h3 style="margin:0; font-size:1rem; font-weight:800; color:#0f172a;">Rapport activité / réservation</h3>
-                    <p style="margin:0.25rem 0 0; color:#475569; font-size:0.9rem;">Analyse IA basée sur les filtres actifs de la liste.</p>
-                </div>
-                <span id="reservation-ai-report-status" style="display:inline-flex; align-items:center; padding:0.35rem 0.7rem; border-radius:999px; background:rgba(37, 99, 235, 0.12); color:#1d4ed8; font-weight:700; font-size:0.82rem;">Prêt</span>
-            </div>
-            <div id="reservation-ai-report-loading" style="display:none; color:#1d4ed8; font-weight:700; margin-bottom:0.75rem;">Generation du rapport en cours...</div>
-            <div id="reservation-ai-report-error" style="display:none; color:#b91c1c; font-weight:700; margin-bottom:0.75rem;"></div>
-            <div id="reservation-ai-report-result" style="display:none; white-space:pre-wrap; line-height:1.65; color:#0f172a; background:linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(248, 250, 252, 0.92)); border:1px solid rgba(191, 219, 254, 0.65); border-radius:16px; padding:1rem;"></div>
-        </div>
-
         <style>
-            .header-wave {
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                width: 100%;
-                height: 66px;
-                opacity: 0.26;
-                pointer-events: none;
-                z-index: 0;
-            }
+            const initAiReport = function () {
+                const reportButton = document.getElementById('reservation-ai-report-btn');
+                const searchForm = document.getElementById('reservation-search-form');
 
-            .header-wave path {
-                fill: #1d4ed8;
-                animation: waveShift 7s ease-in-out infinite alternate;
-                transform-origin: center;
-            }
+                if (!reportButton) {
+                    return;
+                }
 
-            .reservation-toast {
-                position: fixed;
-                top: 1.25rem;
-                right: 1.25rem;
-                z-index: 999;
-                background: linear-gradient(135deg, #16a34a, #166534);
-                color: #ffffff;
-                padding: 0.7rem 1rem;
-                border-radius: 10px;
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
-                font-size: 0.9rem;
-                font-weight: 700;
-                opacity: 0;
-                transform: translateY(-8px);
-                pointer-events: none;
-                transition: opacity 0.25s ease, transform 0.25s ease;
-            }
+                if (reportButton.dataset.bound === '1') {
+                    return;
+                }
 
-            .reservation-toast.error {
-                background: linear-gradient(135deg, #dc2626, #7f1d1d);
-            }
+                reportButton.dataset.bound = '1';
 
-            .reservation-toast.show {
-                opacity: 1;
-                transform: translateY(0);
-            }
+                reportButton.addEventListener('click', function () {
+                    const baseUrl = reportButton.dataset.pageUrl;
+                    if (!baseUrl) {
+                        return;
+                    }
 
-            .reservation-search-row {
-                display: flex;
-                align-items: center;
-                gap: 0.9rem;
-                flex-wrap: wrap;
-            }
-
-            .admin-live-form {
-                margin-bottom: 1.5rem;
-                display: flex;
-                flex-direction: column;
-                gap: 1.1rem;
-                padding: 1.1rem;
-                border-radius: 20px;
-                border: 1px solid rgba(191, 219, 254, 0.55);
-                background: linear-gradient(135deg, rgba(251, 253, 254, 0.52), rgba(239, 246, 255, 0.34));
-                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.7);
-                backdrop-filter: blur(10px);
-            }
-
-            .admin-live-form-row {
-                display: flex;
-                align-items: center;
-                gap: 0.65rem;
-                flex-wrap: wrap;
-            }
-
-            .admin-live-form-row--split {
-                padding-top: 0.5rem;
-                border-top: 1px solid rgba(203, 213, 225, 0.3);
-            }
-
-            .admin-live-search-main {
-                display: flex;
-                align-items: center;
-                gap: 0.65rem;
-                flex: 1;
-                min-width: 260px;
-            }
-
-            .admin-field-select {
-                max-width: 170px;
-                min-width: 170px;
-            }
-
+                    const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
+                    const reportUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
+                    window.location.href = reportUrl;
+                });
+            };
             .admin-inline-select {
                 max-width: 170px;
             }
@@ -693,6 +602,7 @@
                         <th>{{ 'reservation.email'|trans }}</th>
                         <th>{{ 'reservation.people'|trans }}</th>
                         <th>{{ 'reservation.status'|trans }}</th>
+                        <th>🏆 Badge</th>
                         <th>{{ 'reservation.actions'|trans }}</th>
                     </tr>
                 </thead>
@@ -738,6 +648,22 @@
                                 <span class="status-badge status-badge-pending">{{ 'reservation.status_pending'|trans }}</span>
                             {% else %}
                                 <span class="status-badge status-badge-cancelled">{{ 'reservation.status_cancelled'|trans }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if reservation.quizBadge %}
+                                {% set badgeEmoji = reservation.quizBadge == 'gold' ? '🥇' : (reservation.quizBadge == 'silver' ? '🥈' : '🥉') %}
+                                {% set badgeLabel = reservation.quizBadge == 'gold' ? 'Or' : (reservation.quizBadge == 'silver' ? 'Argent' : 'Bronze') %}
+                                <span style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.8rem; border-radius: 8px;
+                                    background: {% if reservation.quizBadge == 'gold' %}rgba(251,191,36,0.15){% elseif reservation.quizBadge == 'silver' %}rgba(148,163,184,0.15){% else %}rgba(180,83,9,0.12){% endif %};
+                                    border: 1px solid {% if reservation.quizBadge == 'gold' %}rgba(251,191,36,0.3){% elseif reservation.quizBadge == 'silver' %}rgba(148,163,184,0.3){% else %}rgba(180,83,9,0.2){% endif %};
+                                    color: {% if reservation.quizBadge == 'gold' %}#d97706{% elseif reservation.quizBadge == 'silver' %}#475569{% else %}#92400e{% endif %};
+                                    font-weight: 600; font-size: 0.85rem;">
+                                    <span style="font-size: 1.1rem;">{{ badgeEmoji }}</span>
+                                    <span>{{ badgeLabel }}</span>
+                                </span>
+                            {% else %}
+                                <span style="color: #cbd5e1; font-size: 0.85rem;">—</span>
                             {% endif %}
                         </td>
                         <td>
@@ -928,15 +854,9 @@
 
             const initAiReport = function () {
                 const reportButton = document.getElementById('reservation-ai-report-btn');
-                const reportPdfButton = document.getElementById('reservation-ai-report-pdf-btn');
-                const reportPanel = document.getElementById('reservation-ai-report-panel');
-                const reportStatus = document.getElementById('reservation-ai-report-status');
-                const reportLoading = document.getElementById('reservation-ai-report-loading');
-                const reportError = document.getElementById('reservation-ai-report-error');
-                const reportResult = document.getElementById('reservation-ai-report-result');
                 const searchForm = document.getElementById('reservation-search-form');
 
-                if (!reportButton || !reportPdfButton || !reportPanel || !reportStatus || !reportLoading || !reportError || !reportResult) {
+                if (!reportButton) {
                     return;
                 }
 
@@ -946,74 +866,15 @@
 
                 reportButton.dataset.bound = '1';
 
-                reportPdfButton.addEventListener('click', function () {
-                    const baseUrl = reportPdfButton.dataset.pdfUrl;
-                    if (!baseUrl) {
-                        return;
-                    }
-
-                    const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
-                    const pdfUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
-                    window.open(pdfUrl, '_blank');
-                });
-
                 reportButton.addEventListener('click', function () {
-                    const baseUrl = reportButton.dataset.reportUrl;
+                    const baseUrl = reportButton.dataset.pageUrl;
                     if (!baseUrl) {
                         return;
                     }
 
                     const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
                     const reportUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
-
-                    reportPanel.style.display = 'block';
-                    reportLoading.style.display = 'block';
-                    reportError.style.display = 'none';
-                    reportResult.style.display = 'none';
-                    reportResult.textContent = '';
-                    reportStatus.textContent = 'Chargement';
-                    reportStatus.style.background = 'rgba(37, 99, 235, 0.12)';
-                    reportStatus.style.color = '#1d4ed8';
-                    reportButton.disabled = true;
-
-                    fetch(reportUrl, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(function (response) {
-                            return response.json().then(function (data) {
-                                if (!response.ok) {
-                                    throw new Error(data.error || 'Impossible de générer le rapport.');
-                                }
-
-                                return data;
-                            });
-                        })
-                        .then(function (data) {
-                            reportLoading.style.display = 'none';
-                            reportButton.disabled = false;
-
-                            if (!data.success || !data.report) {
-                                throw new Error(data.error || 'Impossible de générer le rapport.');
-                            }
-
-                            reportResult.textContent = data.report;
-                            reportResult.style.display = 'block';
-                            reportStatus.textContent = 'Généré';
-                            reportStatus.style.background = 'rgba(22, 163, 74, 0.12)';
-                            reportStatus.style.color = '#15803d';
-                            reportPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        })
-                        .catch(function (error) {
-                            reportLoading.style.display = 'none';
-                            reportButton.disabled = false;
-                            reportError.textContent = error.message || 'Erreur lors de la génération du rapport.';
-                            reportError.style.display = 'block';
-                            reportStatus.textContent = 'Erreur';
-                            reportStatus.style.background = 'rgba(220, 38, 38, 0.12)';
-                            reportStatus.style.color = '#b91c1c';
-                        });
+                    window.location.href = reportUrl;
                 });
             };
 
@@ -1049,73 +910,15 @@
                         let isListening = false;
                         let toastTimer = null;
 
-                        const micSVG = `<svg id="reservation-voice-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                                <line x1="12" y1="19" x2="12" y2="23"/>
-                                <line x1="8" y1="23" x2="16" y2="23"/>
-                            </svg>`;
-
-                        const stopSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <rect x="4" y="4" width="16" height="16" rx="3"/>
-                            </svg>`;
-
                         const showToast = function (message, type) {
-                            window.clearTimeout(toastTimer);
+                                            const baseUrl = reportButton.dataset.pageUrl;
                             voiceToast.textContent = message;
                             voiceToast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
                             toastTimer = window.setTimeout(function () {
                                 voiceToast.classList.remove('voice-toast--visible');
                             }, 2800);
                         };
-
-                        const startListening = function () {
-                            isListening = true;
-                            voiceBtn.classList.add('voice-btn--active');
-                            voiceBtn.innerHTML = stopSVG;
-                            voiceBtn.setAttribute('aria-label', 'Arrêter la recherche vocale');
-                            showToast('🎙 Parlez maintenant…', 'info');
-                            recognition.start();
-                        };
-
-                        const stopListening = function () {
-                            isListening = false;
-                            voiceBtn.classList.remove('voice-btn--active');
-                            voiceBtn.innerHTML = micSVG;
-                            voiceBtn.setAttribute('aria-label', 'Démarrer la recherche vocale');
-                            recognition.stop();
-                        };
-
-                        voiceBtn.addEventListener('click', function () {
-                            if (isListening) {
-                                stopListening();
-                            } else {
-                                startListening();
-                            }
-                        });
-
-                        recognition.addEventListener('result', function (event) {
-                            const transcript = Array.from(event.results)
-                                .map(function (result) {
-                                    return result[0].transcript;
-                                })
-                                .join('');
-
-                            voiceInput.value = transcript;
-
-                            if (event.results[0].isFinal) {
-                                showToast('Recherche : « ' + transcript + ' »', 'success');
-                                form.requestSubmit();
-                            }
-                        });
-
-                        recognition.addEventListener('end', function () {
-                            if (isListening) {
-                                stopListening();
-                            }
-                        });
-
-                        recognition.addEventListener('error', function (event) {
+                                            window.location.href = reportUrl;
                             stopListening();
 
                             const messages = {
