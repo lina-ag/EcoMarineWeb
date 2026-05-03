@@ -4,12 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "04c94f3c9641e8108f7c92901af1bbe7",
-=======
-    "content-hash": "a9c96ad09020b5f2f6fb0af8e3402889",
-
->>>>>>> e675b83f9cb232b107624a7e53c1d24cab4292ae
+    "content-hash": "e6c662ed85f83c917ba9ed3116a466cd",
     "packages": [
         {
             "name": "94noni/highcharts-bundle",

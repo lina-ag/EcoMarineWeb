@@ -225,7 +225,7 @@ final class ReservationController extends AbstractController
     }
 
 #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient): Response
+public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
 {
     $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
     $questions = [];
@@ -299,6 +299,11 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
             $correctCount >= 2 => 'silver',
             default => 'bronze',
         };
+
+        // Enregistrer le badge dans la réservation
+        $reservation->setQuizBadge($badge);
+        $entityManager->persist($reservation);
+        $entityManager->flush();
 
         // Quiz result email removed (GroqMailService)
 
@@ -402,6 +407,58 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
                 'error' => $this->normalizeGroqErrorMessage($exception->getMessage()),
             ], Response::HTTP_BAD_GATEWAY);
         }
+    }
+
+    #[Route('/report/ai/page', name: 'app_reservation_report_ai_page', methods: ['GET'])]
+    public function reportAiPage(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        GroqReportService $groqReportService
+    ): Response {
+        $searchTerm = trim((string) $request->query->get('q', ''));
+        $searchField = (string) $request->query->get('field', 'all');
+        $statusFilter = (string) $request->query->get('status', 'all');
+        $personnesFilter = (string) $request->query->get('personnes', 'all');
+        $dateFrom = trim((string) $request->query->get('date_from', ''));
+        $dateTo = trim((string) $request->query->get('date_to', ''));
+        $sort = (string) $request->query->get('sort', 'id_desc');
+
+        $queryBuilder = $this->buildFilteredReservationQueryBuilder(
+            $reservationRepository,
+            $searchTerm,
+            $searchField,
+            $statusFilter,
+            $personnesFilter,
+            $dateFrom,
+            $dateTo
+        );
+        $this->applyReservationSort($queryBuilder, $sort);
+
+        /** @var array<int, Reservation> $reservations */
+        $reservations = $queryBuilder->getQuery()->getResult();
+
+        $reportPayload = $this->buildReservationReportPayload($reservations);
+
+        try {
+            $report = $groqReportService->generateReport($reportPayload['activities'], $reportPayload['reservations']);
+        } catch (\Throwable $exception) {
+            $report = 'Rapport IA indisponible pour le moment.';
+        }
+
+        return $this->render('reservation/report_ai.html.twig', [
+            'reservations' => $reservations,
+            'generatedAt' => new \DateTimeImmutable(),
+            'report' => $report,
+            'filters' => [
+                'q' => $searchTerm,
+                'field' => $searchField,
+                'status' => $statusFilter,
+                'personnes' => $personnesFilter,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'sort' => $sort,
+            ],
+        ]);
     }
 
     #[Route('/report/ai/pdf', name: 'app_reservation_report_ai_pdf', methods: ['GET'])]

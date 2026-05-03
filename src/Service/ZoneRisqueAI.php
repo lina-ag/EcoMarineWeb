@@ -2,17 +2,22 @@
 
 namespace App\Service;
 
-use Phpml\Classification\KNearestNeighbors;
-
-
 class ZoneRisqueAI
 {
-    private KNearestNeighbors $model;
+    /**
+     * @var array<int, array<int, float|int>>
+     */
+    private array $samples = [];
+
+    /**
+     * @var array<int, string>
+     */
+    private array $labels = [];
 
     public function __construct()
     {
         // [temperature, activite_humaine(0-4), pollution(0-4), biodiversite(0-4)]
-        $samples = [
+        $this->samples = [
             [18, 0, 0, 4],
             [20, 1, 0, 4],
             [22, 1, 1, 3],
@@ -25,15 +30,12 @@ class ZoneRisqueAI
             [34, 4, 4, 0],
         ];
 
-        $labels = [
+        $this->labels = [
             'Faible', 'Faible', 'Faible',
             'Moyen',  'Moyen',  'Moyen',
             'Élevé',  'Élevé',
             'Critique', 'Critique',
         ];
-
-        $this->model = new KNearestNeighbors(k: 3);
-        $this->model->train($samples, $labels);
     }
 
     public function predireRisque(
@@ -42,11 +44,12 @@ class ZoneRisqueAI
         int   $pollution,
         int   $biodiversite
     ): array {
-        $prediction = $this->model->predict([
-            [$temperature, $activiteHumaine, $pollution, $biodiversite]
+        $niveau = $this->predireNiveau([
+            $temperature,
+            $activiteHumaine,
+            $pollution,
+            $biodiversite,
         ]);
-
-        $niveau = $prediction[0];
 
         $scores = [
             'Faible'   => rand(10, 30),
@@ -76,5 +79,41 @@ class ZoneRisqueAI
             'risques'         => $risques[$niveau],
             'recommandations' => $recommandations[$niveau],
         ];
+    }
+
+    /**
+     * @param array<int, float|int> $point
+     */
+    private function predireNiveau(array $point): string
+    {
+        $meilleureDistance = null;
+        $meilleurLabel = 'Moyen';
+
+        foreach ($this->samples as $index => $sample) {
+            $distance = $this->distanceEuclidienne($point, $sample);
+
+            if ($meilleureDistance === null || $distance < $meilleureDistance) {
+                $meilleureDistance = $distance;
+                $meilleurLabel = $this->labels[$index];
+            }
+        }
+
+        return $meilleurLabel;
+    }
+
+    /**
+     * @param array<int, float|int> $a
+     * @param array<int, float|int> $b
+     */
+    private function distanceEuclidienne(array $a, array $b): float
+    {
+        $somme = 0.0;
+
+        foreach ($a as $index => $valeur) {
+            $difference = (float) $valeur - (float) $b[$index];
+            $somme += $difference * $difference;
+        }
+
+        return sqrt($somme);
     }
 }

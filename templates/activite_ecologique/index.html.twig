@@ -714,6 +714,7 @@
                         <th>{{ 'activite.fill_rate'|trans }}</th>
                         <th>{{ 'activite.description'|trans }}</th>
                         <th>{{ 'activite.status'|trans }}</th>
+                        <th>🧬 DNA</th>
                         <th>{{ 'activite.actions'|trans }}</th>
                     </tr>
                 </thead>
@@ -772,6 +773,30 @@
                                 <span class="status-badge status-badge-cancelled">{{ 'activite.status_cancelled'|trans }}</span>
                             {% endif %}
                         </td>
+                        <td>
+    {% set dna = activity_dna[activite_ecologique.idActivite] ?? null %}
+    <a href="{{ path('app_activite_ecologique_dna', {'id_activite': activite_ecologique.id_activite}) }}"
+       style="text-decoration:none; color:inherit; display:block;"
+       title="Voir le détail DNA de cette activité">
+        {% if dna %}
+            <span class="badge bg-{{ dna.dna_color }} dna-badge"
+                  title="Groupe moyen : {{ dna.avg_groupe }} pers. | Délai moyen : {{ dna.avg_delai }}j | Réservations : {{ dna.nb_reservations }}">
+                {{ dna.dna_label }}
+            </span>
+            <div style="font-size:0.72rem; color:#64748b; margin-top:0.3rem;">
+                👥 {{ dna.avg_groupe > 0 ? dna.avg_groupe ~ ' pers.' : '—' }}
+                · ⏱ {{ dna.avg_delai > 0 ? dna.avg_delai ~ 'j' : '—' }}
+                · 📋 {{ dna.nb_reservations }}
+            </div>
+        {% else %}
+            <span class="badge bg-secondary" style="font-size:0.7rem;">Non analysé</span>
+            <div style="font-size:0.7rem; color:#94a3b8; margin-top:0.2rem;">
+                Ouvrir le détail DNA
+            </div>
+        {% endif %}
+    </a>
+</td>
+
                         <td>
                             <div class="reservation-admin-actions">
                                 <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn" title="{{ 'activite.show_activity'|trans }}">{{ 'activite.view'|trans }}</a>

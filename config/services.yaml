@@ -6,48 +6,63 @@
 parameters:
 
     face_upload_dir: '%kernel.project_dir%/public/uploads/faces'
+<<<<<<< HEAD
     google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
+=======
+>>>>>>> e675b83f9cb232b107624a7e53c1d24cab4292ae
     python_face_service_url: 'http://localhost:5000'
 
 
 
 services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
+  # makes classes in src/ available to be used as services
+  # this creates a service per class whose id is the fully-qualified class name
+  App\:
+    resource: "../src/"
+    exclude:
+      - "../src/DependencyInjection/"
+      - "../src/Entity/"
+      - "../src/Entity/"
+      - "../src/Kernel.php"
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+  App\Service\AiRecommendationService:
+    bind:
+      $openAiApiKey: "%env(OPENAI_API_KEY)%"
 
-    App\Service\GroqAnalyzer:
-        arguments:
-            $groqApiKey: '%env(GROQ_API_KEY)%'
+  # add more service definitions when explicit configuration is needed
+  # please note that last definitions always *replace* previous ones
 
-    App\Service\GroqReportService:
-        arguments:
-            $groqApiKey: '%env(GROQ_API_KEY)%'
+  App\Service\GroqAnalyzer:
+    arguments:
+      $groqApiKey: "%env(GROQ_API_KEY)%"
 
-    App\Service\WeatherService:
-        arguments:
-            $apiKey: '%env(API_NINJAS_KEY)%'
-    # Service météorologique
-    App\Service\WeatherServices:
-        arguments:
-            $openWeatherApiKey: '%env(OPENWEATHER_API_KEY)%'
+  App\Service\GroqReportService:
+    arguments:
+      $groqApiKey: "%env(GROQ_API_KEY)%"
 
+  # Service météorologique
+  App\Service\WeatherService:
+    arguments:
+      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
+
+  App\Service\WeatherServices:
+    arguments:
+      $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
+
+  # Service de prédiction
+  App\Service\PredictionService: ~
+
+<<<<<<< HEAD
     # Service de prédiction
     App\Service\PredictionService: ~
 
     App\Service\FaceRecognitionService:
         arguments:
             $pythonFaceServiceUrl: '%python_face_service_url%'
+=======
+>>>>>>> 800fcd70a75778815110f929a4830304f8d0c140

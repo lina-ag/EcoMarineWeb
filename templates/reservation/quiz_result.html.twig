@@ -86,9 +86,12 @@
             </div>
         {% endfor %}
 
-        <div style="text-align: center; margin-top: 2rem;">
+        <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="{{ path('app_reservation_index') }}" class="btn btn-primary" style="padding: 0.85rem 2.5rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); font-weight: 700; text-decoration: none; display: inline-block; box-shadow: 0 8px 20px rgba(29,78,216,0.25);">
-                Voir mes réservations
+                📋 Voir mes réservations
+            </a>
+            <a href="{{ path('app_reservation_index') }}" class="btn" style="padding: 0.85rem 2.5rem; border-radius: 12px; background: rgba(100, 116, 139, 0.12); border: 1px solid rgba(100, 116, 139, 0.3); color: #475569; font-weight: 600; text-decoration: none; display: inline-block;">
+                ⏭️ Retour rapide
             </a>
         </div>
     </div>

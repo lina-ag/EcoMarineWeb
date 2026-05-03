@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Utilisateur;
 use App\Repository\VolontaireRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -53,6 +54,20 @@ class Volontaire
     #[Assert\NotNull(message: "Vous devez choisir une action de nettoyage.")]
     private ?ActionNettoyage $id_action = null;
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_utilisateur', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $utilisateur = null;
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
     public function getId_volontaire(): ?int
     {
         return $this->id_volontaire;

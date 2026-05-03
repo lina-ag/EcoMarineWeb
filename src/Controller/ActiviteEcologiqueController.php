@@ -23,13 +23,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
+    #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
     public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository, WeatherService $weatherService): Response
     {
-        $searchTerm = trim((string) $request->query->get('q', ''));
-        $searchField = (string) $request->query->get('field', 'all');
-        $periodeFilter = (string) $request->query->get('periode', 'all');
+        $searchTerm     = trim((string) $request->query->get('q', ''));
+        $searchField    = (string) $request->query->get('field', 'all');
+        $periodeFilter  = (string) $request->query->get('periode', 'all');
         $capaciteFilter = (string) $request->query->get('capacite', 'all');
-        $sort = (string) $request->query->get('sort', 'date_desc');
+        $sort           = (string) $request->query->get('sort', 'date_desc');
 
         $activites = $activiteEcologiqueRepository->findAll();
 
@@ -43,49 +44,37 @@ final class ActiviteEcologiqueController extends AbstractController
             return $this->compareActivities($left, $right, $sort);
         });
 
-        $page = max(1, (int) $request->query->get('page', 1));
-        $perPage = 10;
+        $page       = max(1, (int) $request->query->get('page', 1));
+        $perPage    = 10;
         $totalItems = count($activites);
         $totalPages = max(1, (int) ceil($totalItems / $perPage));
         $currentPage = min($page, $totalPages);
-        $offset = ($currentPage - 1) * $perPage;
+        $offset      = ($currentPage - 1) * $perPage;
         $paginatedActivities = array_slice($activites, $offset, $perPage);
-        $pageStart = $totalItems > 0 ? $offset + 1 : 0;
-        $pageEnd = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
+        $pageStart   = $totalItems > 0 ? $offset + 1 : 0;
+        $pageEnd     = $totalItems > 0 ? min($offset + $perPage, $totalItems) : 0;
 
         $weather = $weatherService->getWeatherForCity('Monastir');
 
-        // Include prediction error summary in dev for debugging
-        $predictionError = null;
-        try {
-            if ($this->getParameter('kernel.environment') !== 'prod') {
-                $errorPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'last_prediction_error.json';
-                if (file_exists($errorPath)) {
-                    $predictionError = json_decode(file_get_contents($errorPath), true);
-                }
-            }
-        } catch (\Throwable $e) {
-            $predictionError = null;
-        }
+        $activityDna = $this->loadActivityDna();
 
         return $this->render('activite_ecologique/index.html.twig', [
-            'activite_ecologiques' => $paginatedActivities,
-            'weather' => $weather,
-            'search_term' => $searchTerm,
-            'search_field' => $searchField,
-            'periode_filter' => $periodeFilter,
-            'capacite_filter' => $capaciteFilter,
-            'sort_by' => $sort,
-            'result_count' => $totalItems,
-            'page' => $currentPage,
-            'total_pages' => $totalPages,
-            'page_start' => $pageStart,
-            'page_end' => $pageEnd,
-            'autocomplete_suggestions' => $this->buildActivityAutocompleteSuggestions($activites),
-            'prediction_error' => $predictionError,
+            'activite_ecologiques'       => $paginatedActivities,
+            'weather'                    => $weather,
+            'search_term'                => $searchTerm,
+            'search_field'               => $searchField,
+            'periode_filter'             => $periodeFilter,
+            'capacite_filter'            => $capaciteFilter,
+            'sort_by'                    => $sort,
+            'result_count'               => $totalItems,
+            'page'                       => $currentPage,
+            'total_pages'                => $totalPages,
+            'page_start'                 => $pageStart,
+            'page_end'                   => $pageEnd,
+            'autocomplete_suggestions'   => $this->buildActivityAutocompleteSuggestions($activites),
+            'activity_dna'               => $activityDna,
         ]);
     }
-
     #[Route('/export-all/pdf', name: 'app_activite_ecologique_export_pdf', methods: ['GET'])]
     public function exportAllPdf(ActiviteEcologiqueRepository $activiteEcologiqueRepository): Response
     {
@@ -253,6 +242,37 @@ final class ActiviteEcologiqueController extends AbstractController
         return $this->render('activite_ecologique/show.html.twig', [
             'activite_ecologique' => $activiteEcologique,
         ]);
+    }
+
+    #[Route('/{id_activite}/dna', name: 'app_activite_ecologique_dna', methods: ['GET'])]
+    public function dnaDetails(ActiviteEcologiqueRepository $activityRepo, ActiviteEcologique $activiteEcologique): Response
+    {
+        return $this->render('activite_ecologique/dna_details.html.twig', $this->buildActivityDnaContext($activityRepo, $activiteEcologique));
+    }
+
+    #[Route('/{id_activite}/dna/pdf', name: 'app_activite_ecologique_dna_pdf', methods: ['GET'])]
+    public function dnaPdf(ActiviteEcologiqueRepository $activityRepo, ActiviteEcologique $activiteEcologique): Response
+    {
+        $context = $this->buildActivityDnaContext($activityRepo, $activiteEcologique);
+        $html = $this->renderView('activite_ecologique/pdf_dna.html.twig', $context);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="dna_activite_%d.pdf"', $activiteEcologique->getIdActivite() ?? 0),
+            ]
+        );
     }
 
     #[Route('/{id_activite}/edit', name: 'app_activite_ecologique_edit', methods: ['GET', 'POST'])]
@@ -570,6 +590,137 @@ final class ActiviteEcologiqueController extends AbstractController
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
+    }
+
+    private function loadActivityDna(): array
+    {
+        $jsonPath = $this->getParameter('kernel.project_dir') . '/var/activity_dna.json';
+        if (!file_exists($jsonPath)) {
+            return [];
+        }
+
+        $decoded = json_decode((string) file_get_contents($jsonPath), true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    private function buildActivityDnaContext(ActiviteEcologiqueRepository $activityRepo, ActiviteEcologique $activiteEcologique): array
+    {
+        $activityDna = $this->loadActivityDna();
+        $activityId = (int) ($activiteEcologique->getIdActivite() ?? 0);
+        $dna = $activityDna[$activityId] ?? null;
+
+        $reservations = $activiteEcologique->getReservations()->toArray();
+        usort($reservations, static function ($left, $right): int {
+            $leftDate = $left?->getDateReservation();
+            $rightDate = $right?->getDateReservation();
+
+            if (!$leftDate && !$rightDate) {
+                return 0;
+            }
+            if (!$leftDate) {
+                return 1;
+            }
+            if (!$rightDate) {
+                return -1;
+            }
+
+            return $rightDate <=> $leftDate;
+        });
+
+        $capacity = max(1, (int) ($activiteEcologique->getCapacite() ?? 0));
+        $activityDate = $activiteEcologique->getDateActivite();
+        $totalReservations = count($reservations);
+        $totalPeople = 0;
+        $leadTimes = [];
+        $uniqueEmails = [];
+        $monthlyBookings = [];
+        $emailFrequency = [];
+
+        foreach ($reservations as $reservation) {
+            if (!$reservation instanceof \App\Entity\Reservation) {
+                continue;
+            }
+
+            $people = (int) ($reservation->getNombrePersonnes() ?? 0);
+            $totalPeople += $people;
+
+            $email = trim((string) ($reservation->getEmail() ?? ''));
+            if ($email !== '') {
+                $emailLower = strtolower($email);
+                $uniqueEmails[$emailLower] = true;
+                $emailFrequency[$emailLower] = ($emailFrequency[$emailLower] ?? 0) + 1;
+            }
+
+            $reservationDate = $reservation->getDateReservation();
+            if ($activityDate instanceof \DateTimeInterface && $reservationDate instanceof \DateTimeInterface) {
+                $leadTimes[] = abs($activityDate->diff($reservationDate)->days ?? 0);
+            }
+
+            if ($reservationDate instanceof \DateTimeInterface) {
+                $monthKey = $reservationDate->format('Y-m');
+                $monthlyBookings[$monthKey] = ($monthlyBookings[$monthKey] ?? 0) + $people;
+            }
+        }
+
+        ksort($monthlyBookings);
+
+        $fillRate = min(100, round(($totalPeople / $capacity) * 100, 1));
+        $avgGroup = $totalReservations > 0 ? round($totalPeople / $totalReservations, 1) : 0.0;
+        $avgLeadTime = count($leadTimes) > 0 ? round(array_sum($leadTimes) / count($leadTimes), 1) : 0.0;
+        $minLeadTime = count($leadTimes) > 0 ? min($leadTimes) : null;
+        $maxLeadTime = count($leadTimes) > 0 ? max($leadTimes) : null;
+        $uniqueVisitors = count($uniqueEmails);
+
+        $repeatCustomers = count(array_filter($emailFrequency, fn($count) => $count > 1));
+        $tauxRetour = $uniqueVisitors > 0 ? round(($repeatCustomers / $uniqueVisitors) * 100, 1) : 0;
+
+        $profileSummary = match (true) {
+            $fillRate >= 80 => 'Demande très forte: activité à forte traction. Pensez à ajouter des créneaux similaires.',
+            $fillRate >= 40 => 'Demande stable: activité régulière avec marge de progression marketing.',
+            default => 'Demande faible: retravailler visibilité, calendrier et positionnement.',
+        };
+
+        $similarActivities = [];
+        if ($dna && isset($dna['cluster'])) {
+            $currentCluster = (int) $dna['cluster'];
+            foreach ($activityDna as $otherActivityId => $otherDna) {
+                if ($otherActivityId === $activityId) {
+                    continue;
+                }
+                if ((int) ($otherDna['cluster'] ?? -1) === $currentCluster) {
+                    try {
+                        $otherActivity = $activityRepo->find($otherActivityId);
+                        if ($otherActivity) {
+                            $similarActivities[] = [
+                                'activity' => $otherActivity,
+                                'dna' => $otherDna,
+                            ];
+                        }
+                    } catch (\Exception $e) {
+                        // ignore missing activities
+                    }
+                }
+            }
+        }
+
+        return [
+            'activite_ecologique' => $activiteEcologique,
+            'dna' => $dna,
+            'total_reservations' => $totalReservations,
+            'total_people' => $totalPeople,
+            'fill_rate' => $fillRate,
+            'avg_group' => $avgGroup,
+            'avg_lead_time' => $avgLeadTime,
+            'min_lead_time' => $minLeadTime,
+            'max_lead_time' => $maxLeadTime,
+            'unique_visitors' => $uniqueVisitors,
+            'taux_retour' => $tauxRetour,
+            'monthly_bookings' => $monthlyBookings,
+            'recent_reservations' => array_slice($reservations, 0, 8),
+            'profile_summary' => $profileSummary,
+            'similar_activities' => $similarActivities,
+        ];
     }
 
     /**

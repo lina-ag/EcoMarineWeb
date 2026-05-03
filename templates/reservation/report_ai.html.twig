@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapport IA des réservations{% endblock %}
+
+{% block body %}
+    {% set totalReservations = reservations|length %}
+    {% set confirmedReservations = 0 %}
+    {% set pendingReservations = 0 %}
+    {% set cancelledReservations = 0 %}
+    {% set totalPeople = 0 %}
+
+    {% for reservation in reservations %}
+        {% set reservationStatus = reservation.activiteEcologique ? (reservation.dateReservation and reservation.dateReservation|date('Y-m-d') > "now"|date('Y-m-d') ? 'pending' : 'confirmed') : 'cancelled' %}
+        {% set totalPeople = totalPeople + (reservation.nombrePersonnes|default(0)) %}
+        {% if reservationStatus == 'confirmed' %}
+            {% set confirmedReservations = confirmedReservations + 1 %}
+        {% elseif reservationStatus == 'pending' %}
+            {% set pendingReservations = pendingReservations + 1 %}
+        {% else %}
+            {% set cancelledReservations = cancelledReservations + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <section class="glass-card" style="position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(226, 239, 255, 0.72), rgba(236, 253, 245, 0.6)); border: 1px solid rgba(191, 219, 254, 0.7); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);">
+        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.25rem;">
+            <div>
+                <span style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.35rem 0.75rem; border-radius:999px; background: rgba(29, 78, 216, 0.12); color:#1d4ed8; font-weight:700; font-size:0.8rem;">🤖 Rapport IA</span>
+                <h1 style="margin:0.75rem 0 0.35rem; font-size:2rem; color:#0f172a;">Analyse intelligente des réservations</h1>
+                <p style="margin:0; color:#475569; max-width: 780px;">Le rapport ci-dessous synthétise les réservations filtrées. Vous pouvez l’exporter en PDF ou revenir à la liste pour ajuster les critères.</p>
+            </div>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <a href="{{ path('app_reservation_index', filters) }}" class="btn btn-secondary" style="border-radius:12px; padding:0.8rem 1.2rem; background: rgba(100, 116, 139, 0.12); border: 1px solid rgba(100, 116, 139, 0.22); color:#334155; font-weight:700; text-decoration:none;">← Retour aux réservations</a>
+                <a href="{{ path('app_reservation_report_ai_pdf', filters) }}" class="btn btn-primary" style="border-radius:12px; padding:0.8rem 1.2rem; background: linear-gradient(135deg, #1d4ed8, #0f766e); border:none; box-shadow: 0 10px 24px rgba(29, 78, 216, 0.22); font-weight:700; text-decoration:none; color:white;">⬇️ Exporter PDF</a>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:0.9rem; margin-bottom:1.2rem;">
+            <div style="padding:1rem; border-radius:16px; background:#ffffff; border:1px solid rgba(191,219,254,0.6); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700;">Total</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#0f172a;">{{ totalReservations }}</div>
+            </div>
+            <div style="padding:1rem; border-radius:16px; background:#ffffff; border:1px solid rgba(191,219,254,0.6); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700;">Confirmées</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#0f766e;">{{ confirmedReservations }}</div>
+            </div>
+            <div style="padding:1rem; border-radius:16px; background:#ffffff; border:1px solid rgba(191,219,254,0.6); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700;">En attente</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#d97706;">{{ pendingReservations }}</div>
+            </div>
+            <div style="padding:1rem; border-radius:16px; background:#ffffff; border:1px solid rgba(191,219,254,0.6); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700;">Annulées</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#dc2626;">{{ cancelledReservations }}</div>
+            </div>
+            <div style="padding:1rem; border-radius:16px; background:#ffffff; border:1px solid rgba(191,219,254,0.6); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:#64748b; font-weight:700;">Participants</div>
+                <div style="font-size:1.8rem; font-weight:800; color:#1d4ed8;">{{ totalPeople }}</div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:1rem; margin-bottom:1.2rem;">
+            <div style="padding:1.1rem 1.2rem; border-radius:18px; background: rgba(255,255,255,0.88); border:1px solid rgba(191,219,254,0.55); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:0.7rem;">
+                    <div>
+                        <h2 style="margin:0; font-size:1.1rem; color:#0f172a;">Filtres actifs</h2>
+                        <p style="margin:0.25rem 0 0; color:#64748b; font-size:0.9rem;">Le rapport reflète les paramètres de la liste source.</p>
+                    </div>
+                    <span style="display:inline-flex; align-items:center; padding:0.35rem 0.7rem; border-radius:999px; background: rgba(59, 130, 246, 0.12); color:#1d4ed8; font-weight:700; font-size:0.8rem;">{{ generatedAt|date('d/m/Y H:i') }}</span>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:0.7rem;">
+                    <div style="padding:0.8rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0;"><div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700;">Recherche</div><div style="font-weight:700; color:#0f172a;">{{ filters.q|default('Aucune') }}</div></div>
+                    <div style="padding:0.8rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0;"><div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700;">Champ</div><div style="font-weight:700; color:#0f172a;">{{ filters.field|default('all') }}</div></div>
+                    <div style="padding:0.8rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0;"><div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700;">Statut</div><div style="font-weight:700; color:#0f172a;">{{ filters.status|default('all') }}</div></div>
+                    <div style="padding:0.8rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0;"><div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700;">Période</div><div style="font-weight:700; color:#0f172a;">{{ filters.date_from|default('') ?: '...' }} → {{ filters.date_to|default('') ?: '...' }}</div></div>
+                </div>
+            </div>
+
+            <div style="padding:1.1rem 1.2rem; border-radius:18px; background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(29, 78, 216, 0.12)); border:1px solid rgba(59,130,246,0.2); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+                <h2 style="margin:0 0 0.5rem; font-size:1.05rem; color:#0f172a;">Lecture rapide</h2>
+                <p style="margin:0; color:#334155; line-height:1.6;">{{ report }}</p>
+            </div>
+        </div>
+
+        <div style="padding:1.1rem 1.2rem; border-radius:18px; background:#ffffff; border:1px solid rgba(191,219,254,0.55); box-shadow:0 8px 20px rgba(15,23,42,0.05);">
+            <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap;">
+                <div>
+                    <h2 style="margin:0; font-size:1.1rem; color:#0f172a;">Synthèse IA</h2>
+                    <p style="margin:0.25rem 0 0; color:#64748b; font-size:0.9rem;">Rapport complet généré à partir des réservations filtrées.</p>
+                </div>
+                <a href="{{ path('app_reservation_report_ai_pdf', filters) }}" class="btn" style="border-radius:12px; padding:0.75rem 1rem; background: rgba(100, 116, 139, 0.12); border:1px solid rgba(100, 116, 139, 0.22); color:#334155; font-weight:700; text-decoration:none;">Exporter le PDF</a>
+            </div>
+            <div style="white-space:pre-wrap; line-height:1.72; color:#0f172a; background: linear-gradient(135deg, rgba(248,250,252,0.92), rgba(239,246,255,0.88)); border:1px solid rgba(191,219,254,0.65); border-radius:16px; padding:1rem 1.1rem; min-height:180px;">{{ report }}</div>
+        </div>
+    </section>
+{% endblock %}

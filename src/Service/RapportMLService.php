@@ -3,9 +3,9 @@
 namespace App\Service;
 
 use App\Repository\UtilisateurRepository;
+use Phpml\Regression\LeastSquares;
 use Phpml\Classification\KNearestNeighbors;
 use Phpml\Clustering\KMeans;
-use Phpml\Regression\LeastSquares;
 
 class RapportMLService
 {
@@ -116,15 +116,14 @@ class RapportMLService
             $prediction = $donnees['total'] + $predictionMois;
 
             return [
-                'valeur' => $prediction,
-                'nouveaux_predit' => $predictionMois,
-                'methode' => 'Estimation simple (donnees insuffisantes)',
-                'confiance' => 50,
-                'historique' => $parMois,
-                'equation' => 'Projection basee sur le dernier mois connu',
+                'valeur'      => $prediction,
+                'methode'     => 'Estimation simple (données insuffisantes)',
+                'confiance'   => 50,
+                'historique'  => [],
             ];
         }
 
+        // Préparer les données pour la régression
         $samples = [];
         $targets = [];
         $i = 1;
@@ -135,11 +134,14 @@ class RapportMLService
             $i++;
         }
 
+        // Régression Linéaire PHP-ML
         $regression = new LeastSquares();
         $regression->train($samples, $targets);
 
         $prochainMois = count($samples) + 1;
         $predictionMois = max(0, (int) $regression->predict([$prochainMois]));
+
+        // Prédiction cumulée
         $predictionTotale = $donnees['total'] + $predictionMois;
         $confiance = $this->calculerConfiance($targets, $samples, $regression);
 
@@ -161,20 +163,13 @@ class RapportMLService
 
         if (count($valeurs) < 3) {
             return [
-                'tendance' => 'stable',
-                'description' => 'Donnees insuffisantes pour analyser la tendance',
-                'couleur' => '#6c757d',
-                'moyenne_debut' => 0,
-                'moyenne_fin' => 0,
-                'difference' => 0,
-                'meilleur_mois' => '-',
-                'moyenne_mobile' => [],
-                'valeurs' => $valeurs,
-                'labels' => array_keys($parMois),
-                'details' => [],
+                'tendance'    => 'stable',
+                'description' => 'Données insuffisantes pour analyser la tendance',
+                'details'     => [],
             ];
         }
 
+        // Calculer la moyenne mobile
         $moyenneMobile = [];
         for ($i = 1; $i < count($valeurs); $i++) {
             $moyenneMobile[] = ($valeurs[$i] + $valeurs[$i - 1]) / 2;
@@ -224,12 +219,7 @@ class RapportMLService
         $valeurs = array_values($donnees['par_jour']);
 
         if (count($valeurs) < 3) {
-            return [
-                'anomalies' => [],
-                'moyenne' => 0,
-                'ecart_type' => 0,
-                'message' => 'Pas assez de donnees',
-            ];
+            return ['anomalies' => [], 'message' => 'Pas assez de données'];
         }
 
         $moyenne = array_sum($valeurs) / count($valeurs);
@@ -314,11 +304,48 @@ class RapportMLService
         $ssRes = 0;
         foreach ($samples as $i => $sample) {
             $predicted = $regression->predict($sample);
-            $ssRes += ($targets[$i] - $predicted) ** 2;
+            $ss_res   += ($targets[$i] - $predicted) ** 2;
         }
 
         $r2 = 1 - ($ssRes / $ssTot);
 
         return max(0, min(100, (int) ($r2 * 100)));
+    }
+
+    /**
+     * @param array<int, array{0:int}> $samples
+     * @param array<int, int> $targets
+     * @return array{slope: float, intercept: float}
+     */
+    private function creerRegressionLineaire(array $samples, array $targets): array
+    {
+        $count = count($samples);
+        if ($count === 0) {
+            return ['slope' => 0.0, 'intercept' => 0.0];
+        }
+
+        $sumX = 0.0;
+        $sumY = 0.0;
+        $sumXY = 0.0;
+        $sumXX = 0.0;
+
+        foreach ($samples as $index => $sample) {
+            $x = (float) $sample[0];
+            $y = (float) $targets[$index];
+            $sumX += $x;
+            $sumY += $y;
+            $sumXY += $x * $y;
+            $sumXX += $x * $x;
+        }
+
+        $denominator = ($count * $sumXX) - ($sumX * $sumX);
+        if ($denominator == 0.0) {
+            return ['slope' => 0.0, 'intercept' => $sumY / $count];
+        }
+
+        $slope = (($count * $sumXY) - ($sumX * $sumY)) / $denominator;
+        $intercept = ($sumY - ($slope * $sumX)) / $count;
+
+        return ['slope' => $slope, 'intercept' => $intercept];
     }
 }
