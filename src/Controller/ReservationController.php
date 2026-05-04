@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 use Symfony\Component\Mailer\MailerInterface;
@@ -225,64 +224,27 @@ final class ReservationController extends AbstractController
     }
 
 #[Route('/quiz/{id_reservation}', name: 'app_reservation_quiz', methods: ['GET', 'POST'])]
-public function quiz(Reservation $reservation, Request $request, HttpClientInterface $httpClient, EntityManagerInterface $entityManager): Response
+public function quiz(Reservation $reservation, Request $request, EntityManagerInterface $entityManager): Response
 {
-    $apiKey = $_ENV['API_NINJAS_KEY'] ?? '';
-    $questions = [];
-
-    try {
-        $response = $httpClient->request('GET', 'https://api.api-ninjas.com/v1/trivia', [
-            'headers' => ['X-Api-Key' => $apiKey],
-            'query' => ['category' => 'nature', 'limit' => 3],
-        ]);
-        $data = $response->toArray();
-        if (!empty($data) && isset($data[0]['question'])) {
-            $questions = $data;
-        }
-    } catch (\Throwable) {
-        $questions = [];
+    if (!$request->hasSession()) {
+        $this->addFlash('error', 'Session indisponible. Veuillez réessayer.');
+        return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    if (empty($questions)) {
-        $questions = [
-            [
-                'question' => 'Quel est le plus grand océan du monde ?',
-                'answer' => 'Pacifique',
-                'wrong' => ['Atlantique', 'Indien', 'Arctique'],
-            ],
-            [
-                'question' => 'Quel animal marin est connu pour changer de couleur ?',
-                'answer' => 'Poulpe',
-                'wrong' => ['Requin', 'Dauphin', 'Baleine'],
-            ],
-            [
-                'question' => 'Combien de pourcentage de la Terre est recouvert d\'eau ?',
-                'answer' => '71%',
-                'wrong' => ['55%', '63%', '85%'],
-            ],
-        ];
-    }
+    $session = $request->getSession();
+    $reservationId = (int) ($reservation->getIdReservation() ?? 0);
+    $sessionKey = sprintf('reservation_quiz_questions_%d', $reservationId);
 
-    // Génère les choix QCM pour chaque question
-    foreach ($questions as $index => &$question) {
-        $correct = $question['answer'];
+    if ($request->isMethod('POST')) {
+        $questions = $session->get($sessionKey, []);
 
-        // Si des fausses réponses spécifiques existent on les utilise
-        if (isset($question['wrong'])) {
-            $wrong = $question['wrong'];
-        } else {
-            // Pour les questions de l'API : on génère des fausses réponses génériques cohérentes
-            $wrong = ['Inconnu', 'Aucune de ces réponses', 'Non applicable'];
+        if (!is_array($questions) || count($questions) === 0) {
+            $this->addFlash('error', 'Votre session a expiré. Veuillez refaire le quiz.');
+            return $this->redirectToRoute('app_reservation_quiz', [
+                'id_reservation' => $reservation->getIdReservation(),
+            ], Response::HTTP_SEE_OTHER);
         }
 
-        $choices = array_slice($wrong, 0, 3);
-        $choices[] = $correct;
-        shuffle($choices);
-        $question['choices'] = $choices;
-    }
-    unset($question);
-
-        if ($request->isMethod('POST')) {
         $answers = $request->request->all('answers');
         $correctCount = 0;
 
@@ -305,6 +267,8 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
         $entityManager->persist($reservation);
         $entityManager->flush();
 
+        $session->remove($sessionKey);
+
         // Quiz result email removed (GroqMailService)
 
         return $this->render('reservation/quiz_result.html.twig', [
@@ -316,6 +280,12 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
             'badge' => $badge,
         ]);
     }
+
+    // À chaque GET, générer 3 questions aléatoires
+    $questions = $this->buildRandomEcoQuizQuestions(3);
+    
+    // Les stocker en session pour validation lors du POST
+    $session->set($sessionKey, $questions);
 
     return $this->render('reservation/quiz.html.twig', [
         'reservation' => $reservation,
@@ -1039,5 +1009,204 @@ public function quiz(Reservation $reservation, Request $request, HttpClientInter
         $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
 
         return $ascii !== false ? $ascii : $normalized;
+    }
+
+    /**
+     * @return array<int, array{question: string, answer: string, wrong: array<int, string>, choices: array<int, string>}>
+     */
+    private function buildRandomEcoQuizQuestions(int $count): array
+    {
+        $bank = $this->buildEcoQuizBank();
+        if ($count <= 0 || count($bank) === 0) {
+            return [];
+        }
+
+        $count = min($count, count($bank));
+        $keys = array_rand($bank, $count);
+        if (!is_array($keys)) {
+            $keys = [$keys];
+        }
+
+        $selected = [];
+        foreach ($keys as $key) {
+            $selected[] = $bank[$key];
+        }
+
+        $selected = array_values($selected);
+
+        foreach ($selected as &$question) {
+            $correct = (string) ($question['answer'] ?? '');
+            $wrong = array_values(array_filter(
+                $question['wrong'] ?? [],
+                static fn ($value): bool => is_string($value) && trim($value) !== '' && trim($value) !== $correct
+            ));
+
+            $wrong = array_slice($wrong, 0, 3);
+            while (count($wrong) < 3) {
+                $candidate = 'Aucune de ces réponses';
+                if (!in_array($candidate, $wrong, true) && $candidate !== $correct) {
+                    $wrong[] = $candidate;
+                    continue;
+                }
+
+                $candidate = 'Je ne sais pas';
+                if (!in_array($candidate, $wrong, true) && $candidate !== $correct) {
+                    $wrong[] = $candidate;
+                    continue;
+                }
+
+                $candidate = 'Non applicable';
+                if (!in_array($candidate, $wrong, true) && $candidate !== $correct) {
+                    $wrong[] = $candidate;
+                }
+            }
+
+            $choices = $wrong;
+            $choices[] = $correct;
+            shuffle($choices);
+            $question['choices'] = $choices;
+        }
+        unset($question);
+
+        return $selected;
+    }
+
+    /**
+     * @return array<int, array{question: string, answer: string, wrong: array<int, string>}>
+     */
+    private function buildEcoQuizBank(): array
+    {
+        return [
+            [
+                'question' => 'Quel geste aide le plus à réduire la pollution plastique en mer ?',
+                'answer' => 'Réduire les plastiques à usage unique',
+                'wrong' => ['Jeter les déchets par la fenêtre', 'Enterrer les plastiques sur la plage', 'Les brûler à l’air libre'],
+            ],
+            [
+                'question' => 'Qu’appelle-t-on « microplastiques » ?',
+                'answer' => 'De minuscules fragments de plastique',
+                'wrong' => ['Des algues microscopiques', 'Des grains de sable colorés', 'De la mousse de mer naturelle'],
+            ],
+            [
+                'question' => 'Pourquoi faut-il éviter de laisser des déchets sur la plage ?',
+                'answer' => 'Ils peuvent être ingérés par les animaux marins',
+                'wrong' => ['Ils se transforment en eau', 'Ils améliorent la biodiversité', 'Ils rendent la mer plus salée'],
+            ],
+            [
+                'question' => 'Quel est le rôle principal des herbiers marins (posidonies) ?',
+                'answer' => 'Abriter la faune et stocker du carbone',
+                'wrong' => ['Augmenter la température de l’eau', 'Produire du pétrole', 'Créer des vagues'],
+            ],
+            [
+                'question' => 'Quel phénomène est lié à l’augmentation du CO₂ dans l’océan ?',
+                'answer' => 'L’acidification des océans',
+                'wrong' => ['La solidification de l’eau', 'La disparition de la marée', 'La création de nouvelles îles'],
+            ],
+            [
+                'question' => 'Quel impact le plastique a-t-il sur les tortues marines ?',
+                'answer' => 'Elles peuvent s’étouffer ou s’empoisonner en l’ingérant',
+                'wrong' => ['Il leur sert toujours de nourriture', 'Il accélère leur croissance', 'Il renforce leur carapace'],
+            ],
+            [
+                'question' => 'Que signifie « surpêche » ?',
+                'answer' => 'Pêcher plus vite que les espèces ne se reproduisent',
+                'wrong' => ['Pêcher uniquement la nuit', 'Pêcher à la main', 'Pêcher seulement des petits poissons'],
+            ],
+            [
+                'question' => 'Quel objet est le plus souvent retrouvé lors des nettoyages de plages ?',
+                'answer' => 'Des mégots de cigarette',
+                'wrong' => ['Des télévisions', 'Des vélos', 'Des casseroles'],
+            ],
+            [
+                'question' => 'Quelle bonne pratique limite la pollution pendant un pique-nique ?',
+                'answer' => 'Utiliser une gourde et des contenants réutilisables',
+                'wrong' => ['Tout emballer dans du film plastique', 'Laisser les restes sur place', 'Jeter les déchets dans la mer'],
+            ],
+            [
+                'question' => 'Quel est l’effet d’une crème solaire non adaptée sur certains récifs ?',
+                'answer' => 'Elle peut contribuer à fragiliser les coraux',
+                'wrong' => ['Elle rend l’eau potable', 'Elle crée du sable', 'Elle augmente l’oxygène dissous'],
+            ],
+            [
+                'question' => 'Pourquoi le verre cassé est-il dangereux sur la plage ?',
+                'answer' => 'Il blesse les visiteurs et la faune',
+                'wrong' => ['Il attire les poissons', 'Il se dissout instantanément', 'Il empêche les vagues d’arriver'],
+            ],
+            [
+                'question' => 'Quel déchet met le plus de temps à se dégrader ?',
+                'answer' => 'Une bouteille en plastique',
+                'wrong' => ['Une peau de banane', 'Un ticket en papier', 'Une feuille'],
+            ],
+            [
+                'question' => 'Quel comportement respecte le mieux la vie marine pendant la baignade ?',
+                'answer' => 'Observer sans toucher ni nourrir les animaux',
+                'wrong' => ['Attraper les poissons pour les montrer', 'Donner du pain aux poissons', 'Ramasser les étoiles de mer'],
+            ],
+            [
+                'question' => 'Quel est l’objectif d’un tri sélectif ?',
+                'answer' => 'Recycler et réduire les déchets enfouis/incinérés',
+                'wrong' => ['Mélanger tous les déchets', 'Augmenter la quantité de déchets', 'Rendre les déchets plus lourds'],
+            ],
+            [
+                'question' => 'Quel est un effet direct du réchauffement de l’océan ?',
+                'answer' => 'Le stress et le déplacement de certaines espèces',
+                'wrong' => ['La disparition du sel', 'La création de diamants', 'La fin du vent'],
+            ],
+            [
+                'question' => 'Pourquoi faut-il ramasser les filets ou morceaux de cordage trouvés sur le rivage ?',
+                'answer' => 'Ils peuvent piéger les animaux (enchevêtrement)',
+                'wrong' => ['Ils aident les poissons à se cacher', 'Ils deviennent des coraux', 'Ils réparent les bateaux automatiquement'],
+            ],
+            [
+                'question' => 'Quel est un bon réflexe pour protéger la qualité de l’eau ?',
+                'answer' => 'Éviter de jeter huiles et produits chimiques à l’évier',
+                'wrong' => ['Laver sa voiture sur la plage', 'Verser la peinture dans la mer', 'Jeter les piles dans le sable'],
+            ],
+            [
+                'question' => 'Quel animal marin est un mammifère ?',
+                'answer' => 'Le dauphin',
+                'wrong' => ['La méduse', 'L’étoile de mer', 'La crevette'],
+            ],
+            [
+                'question' => 'Pourquoi les sacs plastiques sont-ils dangereux pour la faune ?',
+                'answer' => 'Ils ressemblent à des proies et peuvent être avalés',
+                'wrong' => ['Ils sont toujours biodégradables', 'Ils se transforment en nourriture saine', 'Ils renforcent les nageoires'],
+            ],
+            [
+                'question' => 'Quel est le meilleur moyen de limiter l’empreinte carbone d’un déplacement ?',
+                'answer' => 'Privilégier le covoiturage ou les transports en commun',
+                'wrong' => ['Faire tourner le moteur à l’arrêt', 'Rouler plus vite', 'Conduire avec les pneus sous-gonflés'],
+            ],
+            [
+                'question' => 'Quel déchet doit être jeté dans une filière spécifique (déchetterie) ?',
+                'answer' => 'Une pile',
+                'wrong' => ['Un trognon de pomme', 'Une feuille de papier', 'Un bouchon en plastique propre'],
+            ],
+            [
+                'question' => 'Quelle action protège les oiseaux marins sur le littoral ?',
+                'answer' => 'Respecter les zones de nidification et la signalisation',
+                'wrong' => ['Marcher dans les nids', 'Nourrir les oiseaux avec des chips', 'Jeter des restes de nourriture partout'],
+            ],
+            [
+                'question' => 'Pourquoi les déchets organiques (restes de nourriture) ne doivent-ils pas être laissés sur la plage ?',
+                'answer' => 'Ils attirent des animaux et déséquilibrent l’écosystème',
+                'wrong' => ['Ils se transforment en plastique', 'Ils augmentent la salinité', 'Ils rendent le sable magnétique'],
+            ],
+            [
+                'question' => 'Quel est un signe possible de pollution sur une plage ?',
+                'answer' => 'Une accumulation de déchets et de mousse anormale',
+                'wrong' => ['Du sable', 'Des vagues', 'Du soleil'],
+            ],
+            [
+                'question' => 'Que peut-on faire si l’on voit un animal marin blessé ou piégé ?',
+                'answer' => 'Alerter les autorités/associations locales compétentes',
+                'wrong' => ['Le ramener chez soi', 'Le laisser avec un déchet pour l’aider', 'Le nourrir avec des bonbons'],
+            ],
+            [
+                'question' => 'Quelle pratique aide à préserver les fonds marins en plongée/snorkeling ?',
+                'answer' => 'Ne pas marcher sur les herbiers ou coraux',
+                'wrong' => ['S’accrocher aux coraux', 'Soulever les rochers pour s’amuser', 'Ramasser des coquillages vivants'],
+            ],
+        ];
     }
 }

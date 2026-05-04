@@ -31,10 +31,24 @@
 
         <div class="form-group-settings full-width">
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité', 'id': 'description-field'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l\'activité', 'id': 'description-field'}}) }}
             {{ form_errors(form.description) }}
-            <div style="margin-top:0.5em;">
-                
+
+            {# ── Bouton Générer Description IA ── #}
+            <div style="margin-top: 0.6rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <button type="button" id="btn-generate-description"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem;
+                               padding: 0.5rem 1.1rem; border-radius: 12px;
+                               background: linear-gradient(135deg, #1d4ed8, #0f766e);
+                               color: #fff; border: none; font-weight: 600; font-size: 0.88rem;
+                               cursor: pointer; box-shadow: 0 6px 16px rgba(29,78,216,0.22);
+                               transition: opacity 0.2s ease;">
+                    🤖 Générer avec l'IA
+                </button>
+                <span id="generate-description-status" style="font-size: 0.82rem; color: #64748b;"></span>
+            </div>
+
+            <div style="margin-top: 0.5em;">
                 <span class="reservation-rating" id="activity-rating-stars" data-rating="0" data-editable-rating="activity-description"></span>
             </div>
         </div>
@@ -182,12 +196,10 @@
             const d = new Date(dateVal);
             if (!isNaN(d.getTime())) {
                 mois = d.getMonth() + 1;
-                // dayofweek 0=Monday -> JS getDay 0=Sunday
                 const jsDay = d.getDay();
                 jour = jsDay === 0 ? 6 : jsDay - 1;
             }
         }
-        // type inferred from first word
         const type = nom.trim().split(/\s+/)[0] ? nom.trim().split(/\s+/)[0].toLowerCase() : '';
         return { capacite, mois, jour, type };
     };
@@ -258,5 +270,71 @@
     analyzeButton.addEventListener('click', analyzePrediction);
     if (dateInput) dateInput.addEventListener('change', () => { liveContainer.innerHTML = ''; });
     if (nomInput) nomInput.addEventListener('input', () => { liveContainer.innerHTML = ''; });
+})();
+</script>
+
+<script>
+// ── Génération de description IA ──────────────────────────────────────────────
+(() => {
+    const btn    = document.getElementById('btn-generate-description');
+    const status = document.getElementById('generate-description-status');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        const nomField      = document.getElementById('{{ form.nom_activite.vars.id }}');
+        const capaciteField = document.getElementById('{{ form.capacite.vars.id }}');
+        const dateField     = document.getElementById('{{ form.date_activite.vars.id }}');
+        const descField     = document.getElementById('{{ form.description.vars.id }}');
+
+        const nom      = nomField      ? nomField.value.trim()      : '';
+        const capacite = capaciteField ? parseInt(capaciteField.value) || 10 : 10;
+        const date     = dateField     ? dateField.value.trim()     : '';
+
+        if (!nom) {
+            status.textContent = '⚠️ Remplissez d\'abord le nom de l\'activité.';
+            status.style.color = '#f59e0b';
+            return;
+        }
+
+        btn.disabled      = true;
+        btn.style.opacity = '0.6';
+        status.textContent = '⏳ Génération en cours...';
+        status.style.color = '#64748b';
+
+        fetch('{{ path('app_activite_ecologique_generate_description') }}', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ nom, capacite, date })
+        })
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('HTTP ' + r.status + ': ' + r.statusText);
+            }
+            return r.json();
+        })
+        .then(data => {
+            console.log('API Response:', data);
+            if (data.success && descField) {
+                descField.value    = data.description;
+                status.textContent = '✅ Description générée ! (type: ' + (data.type_detecte || '?') + ')';
+                status.style.color = '#16a34a';
+            } else {
+                const errorMsg = data.message || 'Erreur inconnue';
+                status.textContent = '❌ ' + errorMsg;
+                status.style.color = '#dc2626';
+                console.error('Generation error:', errorMsg);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            status.textContent = '❌ Erreur: ' + error.message;
+            status.style.color = '#dc2626';
+        })
+        .finally(() => {
+            btn.disabled      = false;
+            btn.style.opacity = '1';
+        });
+    });
 })();
 </script>

@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-
+use App\Service\DescriptionAIService; 
 #[Route('/activite/ecologique')]
 final class ActiviteEcologiqueController extends AbstractController
 {
@@ -235,7 +235,48 @@ final class ActiviteEcologiqueController extends AbstractController
             'prediction_error' => $predictionError,
         ]);
     }
+    #[Route('/generate-description', name: 'app_activite_ecologique_generate_description', methods: ['POST'])]
+    public function generateDescription(Request $request, DescriptionAIService $descriptionAIService): \Symfony\Component\HttpFoundation\JsonResponse
+    {
+        try {
+            $data        = json_decode($request->getContent(), true);
+            $nom         = trim((string) ($data['nom'] ?? ''));
+            $capacite    = (int) ($data['capacite'] ?? 10);
+            $dateStr     = trim((string) ($data['date'] ?? ''));
+            $date        = null;
 
+            if ($nom === '') {
+                return $this->json(['success' => false, 'message' => 'Nom manquant.']);
+            }
+
+            if ($dateStr !== '') {
+                try {
+                    $date = new \DateTime($dateStr);
+                } catch (\Exception) {
+                    $date = null;
+                }
+            }
+
+            $result = $descriptionAIService->generateDescription($nom, $capacite > 0 ? $capacite : 10, $date);
+
+            // Ensure we always have a message field
+            if (!isset($result['message'])) {
+                if ($result['success']) {
+                    $result['message'] = 'OK';
+                } else {
+                    $result['message'] = 'Erreur inconnue';
+                }
+            }
+
+            return $this->json($result);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur serveur: ' . $e->getMessage(),
+                'error' => get_class($e),
+            ], 500);
+        }
+    }
     #[Route('/{id_activite}', name: 'app_activite_ecologique_show', methods: ['GET'])]
     public function show(ActiviteEcologique $activiteEcologique): Response
     {
@@ -754,4 +795,5 @@ final class ActiviteEcologiqueController extends AbstractController
 
         return array_slice($suggestions, 0, 12);
     }
+
 }
