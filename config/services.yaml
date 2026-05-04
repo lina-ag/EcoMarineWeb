@@ -39,13 +39,14 @@ services:
     arguments:
       $groqApiKey: "%env(GROQ_API_KEY)%"
 
+  # Service météorologique
   App\Service\WeatherServices:
     arguments:
       $openWeatherApiKey: "%env(OPENWEATHER_API_KEY)%"
 
-  # Service de prÃ©diction
+  # Service de prédiction
   App\Service\PredictionService: ~
 
   App\Service\FaceRecognitionService:
     arguments:
-      $pythonFaceServiceUrl: '%python_face_service_url%'
+      $pythonFaceServiceUrl: "%python_face_service_url%"

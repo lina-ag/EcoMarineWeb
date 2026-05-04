@@ -37,39 +37,45 @@
                 <a href="{{ path('app_reservation_new') }}" class="btn btn-primary reservation-admin-cta">{{ 'reservation.create'|trans }}</a>
             </div>
         </div>
-        <svg class="header-wave" viewBox="0 0 1200 140" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0,50 C180,110 320,0 520,48 C760,108 880,22 1200,74 L1200,140 L0,140 Z"></path>
-        </svg>
-
-
         <style>
-            const initAiReport = function () {
-                const reportButton = document.getElementById('reservation-ai-report-btn');
-                const searchForm = document.getElementById('reservation-search-form');
+            .reservation-admin-shell-list .card-header {
+                position: relative;
+                z-index: 1;
+                padding: 1.1rem 1.2rem;
+                margin-bottom: 1rem;
+                border-radius: 18px;
+                border: 1px solid rgba(148, 163, 184, 0.3);
+                background:
+                    radial-gradient(circle at right top, rgba(14, 165, 233, 0.2), transparent 40%),
+                    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(219, 234, 254, 0.68));
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 14px 28px rgba(15, 23, 42, 0.08);
+            }
 
-                if (!reportButton) {
-                    return;
-                }
+            .reservation-admin-shell-list .card-title {
+                color: #0f172a;
+            }
 
-                if (reportButton.dataset.bound === '1') {
-                    return;
-                }
+            .reservation-admin-shell-list .card-subtitle {
+                color: #475569;
+            }
 
-                reportButton.dataset.bound = '1';
-
-                reportButton.addEventListener('click', function () {
-                    const baseUrl = reportButton.dataset.pageUrl;
-                    if (!baseUrl) {
-                        return;
-                    }
-
-                    const params = searchForm ? new URLSearchParams(new FormData(searchForm)) : new URLSearchParams(window.location.search);
-                    const reportUrl = baseUrl + (params.toString() ? ('?' + params.toString()) : '');
-                    window.location.href = reportUrl;
-                });
-            };
             .admin-inline-select {
                 max-width: 170px;
+            }
+
+            .reservation-search-row {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+
+            .admin-live-search-main {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                flex: 1;
+                min-width: 0;
             }
 
             .admin-sort-select {
@@ -90,49 +96,59 @@
                 margin-right: 0.5rem;
             }
 
-            .search-box {
+            /* Zonep-like search bar */
+            #reservation-search-form .search-box {
                 position: relative;
                 display: flex;
                 align-items: center;
-                gap: 0.95rem;
                 flex: 1;
-                min-width: 320px;
-                padding: 0.85rem 1rem;
-                border-radius: 24px;
-                border: 1px solid rgba(191, 219, 254, 0.9);
-                background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(229, 246, 255, 0.78));
-                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-                transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+                min-width: 260px;
+                max-width: 34rem;
             }
 
-            .search-box:focus-within {
-                border-color: rgba(59, 130, 246, 0.55);
-                box-shadow: 0 14px 30px rgba(59, 130, 246, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.95);
-                transform: translateY(-1px);
+            #reservation-search-form .search-box:focus-within {
+                transform: none;
             }
 
-            .search-box .search-icon {
-                flex: 0 0 auto;
-                width: 3.25rem;
-                height: 3.25rem;
-                padding: 0.72rem;
-                border-radius: 18px;
-                background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.18));
-                color: #1d4ed8;
-                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.12);
+            #reservation-search-form .search-box .search-icon {
+                display: none;
             }
 
-            .search-box .search-input {
+            #reservation-search-form .search-box .search-input {
                 min-width: 0;
                 width: 100%;
-                padding: 0.4rem 3rem 0.4rem 0;
-                border: 0;
-                background: transparent;
-                color: #0f172a;
-                font-size: 0.98rem;
+                padding: 12px 48px 12px 18px;
+                border-radius: 12px;
+                border: 1px solid var(--glass-border, #e0e0e0);
+                background: var(--glass-bg, #fff);
+                color: var(--text-primary, #222);
+                font-size: 15px;
                 font-weight: 500;
-                box-shadow: none;
+                box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
                 outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            #reservation-search-form .search-box .search-input:focus {
+                border-color: var(--emerald-light, #38bdf8);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+            }
+
+            #reservation-search-form .search-input {
+                padding: 12px 18px;
+                border-radius: 12px;
+                border: 1px solid var(--glass-border, #e0e0e0);
+                background: var(--glass-bg, #fff);
+                color: var(--text-primary, #222);
+                font-size: 15px;
+                box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+                outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            #reservation-search-form .search-input:focus {
+                border-color: var(--emerald-light, #38bdf8);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
             }
 
             .search-box .search-input::placeholder {
@@ -146,6 +162,8 @@
                 gap: 0.4rem;
                 min-height: 3.25rem;
                 padding: 0 1.2rem;
+                width: auto;
+                flex: 0 0 auto;
                 border-radius: 18px;
                 border: 1px solid rgba(59, 130, 246, 0.22);
                 background: linear-gradient(135deg, #1d4ed8, #0f766e);
@@ -181,6 +199,12 @@
                 outline-offset: 2px;
             }
 
+            #reservation-export-csv {
+                width: auto !important;
+                min-width: max-content;
+                align-self: center;
+            }
+
             .voice-btn {
                 position: absolute;
                 right: 10px;
@@ -192,7 +216,7 @@
                 border-radius: 8px;
                 border: none;
                 background: transparent;
-                color: #94a3b8;
+                color: var(--text-secondary, #94a3b8);
                 cursor: pointer;
                 transition: color 0.2s, background 0.2s;
                 flex-shrink: 0;
@@ -261,31 +285,37 @@
             }
 
             .quick-filter-btn {
-                padding: 0.55rem 1.1rem;
-                border-radius: 8px;
-                border: 1px solid rgba(148, 163, 184, 0.35);
-                background: linear-gradient(135deg, rgba(241, 245, 250, 0.85), rgba(226, 232, 240, 0.85));
-                color: #1e293b;
-                font-size: 0.82rem;
-                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.54rem 1rem;
+                border-radius: 999px;
+                border: 1px solid rgba(148, 163, 184, 0.32);
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(226, 232, 240, 0.6));
+                backdrop-filter: blur(8px);
+                color: #1f2937;
+                font-size: 0.81rem;
+                font-weight: 700;
+                letter-spacing: 0.01em;
+                text-decoration: none;
                 cursor: pointer;
                 transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
                 white-space: nowrap;
-                box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+                box-shadow: 0 5px 16px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.72);
             }
 
             .quick-filter-btn:hover {
-                background: linear-gradient(135deg, rgba(219, 228, 240, 0.95), rgba(203, 213, 225, 0.95));
+                background: linear-gradient(135deg, rgba(240, 249, 255, 0.92), rgba(219, 234, 254, 0.88));
                 transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
-                border-color: rgba(148, 163, 184, 0.5);
+                box-shadow: 0 9px 18px rgba(59, 130, 246, 0.17), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+                border-color: rgba(96, 165, 250, 0.5);
             }
 
             .quick-filter-btn.active {
-                background: linear-gradient(135deg, rgba(59, 130, 246, 0.92), rgba(37, 99, 235, 0.92));
+                background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.9));
                 color: #ffffff;
                 border-color: rgba(37, 99, 235, 0.7);
-                box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+                box-shadow: 0 8px 18px rgba(59, 130, 246, 0.33), inset 0 1px 2px rgba(255, 255, 255, 0.26);
                 font-weight: 700;
             }
 
@@ -342,21 +372,25 @@
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 0.22rem 0.62rem;
+                padding: 0.26rem 0.72rem;
                 border-radius: 999px;
-                font-size: 0.74rem;
+                border: 1px solid transparent;
+                font-size: 0.75rem;
                 font-weight: 700;
                 letter-spacing: 0.01em;
+                box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
             }
 
             .status-badge-confirmed {
-                background: #dcfce7;
+                background: linear-gradient(135deg, #dcfce7, #bbf7d0);
                 color: #166534;
+                border-color: rgba(34, 197, 94, 0.3);
             }
 
             .status-badge-pending {
-                background: #fef3c7;
+                background: linear-gradient(135deg, #fff7cc, #fde68a);
                 color: #92400e;
+                border-color: rgba(245, 158, 11, 0.35);
             }
 
             .status-badge-completed {
@@ -365,8 +399,61 @@
             }
 
             .status-badge-cancelled {
-                background: #fee2e2;
+                background: linear-gradient(135deg, #fee2e2, #fecaca);
                 color: #b91c1c;
+                border-color: rgba(239, 68, 68, 0.3);
+            }
+
+            .reservation-admin-table-wrap .data-table thead th {
+                background: linear-gradient(135deg, rgba(219, 234, 254, 0.58), rgba(226, 232, 240, 0.52));
+                color: #0f172a;
+            }
+
+            .reservation-admin-table-wrap .data-table tbody tr:nth-child(odd) {
+                background: rgba(248, 250, 252, 0.95);
+            }
+
+            .reservation-admin-table-wrap .data-table tbody tr:nth-child(even) {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .reservation-admin-table-wrap .data-table tbody td {
+                border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+            }
+
+            .reservation-admin-table-wrap .data-table tbody tr:hover {
+                background: rgba(239, 246, 255, 0.95);
+            }
+
+            .quiz-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.4rem 0.82rem;
+                border-radius: 10px;
+                border: 1px solid transparent;
+                font-weight: 700;
+                font-size: 0.84rem;
+                box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+            }
+
+            .quiz-badge--gold {
+                background: linear-gradient(145deg, rgba(254, 243, 199, 0.92), rgba(251, 191, 36, 0.28));
+                border-color: rgba(245, 158, 11, 0.32);
+                color: #b45309;
+            }
+
+            .quiz-badge--silver {
+                background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 32%, #cbd5e1 52%, #f1f5f9 76%, #d8e1ec 100%);
+                border-color: rgba(148, 163, 184, 0.45);
+                color: #334155;
+                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.95), 0 4px 12px rgba(100, 116, 139, 0.18);
+            }
+
+            .quiz-badge--bronze {
+                background: linear-gradient(145deg, rgba(254, 215, 170, 0.9), rgba(194, 65, 12, 0.18));
+                border-color: rgba(180, 83, 9, 0.3);
+                color: #92400e;
             }
 
             .list-loading {
@@ -458,15 +545,6 @@
                 }
             }
 
-            @keyframes waveShift {
-                0% {
-                    transform: translateX(0) scaleY(1);
-                }
-                100% {
-                    transform: translateX(-20px) scaleY(1.08);
-                }
-            }
-
         </style>
 
         <div id="reservation-live-root">
@@ -483,10 +561,6 @@
                 </select>
                 <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
-                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
                         <input
                             id="reservation-search-input"
                             type="text"
@@ -512,13 +586,6 @@
                             {% endfor %}
                         </datalist>
                     </div>
-                    <button id="reservation-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'reservation.search'|trans }}" title="{{ 'reservation.search'|trans }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <span>{{ 'reservation.search'|trans }}</span>
-                    </button>
                 </div>
                 <small id="reservation-result-count" class="admin-result-count">{{ result_count|default(reservations|length) }} {{ 'reservation.results'|trans }}</small>
             </div>
@@ -654,11 +721,7 @@
                             {% if reservation.quizBadge %}
                                 {% set badgeEmoji = reservation.quizBadge == 'gold' ? '🥇' : (reservation.quizBadge == 'silver' ? '🥈' : '🥉') %}
                                 {% set badgeLabel = reservation.quizBadge == 'gold' ? 'Or' : (reservation.quizBadge == 'silver' ? 'Argent' : 'Bronze') %}
-                                <span style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.8rem; border-radius: 8px;
-                                    background: {% if reservation.quizBadge == 'gold' %}rgba(251,191,36,0.15){% elseif reservation.quizBadge == 'silver' %}rgba(148,163,184,0.15){% else %}rgba(180,83,9,0.12){% endif %};
-                                    border: 1px solid {% if reservation.quizBadge == 'gold' %}rgba(251,191,36,0.3){% elseif reservation.quizBadge == 'silver' %}rgba(148,163,184,0.3){% else %}rgba(180,83,9,0.2){% endif %};
-                                    color: {% if reservation.quizBadge == 'gold' %}#d97706{% elseif reservation.quizBadge == 'silver' %}#475569{% else %}#92400e{% endif %};
-                                    font-weight: 600; font-size: 0.85rem;">
+                                <span class="quiz-badge quiz-badge--{{ reservation.quizBadge }}">
                                     <span style="font-size: 1.1rem;">{{ badgeEmoji }}</span>
                                     <span>{{ badgeLabel }}</span>
                                 </span>
@@ -728,8 +791,6 @@
     {{ parent() }}
     <script>
         (function () {
-            const animatedCounter = document.getElementById('reservation-animated-counter');
-
             const initReservationFlashToasts = function () {
                 const flashRoot = document.getElementById('reservation-flash-messages');
                 const toast = document.getElementById('reservation-toast');
@@ -778,6 +839,8 @@
             };
 
             const animateCounter = function () {
+                const animatedCounter = document.getElementById('reservation-animated-counter');
+
                 if (!animatedCounter || animatedCounter.dataset.animated === '1') {
                     return;
                 }
@@ -894,8 +957,10 @@
                 const voiceBtn = form.querySelector('#reservation-voice-btn');
                 const voiceInput = form.querySelector('input[name="q"]');
                 const voiceToast = document.getElementById('reservation-voice-toast');
-                const SpeechRecognition =
-                    window.SpeechRecognition || window.webkitSpeechRecognition;
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+                let activeController = null;
+                let activeRequestToken = 0;
 
                 if (voiceBtn && voiceInput && voiceToast) {
                     if (!SpeechRecognition) {
@@ -911,14 +976,54 @@
                         let toastTimer = null;
 
                         const showToast = function (message, type) {
-                                            const baseUrl = reportButton.dataset.pageUrl;
+                            if (toastTimer) {
+                                window.clearTimeout(toastTimer);
+                            }
+
                             voiceToast.textContent = message;
                             voiceToast.className = 'voice-toast voice-toast--' + type + ' voice-toast--visible';
                             toastTimer = window.setTimeout(function () {
                                 voiceToast.classList.remove('voice-toast--visible');
                             }, 2800);
                         };
-                                            window.location.href = reportUrl;
+
+                        const stopListening = function () {
+                            if (!isListening) {
+                                return;
+                            }
+
+                            isListening = false;
+                            voiceBtn.classList.remove('voice-btn--active');
+                            try {
+                                recognition.stop();
+                            } catch (error) {
+                                // Ignore stop errors when recognition already ended.
+                            }
+                        };
+
+                        recognition.onstart = function () {
+                            isListening = true;
+                            voiceBtn.classList.add('voice-btn--active');
+                            showToast('Parlez maintenant...', 'info');
+                        };
+
+                        recognition.onresult = function (event) {
+                            let transcript = '';
+
+                            for (let index = event.resultIndex; index < event.results.length; index += 1) {
+                                transcript += event.results[index][0].transcript;
+                            }
+
+                            const value = transcript.trim();
+
+                            if (value) {
+                                voiceInput.value = value;
+                                resetToFirstPage();
+                                submitWithAjax();
+                            }
+                        };
+
+                        recognition.onerror = function (event) {
                             stopListening();
 
                             const messages = {
@@ -929,12 +1034,26 @@
                             };
 
                             showToast(messages[event.error] || 'Erreur vocale : ' + event.error, 'error');
+                        };
+
+                        recognition.onend = function () {
+                            stopListening();
+                        };
+
+                        voiceBtn.addEventListener('click', function () {
+                            if (isListening) {
+                                stopListening();
+                                return;
+                            }
+
+                            try {
+                                recognition.start();
+                            } catch (error) {
+                                showToast('Impossible de démarrer la reconnaissance vocale.', 'error');
+                            }
                         });
                     }
                 }
-
-                // Use full page requests for reliability: avoids stale swapped DOM states.
-                return;
 
                 const queryInput = form.querySelector('input[name="q"]');
                 const trackedFields = [
@@ -945,8 +1064,6 @@
                     form.querySelector('input[name="date_to"]'),
                     form.querySelector('select[name="sort"]')
                 ].filter(Boolean);
-
-                let submitTimer = null;
 
                 const resetToFirstPage = function () {
                     let pageInput = form.querySelector('input[name="page"]');
@@ -962,15 +1079,27 @@
                 };
 
                 const requestAndSwap = function (url) {
-                    fetch(url, {
+                    if (activeController) {
+                        activeController.abort();
+                    }
+
+                    activeController = new AbortController();
+                    const requestToken = ++activeRequestToken;
+
+                    return fetch(url, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
-                        }
+                        },
+                        signal: activeController.signal
                     })
                         .then(function (response) {
                             return response.text();
                         })
                         .then(function (html) {
+                            if (requestToken !== activeRequestToken) {
+                                return;
+                            }
+
                             const parser = new DOMParser();
                             const nextDoc = parser.parseFromString(html, 'text/html');
                             const nextRoot = nextDoc.getElementById('reservation-live-root');
@@ -984,8 +1113,13 @@
                             window.history.replaceState({}, '', url);
                             initReservationLiveSearch();
                             initReservationCsvExport();
+                            animateCounter();
                         })
-                        .catch(function () {
+                        .catch(function (error) {
+                            if (error && error.name === 'AbortError') {
+                                return;
+                            }
+
                             window.location.href = url;
                         });
                 };
@@ -994,16 +1128,6 @@
                     const params = new URLSearchParams(new FormData(form));
                     const url = form.action + (params.toString() ? ('?' + params.toString()) : '');
                     requestAndSwap(url);
-                };
-
-                const scheduleSubmit = function (delay) {
-                    if (submitTimer) {
-                        window.clearTimeout(submitTimer);
-                    }
-
-                    submitTimer = window.setTimeout(function () {
-                        submitWithAjax();
-                    }, delay);
                 };
 
                 form.addEventListener('submit', function (event) {
@@ -1022,14 +1146,14 @@
                     if (field === queryInput) {
                         field.addEventListener('input', function () {
                             resetToFirstPage();
-                            scheduleSubmit(320);
+                            submitWithAjax();
                         });
 
                         field.addEventListener('keydown', function (event) {
                             if (event.key === 'Enter') {
                                 event.preventDefault();
                                 resetToFirstPage();
-                                scheduleSubmit(0);
+                                submitWithAjax();
                             }
                         });
 
@@ -1038,7 +1162,7 @@
 
                     field.addEventListener('change', function () {
                         resetToFirstPage();
-                        scheduleSubmit(0);
+                        submitWithAjax();
                     });
                 });
             };

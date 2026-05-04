@@ -27,3 +27,12 @@
 
 /.composer-cache/
 /.composer-home/
+
+###> python ###
+__pycache__/
+*.pyc
+python_service/venv/
+python_service/.venv/
+.venv/
+venv/
+###< python ###

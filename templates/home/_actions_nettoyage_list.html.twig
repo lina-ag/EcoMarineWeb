@@ -11,13 +11,14 @@
             </thead>
             <tbody>
                 {% for action in actions_nettoyage %}
-                    {% set isRegistered = action.getIdAction() in (inscriptions_utilisateur|default([])) %}
+                    {% set actionId = action.idAction %}
+                    {% set isRegistered = actionId in (inscriptions_utilisateur|default([])) %}
                     {% set isComplete = action.estComplete() %}
                     <tr>
-                        <td>{{ action.lieu }}</td>
-                        <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non definie' }}</td>
+                        <td>{{ action.lieu ?: 'Non défini' }}</td>
+                        <td>{{ action.dateAction ? action.dateAction|date('d/m/Y') : 'Non définie' }}</td>
                         <td>
-                            {{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}
+                            {{ action.nombreVolontaires }} / {{ action.limiteBenevoles }}
                             {% if isComplete %}
                                 <span class="badge bg-danger ms-2">Complet</span>
                             {% else %}
@@ -28,15 +29,15 @@
                             {% if app.user is null %}
                                 <a href="{{ path('app_signIn') }}" class="btn btn-outline-success btn-sm">Se connecter</a>
                             {% elseif isRegistered %}
-                                <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': action.getIdAction()}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ action.getIdAction()) }}">
+                                <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': actionId}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ actionId) }}">
                                     <button type="submit" class="btn btn-secondary btn-sm">Annuler</button>
                                 </form>
                             {% elseif isComplete %}
                                 <button type="button" class="btn btn-danger btn-sm" disabled>Complet</button>
                             {% else %}
-                                <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+                                <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': actionId}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ actionId) }}">
                                     <button type="submit" class="btn btn-success btn-sm">Participer</button>
                                 </form>
                             {% endif %}

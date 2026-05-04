@@ -106,6 +106,14 @@ if ($blockedCountryRepo->isCountryBlocked($location['country_code'])) {
             }
 
             if ($user->getRoleName() === 'chercheur' && $imageBase64) {
+    if (!$faceService->testPythonService()) {
+        $em->persist($user);
+        $em->flush();
+        $session->set('user_id_for_face_registration', $user->getIdUtilisateur());
+        $this->addFlash('error', 'Le service de reconnaissance faciale est momentanément indisponible. Votre compte a été créé, mais l’enregistrement du visage devra être réessayé plus tard.');
+        return $this->redirectToRoute('app_signUp');
+    }
+
     $encoding = $faceService->extractEncoding($imageBase64);
     if ($encoding) {
         $user->setFaceEncoding($encoding);
@@ -218,6 +226,10 @@ $em->flush();
             return $this->json(['success' => false, 'message' => 'Aucune image reçue']);
         }
 
+        if (!$faceService->testPythonService()) {
+            return $this->json(['success' => false, 'message' => 'Le service de reconnaissance faciale est indisponible.']);
+        }
+
         $user = $faceService->recognizeFace($image);
 
         if (!$user) {
@@ -256,6 +268,10 @@ $em->flush();
 
         if (!$image) {
             return $this->json(['success' => false, 'message' => 'Aucune image reçue']);
+        }
+
+        if (!$faceService->testPythonService()) {
+            return $this->json(['success' => false, 'message' => 'Le service de reconnaissance faciale est indisponible.']);
         }
 
         $userId = $session->get('user_id_for_face_registration');

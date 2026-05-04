@@ -232,7 +232,21 @@ final class AdminController extends AbstractController
                     'labels' => [
                         'usePointStyle' => true,
                         'padding' => 16,
+                        'color' => '#334155',
                     ],
+                ],
+                'tooltip' => [
+                    'backgroundColor' => 'rgba(248, 250, 252, 0.96)',
+                    'titleColor' => '#0f172a',
+                    'bodyColor' => '#334155',
+                    'borderColor' => 'rgba(148, 163, 184, 0.4)',
+                    'borderWidth' => 1,
+                ],
+            ],
+            'elements' => [
+                'arc' => [
+                    'borderColor' => 'rgba(255, 255, 255, 0.9)',
+                    'borderWidth' => 2,
                 ],
             ],
             'cutout' => '62%',
