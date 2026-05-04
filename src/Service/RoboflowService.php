@@ -39,6 +39,7 @@ class RoboflowService
             $data = $response->toArray();
 
             return [
+                'success'          => true,
                 'espece'           => $data['espece'] ?? 'Inconnu',
                 'nombre_individus' => $data['nombre_individus'] ?? 1,
                 'comportement'     => $data['comportement'] ?? 'Observation',
@@ -48,11 +49,8 @@ class RoboflowService
 
         } catch (\Exception $e) {
             return [
-                'espece'           => 'Erreur connexion Python API',
-                'nombre_individus' => 0,
-                'comportement'     => 'N/A',
-                'confiance_ia'     => '0%',
-                'description'      => 'Vérifiez que l\'API Python tourne: python python_ai/api.py — Erreur: ' . $e->getMessage()
+                'success' => false,
+                'error' => 'Vérifiez que l\'API Python tourne: python python_ai/api.py - Erreur: ' . $e->getMessage(),
             ];
         }
     }

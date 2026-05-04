@@ -3,20 +3,23 @@ from ultralytics import YOLO
 from PIL import Image
 import io
 import os
+from pathlib import Path
 
 app = Flask(__name__)
 
+BASE_DIR = Path(__file__).resolve().parent
+
 # Chemin vers votre modèle entraîné
-MODEL_PATH = "runs/classify/afhq_classification_model/weights/best.pt"
+MODEL_PATH = BASE_DIR / "runs" / "classify" / "afhq_classification_model" / "weights" / "best.pt"
 
 # Variable globale pour stocker le modèle
 model = None
 
 def load_model():
     global model
-    if os.path.exists(MODEL_PATH):
+    if MODEL_PATH.exists():
         print(f"Chargement du modèle: {MODEL_PATH}")
-        model = YOLO(MODEL_PATH)
+        model = YOLO(str(MODEL_PATH))
     else:
         print(f"ATTENTION: Le modèle {MODEL_PATH} n'existe pas encore.")
         print("L'API retournera des données de test (mock) en attendant la fin de l'entraînement.")

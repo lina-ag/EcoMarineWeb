@@ -117,9 +117,11 @@ class RapportMLService
 
             return [
                 'valeur'      => $prediction,
+                'nouveaux_predit' => $predictionMois,
                 'methode'     => 'Estimation simple (données insuffisantes)',
                 'confiance'   => 50,
                 'historique'  => [],
+                'equation'    => null,
             ];
         }
 
@@ -165,7 +167,15 @@ class RapportMLService
             return [
                 'tendance'    => 'stable',
                 'description' => 'Données insuffisantes pour analyser la tendance',
+                'couleur'     => '#6c757d',
                 'details'     => [],
+                'moyenne_debut' => 0,
+                'moyenne_fin' => 0,
+                'difference' => 0,
+                'meilleur_mois' => '-',
+                'moyenne_mobile' => [],
+                'valeurs' => [],
+                'labels' => [],
             ];
         }
 
@@ -219,7 +229,12 @@ class RapportMLService
         $valeurs = array_values($donnees['par_jour']);
 
         if (count($valeurs) < 3) {
-            return ['anomalies' => [], 'message' => 'Pas assez de données'];
+            return [
+                'anomalies' => [],
+                'moyenne' => 0,
+                'ecart_type' => 0,
+                'message' => 'Pas assez de données',
+            ];
         }
 
         $moyenne = array_sum($valeurs) / count($valeurs);

@@ -110,7 +110,7 @@ final class DetectionDroneController extends AbstractController
             $analysisResult = $roboflowService->analyzeImage($imageFile);
             
             // Flatten result so JS can access data.espece, data.comportement etc. directly
-            $result = array_merge(['success' => true], $analysisResult);
+            $result = array_merge(['success' => false], $analysisResult);
         } catch (\Exception $e) {
             $result = [
                 'success' => false,

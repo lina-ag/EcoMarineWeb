@@ -6,6 +6,7 @@ use App\Entity\Dechet;
 use App\Form\DechetType;
 use App\Repository\DechetRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,7 +44,7 @@ final class DechetController extends AbstractController
     }
 
     #[Route('/{id_dechet}', name: 'app_dechet_show', methods: ['GET'])]
-    public function show(Dechet $dechet): Response
+    public function show(#[MapEntity(mapping: ['id_dechet' => 'id_dechet'])] Dechet $dechet): Response
     {
         return $this->render('dechet/show.html.twig', [
             'dechet' => $dechet,
@@ -51,7 +52,7 @@ final class DechetController extends AbstractController
     }
 
     #[Route('/{id_dechet}/edit', name: 'app_dechet_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, #[MapEntity(mapping: ['id_dechet' => 'id_dechet'])] Dechet $dechet, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(DechetType::class, $dechet);
         $form->handleRequest($request);
@@ -69,7 +70,7 @@ final class DechetController extends AbstractController
     }
 
     #[Route('/{id_dechet}', name: 'app_dechet_delete', methods: ['POST'])]
-    public function delete(Request $request, Dechet $dechet, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, #[MapEntity(mapping: ['id_dechet' => 'id_dechet'])] Dechet $dechet, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$dechet->getId_dechet(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($dechet);

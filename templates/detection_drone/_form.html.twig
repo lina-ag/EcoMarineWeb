@@ -6,13 +6,13 @@
         <div class="form-group-settings full-width {% if form.image_path.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.image_path, null, {'label_attr': {'class': 'form-label'}}) }}
             
-            <div class="file-drop-area" id="imageDropArea">
+            <label class="file-drop-area" id="imageDropArea" for="{{ form.image_path.vars.id }}">
                 <div class="file-drop-icon">📸</div>
                 <div class="file-drop-text">Glissez-déposez une image ici</div>
-                <div class="file-drop-info">ou cliquez pour sélectionner (Max 10 MB)</div>
-            </div>
+                <div class="file-drop-info">ou cliquez pour sélectionner (JPEG, PNG, GIF, WebP - Max 10 MB)</div>
+            </label>
             
-            {{ form_widget(form.image_path, {'attr': {'class': 'form-input file-input', 'id': 'imageFileInput'}}) }}
+            {{ form_widget(form.image_path, {'attr': {'class': 'form-input', 'id': 'imageFileInput'}}) }}
             
             <div id="filePreview" class="file-preview" style="display: none;">
                 <img id="previewImg" class="file-preview-img" src="" alt="Aperçu">
@@ -141,6 +141,108 @@
 {# STYLES FOR ECOMARINE AI INTEGRATION                                #}
 {# ═══════════════════════════════════════════════════════════════════ #}
 <style>
+/* ── Image Dropzone ── */
+.file-drop-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 180px;
+    width: 100%;
+    border: 2px dashed rgba(148, 163, 184, 0.5);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.35);
+    cursor: pointer;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease;
+    padding: 20px;
+    text-align: center;
+}
+
+.file-drop-area + .form-input[type="file"] {
+    margin-top: 10px;
+}
+
+.file-drop-area:hover {
+    border-color: rgba(99, 102, 241, 0.7);
+    background: rgba(30, 41, 59, 0.45);
+}
+
+.file-drop-area.dragover {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.12);
+    transform: scale(1.01);
+}
+
+.file-drop-icon {
+    font-size: 34px;
+}
+
+.file-drop-text {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.file-drop-info {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.file-preview {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.4);
+}
+
+.file-preview-img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.file-preview-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-preview-name {
+    color: #f8fafc;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-preview-size {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.file-preview-remove {
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-preview-remove:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fecaca;
+}
+
 /* ── Grok Analyze Button ── */
 .btn-grok-analyze {
     display: flex;
@@ -341,9 +443,10 @@
 {# JAVASCRIPT FOR IMAGE HANDLING + ECOMARINE AI ANALYSIS              #}
 {# ═══════════════════════════════════════════════════════════════════ #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initDetectionDroneForm() {
+    const imageInputId = '{{ form.image_path.vars.id }}';
     const dropArea = document.getElementById('imageDropArea');
-    const fileInput = document.querySelector('input[type="file"]');
+    const fileInput = document.getElementById(imageInputId) || document.getElementById('imageFileInput');
     const filePreview = document.getElementById('filePreview');
     const previewImg = document.getElementById('previewImg');
     const fileName = document.getElementById('fileName');
@@ -358,6 +461,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFile = null;
 
     if (!dropArea || !fileInput) return;
+    if (dropArea.dataset.dndInitialized === '1') return;
+    dropArea.dataset.dndInitialized = '1';
 
     // ── Drag & Drop ──
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -376,6 +481,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, false);
     });
 
+    dropArea.addEventListener('dragover', (e) => {
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    });
+
     ['dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, () => {
             dropArea.classList.remove('dragover');
@@ -383,15 +494,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     dropArea.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        fileInput.files = files;
-        handleFiles(files);
-    }, false);
+        const files = e.dataTransfer?.files;
+        if (!files || files.length === 0) return;
 
-    dropArea.addEventListener('click', () => {
-        fileInput.click();
-    });
+        const droppedFile = files[0];
+        const inputSynced = syncInputWithSingleFile(droppedFile);
+
+        if (!inputSynced) {
+            alert('Votre navigateur ne permet pas le drag-and-drop pour ce champ. Cliquez sur la zone pour choisir un fichier.');
+            return;
+        }
+
+        handleFiles(fileInput.files);
+    }, false);
 
     fileInput.addEventListener('change', (e) => {
         handleFiles(e.target.files);
@@ -413,8 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = files[0];
 
         // Validate MIME type
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
+        if (!isAcceptedImage(file)) {
             alert('Types autorisés: JPEG, PNG, GIF, WebP');
             fileInput.value = '';
             return;
@@ -442,6 +556,34 @@ document.addEventListener('DOMContentLoaded', function() {
             analyzeBtn.style.display = 'flex';
         };
         reader.readAsDataURL(file);
+    }
+
+    function isAcceptedImage(file) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        const mime = (file.type || '').toLowerCase();
+
+        if (validTypes.includes(mime)) {
+            return true;
+        }
+
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        return validExtensions.includes(ext);
+    }
+
+    function syncInputWithSingleFile(file) {
+        if (typeof DataTransfer === 'undefined') {
+            return false;
+        }
+
+        try {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            return fileInput.files && fileInput.files.length > 0;
+        } catch (error) {
+            return false;
+        }
     }
 
     // ══════════════════════════════════════════════════════
@@ -582,5 +724,8 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => field.classList.remove('ai-filled'), 2000);
         }
     }
-});
+}
+
+document.addEventListener('DOMContentLoaded', initDetectionDroneForm);
+document.addEventListener('turbo:load', initDetectionDroneForm);
 </script>
