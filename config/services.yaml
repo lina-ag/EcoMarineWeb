@@ -30,3 +30,6 @@ services:
 
     # Service de prédiction
     App\Service\PredictionService: ~
+
+    # Service Python AI (local custom trained model)
+    App\Service\RoboflowService: ~
