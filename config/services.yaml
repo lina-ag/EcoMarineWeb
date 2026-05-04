@@ -50,3 +50,6 @@ services:
   App\Service\FaceRecognitionService:
     arguments:
       $pythonFaceServiceUrl: "%python_face_service_url%"
+
+  # Service Python AI (local custom trained model)
+  App\Service\RoboflowService: ~
