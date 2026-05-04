@@ -48,7 +48,7 @@ final class ZonepController extends AbstractController
         $zoneps = $paginator->paginate(
             $query->getQuery(),
             $request->query->getInt('page', 1),
-            3
+            2
         );
 
         $leafletOptions = (new LeafletOptions())
