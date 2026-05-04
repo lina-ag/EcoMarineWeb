@@ -11,11 +11,17 @@
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">
+<<<<<<< HEAD
                 <h3>RÃƒÂ©servations</h3>
                 <div class="stat-value">248</div>
                 <span class="stat-change positive">
+=======
+                <h3>Réservations</h3>
+                <div class="stat-value">{{ kpi.reservations }}</div>
+                <span class="stat-change {{ metrics.reservations_growth starts with '-' ? 'negative' : 'positive' }}">
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +12.5% ce mois
+                    {{ metrics.reservations_growth }} ce mois
                 </span>
             </div>
             <div class="stat-icon cyan">
@@ -30,10 +36,10 @@
         <div class="stat-card-inner">
             <div class="stat-info">
                 <h3>Visiteurs</h3>
-                <div class="stat-value">1 024</div>
-                <span class="stat-change positive">
+                <div class="stat-value">{{ kpi.visitors }}</div>
+                <span class="stat-change {{ metrics.new_visitors_growth starts with '-' ? 'negative' : 'positive' }}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +8.2% ce mois
+                    {{ metrics.new_visitors_growth }} ce mois
                 </span>
             </div>
             <div class="stat-icon magenta">
@@ -48,16 +54,21 @@
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">
+<<<<<<< HEAD
                 <h3>ActivitÃƒÂ©s</h3>
                 <div class="stat-value">36</div>
+=======
+                <h3>Déchets collectés</h3>
+                <div class="stat-value">{{ kpi.waste_quantity|number_format(1, ',', ' ') }} kg</div>
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
                 <span class="stat-change positive">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                    +3 nouvelles
+                    {{ metrics.waste_records }} relevés
                 </span>
             </div>
             <div class="stat-icon purple">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2">
-                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 0v10l4 4"/>
+                    <path d="M3 6h18"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 10v6"/><path d="M14 10v6"/><path d="M9 6V4h6v2"/>
                 </svg>
             </div>
         </div>
@@ -66,16 +77,81 @@
     <div class="glass-card glass-card-3d stat-card">
         <div class="stat-card-inner">
             <div class="stat-info">
+<<<<<<< HEAD
                 <h3>EspÃƒÂ¨ces suivies</h3>
                 <div class="stat-value">15</div>
                 <span class="stat-change positive">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
                     Kuriat protÃƒÂ©gÃƒÂ©e
+=======
+                <h3>Détections Drone</h3>
+                <div class="stat-value">{{ kpi.drone_detections }}</div>
+                <span class="stat-change positive">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    {{ metrics.drone_missions }} missions
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
                 </span>
             </div>
             <div class="stat-icon success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    <circle cx="12" cy="12" r="3"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 8l2 2"/><path d="M16 8l-2 2"/><path d="M8 16l2-2"/><path d="M16 16l-2-2"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+
+{# Graphiques #}
+
+<section class="content-grid" style="margin-bottom: 1.4rem;">
+    <div class="glass-card chart-card" style="grid-column: 1 / -1; background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.94)); border: 1px solid rgba(191, 219, 254, 0.6);">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Réservations par activité</h2>
+                <p class="card-subtitle">Répartition globale des réservations sur l'ensemble de la plateforme</p>
+            </div>
+        </div>
+        <div class="chart-wrapper" style="min-height: 340px;">
+            <div style="height: 340px; max-width: 820px; margin: 0 auto; padding: 0.7rem; border-radius: 16px; background: rgba(255, 255, 255, 0.86); border: 1px solid rgba(203, 213, 225, 0.55);">
+                {{ render_chart(reservationActivityChart, {'controller': '@symfony/ux-chartjs/chart'}) }}
+            </div>
+        </div>
+    </div>
+</section>
+
+    <div class="glass-card glass-card-3d stat-card">
+        <div class="stat-card-inner">
+            <div class="stat-info">
+                <h3>Zones Protégées</h3>
+                <div class="stat-value">{{ kpi.protected_zones }}</div>
+                <span class="stat-change positive">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    Zones enregistrées
+                </span>
+            </div>
+            <div class="stat-icon cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card glass-card-3d stat-card">
+        <div class="stat-card-inner">
+            <div class="stat-info">
+                <h3>Surveillances</h3>
+                <div class="stat-value">{{ kpi.surveillances }}</div>
+                <span class="stat-change positive">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                    Total surveillances
+                </span>
+            </div>
+            <div class="stat-icon magenta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--magenta)" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                 </svg>
             </div>
         </div>
@@ -83,39 +159,263 @@
 
 </section>
 
+<<<<<<< HEAD
 {# Tableau des derniÃƒÂ¨res rÃƒÂ©servations #}
+=======
+{# Graphiques existants #}
+
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
 <section class="content-grid">
-    <div class="glass-card table-card">
+    <div class="glass-card chart-card">
         <div class="card-header">
             <div>
+<<<<<<< HEAD
                 <h2 class="card-title">DerniÃƒÂ¨res RÃƒÂ©servations</h2>
                 <p class="card-subtitle">ActivitÃƒÂ©s rÃƒÂ©cemment rÃƒÂ©servÃƒÂ©es</p>
-            </div>
-            <div class="card-actions">
-                <button class="card-btn">Voir tout</button>
-                <button class="card-btn">Exporter</button>
+=======
+                <h2 class="card-title">Réservations sur 6 mois</h2>
+                <p class="card-subtitle">Tendance mensuelle (table réservation)</p>
             </div>
         </div>
-        <div class="table-wrapper">
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">Max</span>
+                    <span class="y-value">50%</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.reservations_by_month %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar bar-emerald" style="height: {{ point.height }}%;" title="{{ point.value }}"></div>
+                            <span class="chart-label">{{ point.label }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card chart-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Déchets par zone</h2>
+                <p class="card-subtitle">Somme des quantités (table dechet)</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">kg</span>
+                    <span class="y-value">Top</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.waste_by_zone %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar bar-coral" style="height: {{ point.height }}%;" title="{{ point.value }} kg"></div>
+                            <span class="chart-label">{{ point.label }}</span>
+                        </div>
+                    {% else %}
+                        <div class="chart-bar-group">
+                            <span class="chart-label">Aucune donnée</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+{# ===== NOUVELLES SECTIONS ZONES ===== #}
+
+{# Alerte zones sans surveillance #}
+{% if zones_without_surveillance|length > 0 %}
+<section style="margin-bottom: 24px;">
+    <div class="glass-card" style="border-left: 4px solid var(--coral, #f87171); padding: 20px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--coral, #f87171)" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3 style="color: var(--coral, #f87171); margin:0;">
+                {{ zones_without_surveillance|length }} zone(s) sans surveillance depuis plus de 30 jours
+            </h3>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for zone in zones_without_surveillance %}
+                <a href="{{ path('app_zonep_show', {'idZone': zone.idZone}) }}"
+                   style="background: rgba(248,113,113,0.12); color: var(--coral, #f87171); padding: 4px 14px; border-radius: 20px; font-size: 13px; text-decoration:none; border: 1px solid rgba(248,113,113,0.3);">
+                    {{ zone.nomZone }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Graphiques zones #}
+<section class="content-grid">
+
+    <div class="glass-card chart-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Surveillances sur 6 mois</h2>
+                <p class="card-subtitle">Tendance mensuelle des surveillances</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">Max</span>
+                    <span class="y-value">50%</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.surveillances_by_month %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar" style="height: {{ point.height }}%; background: var(--cyan, #22d3ee);" title="{{ point.value }} surveillances"></div>
+                            <span class="chart-label">{{ point.label }}</span>
+                        </div>
+                    {% else %}
+                        <div class="chart-bar-group"><span class="chart-label">Aucune donnée</span></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card chart-card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Zones les plus surveillées</h2>
+                <p class="card-subtitle">Top 5 par nombre de surveillances</p>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <div class="chart-y-axis">
+                    <span class="y-value">Max</span>
+                    <span class="y-value">50%</span>
+                    <span class="y-value">0</span>
+                </div>
+                <div class="chart-placeholder">
+                    {% for point in charts.most_surveilled_zones %}
+                        <div class="chart-bar-group">
+                            <div class="chart-bar" style="height: {{ point.height }}%; background: var(--emerald-light, #34d399);" title="{{ point.value }} surveillances"></div>
+                            <span class="chart-label" title="{{ point.label }}">{{ point.label|slice(0, 8) }}</span>
+                        </div>
+                    {% else %}
+                        <div class="chart-bar-group"><span class="chart-label">Aucune donnée</span></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+{# Répartition zones par statut #}
+<section style="margin-bottom: 24px;">
+    <div class="glass-card" style="padding: 24px;">
+        <div class="card-header" style="margin-bottom: 20px;">
+            <div>
+                <h2 class="card-title">Répartition des zones par statut</h2>
+                <p class="card-subtitle">Vue d'ensemble de l'état des zones marines</p>
+            </div>
+            <a href="{{ path('app_zonep_index') }}" class="card-btn" style="padding: 8px 18px; border-radius: 8px; background: rgba(34,211,238,0.1); color: var(--cyan); text-decoration:none; font-size:13px;">Voir tout</a>
+        </div>
+        {% set statusColors = {'Actif': '#34d399', 'En surveillance': '#fbbf24', 'En maintenance': '#818cf8', 'Inactif': '#f87171'} %}
+        {% set total = charts.zones_by_status|reduce((carry, v) => carry + v, 0) %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+            {% for status, count in charts.zones_by_status %}
+                {% set color = statusColors[status] ?? '#94a3b8' %}
+                {% set pct = total > 0 ? ((count / total) * 100)|round(1) : 0 %}
+                <div style="background: rgba(255,255,255,0.04); border-radius: 14px; padding: 18px; border: 1px solid rgba(255,255,255,0.08); text-align:center;">
+                    <div style="font-size: 32px; font-weight: 700; color: {{ color }};">{{ count }}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary, #94a3b8); margin: 6px 0;">{{ status }}</div>
+                    <div style="background: rgba(255,255,255,0.08); border-radius: 99px; height: 6px; overflow:hidden; margin-top: 10px;">
+                        <div style="width: {{ pct }}%; height: 100%; background: {{ color }}; border-radius: 99px;"></div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary, #94a3b8); margin-top: 4px;">{{ pct }}%</div>
+                </div>
+            {% else %}
+                <div style="color: var(--text-secondary);">Aucune donnée</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ===== FIN SECTIONS ZONES ===== #}
+
+
+{# Blocs métiers #}
+<section class="business-grid">
+    {% for block in domain_blocks %}
+        <div class="glass-card business-card business-card-{{ block.accent }}">
+            <div class="business-header">
+                <div class="business-title-wrap">
+                    <div>
+                        <h3>{{ block.title }}</h3>
+                        <p class="business-subtitle">Indicateurs en temps réel</p>
+                    </div>
+                </div>
+                <span class="business-badge {{ block.accent }}">Live</span>
+            </div>
+            <div class="business-metrics">
+                {% for item in block.items %}
+                    <div class="business-row business-row-{{ block.accent }}">
+                        <span class="business-label">{{ item.label }}</span>
+                        <span class="business-value">{{ item.value }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</section>
+
+{# Tableau des dernières réservations + activité #}
+<section class="content-grid reservation-showcase">
+    <div class="glass-card table-card reservation-table-card">
+        <div class="card-header">
+            <div class="reservation-heading-wrap">
+                <span class="reservation-kicker">Admin Reservation</span>
+                <h2 class="card-title">Dernières Réservations</h2>
+                <p class="card-subtitle">Activités récemment réservées</p>
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
+            </div>
+            <div class="card-actions">
+                <a href="{{ path('app_reservation_index') }}" class="card-btn reservation-btn">Voir tout</a>
+                <button type="button" class="card-btn reservation-btn">Exporter</button>
+            </div>
+        </div>
+        <div class="table-wrapper reservation-table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Visiteur</th>
                         <th>ActivitÃƒÂ©</th>
                         <th>Date</th>
-                        <th>Statut</th>
-                        <th>Montant</th>
+                        <th>Personnes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="table-user">
-                                <div class="table-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">YB</div>
-                                <div class="table-user-info">
-                                    <span class="table-user-name">Yasmine Ben Ali</span>
-                                    <span class="table-user-email">yasmine@email.com</span>
+                    {% for reservation in latest_reservations %}
+                        {% set nameParts = reservation.nom ? reservation.nom|split(' ') : [] %}
+                        {% set firstInitial = nameParts|length > 0 and nameParts[0] is not empty ? nameParts[0]|slice(0, 1)|upper : 'R' %}
+                        {% set secondInitial = nameParts|length > 1 and nameParts[1] is not empty ? nameParts[1]|slice(0, 1)|upper : '' %}
+                        <tr class="reservation-row" style="--row-index: {{ loop.index0 }};">
+                            <td>
+                                <div class="table-user">
+                                    <div class="table-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">{{ firstInitial ~ secondInitial }}</div>
+                                    <div class="table-user-info">
+                                        <span class="table-user-name">{{ reservation.nom }}</span>
+                                        <span class="table-user-email">{{ reservation.email }}</span>
+                                    </div>
                                 </div>
+<<<<<<< HEAD
                             </div>
                         </td>
                         <td>PlongÃƒÂ©e ÃƒÂ  Kuriat</td>
@@ -153,13 +453,33 @@
                         <td><span class="status-badge pending">Pending</span></td>
                         <td><span class="table-amount">50 TND</span></td>
                     </tr>
+=======
+                            </td>
+                            <td>{{ reservation.activiteEcologique ? reservation.activiteEcologique.nom_activite : 'Non définie' }}</td>
+                            <td>{{ reservation.date_reservation ? reservation.date_reservation|date('d M Y') : '-' }}</td>
+                            <td>{{ reservation.nombre_personnes }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Aucune réservation trouvée.</td>
+                        </tr>
+                    {% endfor %}
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
                 </tbody>
             </table>
         </div>
     </div>
 
+<<<<<<< HEAD
     {# ActivitÃƒÂ© rÃƒÂ©cente #}
     <div class="glass-card activity-card">
+=======
+
+    {# Activité récente #}
+
+
+    <div class="glass-card activity-card reservation-activity-card">
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
         <div class="card-header">
             <div>
                 <h2 class="card-title">ActivitÃƒÂ© RÃƒÂ©cente</h2>
@@ -167,6 +487,7 @@
             </div>
         </div>
         <div class="activity-list">
+<<<<<<< HEAD
             <div class="activity-item">
                 <div class="activity-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">YB</div>
                 <div class="activity-content">
@@ -195,8 +516,32 @@
                     <span class="activity-time">Il y a 2 heures</span>
                 </div>
             </div>
+=======
+            {% for reservation in latest_reservations %}
+                {% set nameParts = reservation.nom ? reservation.nom|split(' ') : [] %}
+                {% set firstInitial = nameParts|length > 0 and nameParts[0] is not empty ? nameParts[0]|slice(0, 1)|upper : 'R' %}
+                {% set secondInitial = nameParts|length > 1 and nameParts[1] is not empty ? nameParts[1]|slice(0, 1)|upper : '' %}
+                <div class="activity-item">
+                    <div class="activity-avatar" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald));">{{ firstInitial ~ secondInitial }}</div>
+                    <div class="activity-content">
+                        <p class="activity-text"><strong>{{ reservation.nom }}</strong> a réservé {{ reservation.activiteEcologique ? reservation.activiteEcologique.nom_activite : 'une activité' }}</p>
+                        <span class="activity-time">Le {{ reservation.date_reservation ? reservation.date_reservation|date('d/m/Y') : '-' }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="activity-item">
+                    <div class="activity-content">
+                        <p class="activity-text">Aucune activité récente disponible.</p>
+                    </div>
+                </div>
+            {% endfor %}
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
         </div>
     </div>
 </section>
 
+
 {% endblock %}
+
+
+

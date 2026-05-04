@@ -7,18 +7,19 @@ use App\Form\VolontaireType;
 use App\Repository\VolontaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/volontaire')]
+#[Route('/admin/volontaire')]
 final class VolontaireController extends AbstractController
 {
-    #[Route(name: 'app_volontaire_index', methods: ['GET'])]
-    public function index(VolontaireRepository $volontaireRepository): Response
+    #[Route('', name: 'app_volontaire_index', methods: ['GET'])]
+    public function index(VolontaireRepository $repository): Response
     {
         return $this->render('volontaire/index.html.twig', [
-            'volontaires' => $volontaireRepository->findAll(),
+            'volontaires' => $repository->findAll(),
         ]);
     }
 
@@ -29,11 +30,22 @@ final class VolontaireController extends AbstractController
         $form = $this->createForm(VolontaireType::class, $volontaire);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($volontaire);
-            $entityManager->flush();
+        if ($form->isSubmitted()) {
+            $action = $volontaire->getIdAction();
 
-            return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+            if ($action && $action->estComplete()) {
+                $form->get('id_action')->addError(
+                    new FormError('Cette action a déjà atteint la limite maximale de bénévoles.')
+                );
+            }
+
+            if ($form->isValid()) {
+                $entityManager->persist($volontaire);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Volontaire ajouté avec succès.');
+                return $this->redirectToRoute('app_volontaire_index');
+            }
         }
 
         return $this->render('volontaire/new.html.twig', [
@@ -53,13 +65,30 @@ final class VolontaireController extends AbstractController
     #[Route('/{id_volontaire}/edit', name: 'app_volontaire_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Volontaire $volontaire, EntityManagerInterface $entityManager): Response
     {
+        $ancienneAction = $volontaire->getIdAction();
+
         $form = $this->createForm(VolontaireType::class, $volontaire);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        if ($form->isSubmitted()) {
+            $nouvelleAction = $volontaire->getIdAction();
 
-            return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+            if (
+                $nouvelleAction &&
+                $nouvelleAction !== $ancienneAction &&
+                $nouvelleAction->estComplete()
+            ) {
+                $form->get('id_action')->addError(
+                    new FormError('Cette action a déjà atteint la limite maximale de bénévoles.')
+                );
+            }
+
+            if ($form->isValid()) {
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Volontaire modifié avec succès.');
+                return $this->redirectToRoute('app_volontaire_index');
+            }
         }
 
         return $this->render('volontaire/edit.html.twig', [
@@ -71,11 +100,11 @@ final class VolontaireController extends AbstractController
     #[Route('/{id_volontaire}', name: 'app_volontaire_delete', methods: ['POST'])]
     public function delete(Request $request, Volontaire $volontaire, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$volontaire->getId_volontaire(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $volontaire->getIdVolontaire(), $request->request->get('_token'))) {
             $entityManager->remove($volontaire);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_volontaire_index');
     }
 }

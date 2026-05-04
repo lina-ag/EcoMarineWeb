@@ -1,13 +1,35 @@
 <nav class="navbar">
-    <h1 class="page-title">{% block navbar_title %}Dashboard Overview{% endblock %}</h1>
+    <h1 class="page-title">
+        {% block navbar_title %}
+            {% if app.request.get('_route') starts with 'app_action_nettoyage' %}
+                Gestion des actions de nettoyage
+            {% elseif app.request.get('_route') starts with 'app_volontaire' %}
+                Gestion des volontaires
+            {% else %}
+                Dashboard Overview
+            {% endif %}
+        {% endblock %}
+    </h1>
+
     <div class="navbar-right">
-        <div class="search-box">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input type="text" class="search-input" placeholder="Rechercher...">
-        </div>
+        {% if app.request.get('_route') starts with 'app_action_nettoyage' %}
+            <a href="{{ path('app_action_nettoyage_new') }}" class="nav-btn" title="Ajouter une action">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </a>
+        {% endif %}
+
+        {% if app.request.get('_route') starts with 'app_volontaire' %}
+            <a href="{{ path('app_volontaire_new') }}" class="nav-btn" title="Ajouter un volontaire">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </a>
+        {% endif %}
+
         <button class="nav-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -15,7 +37,12 @@
             </svg>
             <span class="notification-dot"></span>
         </button>
+<<<<<<< HEAD
         <button class="nav-btn" id="theme-toggle" title="Changer le thÃƒÂ¨me">
+=======
+
+        <button class="nav-btn" id="theme-toggle" title="Changer le thème">
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
             <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="4"/>
                 <path d="M12 2v2"/><path d="M12 20v2"/>

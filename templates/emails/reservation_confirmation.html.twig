@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Confirmation de réservation</title>
+  </head>
+  <body>
+    <p>Bonjour {{ reservation.nom|e }},</p>
+    <p>Votre réservation pour <strong>{{ activityName|e }}</strong> le <strong>{{ date }}</strong> a été enregistrée.</p>
+    <p>Nombre de personnes : {{ personnes }}</p>
+    <p>Merci et à bientôt.</p>
+  </body>
+</html>

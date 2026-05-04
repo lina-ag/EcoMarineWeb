@@ -1,0 +1,49 @@
+<div id="survzoneResults">
+    <div class="table-wrapper">
+        <table class="data-table" id="survzoneTable">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="{{ path('app_survzone_index', {'tri': 'idSurv', 'sens': sortBy == 'idSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'page': 1}) }}">
+                            {{ 'common.id'|trans }} {{ sortBy == 'idSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ path('app_survzone_index', {'tri': 'dateSurv', 'sens': sortBy == 'dateSurv' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'page': 1}) }}">
+                            {{ 'survzone.fields.date'|trans }} {{ sortBy == 'dateSurv' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ path('app_survzone_index', {'tri': 'observation', 'sens': sortBy == 'observation' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'page': 1}) }}">
+                            {{ 'survzone.fields.observation'|trans }} {{ sortBy == 'observation' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                        </a>
+                    </th>
+                    <th>{{ 'survzone.fields.zone'|trans }}</th>
+                    <th>{{ 'common.actions'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for survzone in survzones %}
+                <tr class="search-row">
+                    <td>{{ survzone.idSurv }}</td>
+                    <td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td>
+                    <td>{{ survzone.observation }}</td>
+                    <td>{{ survzone.zone ? survzone.zone.nomZone : 'zonep.not_found'|trans }}</td>
+                    <td>
+                        <a href="{{ path('app_survzone_show', {'idSurv': survzone.idSurv}) }}" class="btn btn-secondary">{{ 'common.show'|trans }}</a>
+                        <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">{{ 'common.edit'|trans }}</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="no-results">
+                    <td colspan="5">{{ 'survzone.no_records'|trans }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {{ knp_pagination_render(survzones) }}
+    </div>
+</div>

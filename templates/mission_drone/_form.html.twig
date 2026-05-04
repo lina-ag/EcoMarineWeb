@@ -1,58 +1,97 @@
 {{ form_start(form) }}
     <div class="form-grid">
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.date_mission.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.date_mission, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.date_mission, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.date_mission) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.date_mission, {'attr': {'class': 'form-input form-date', 'required': 'required'}}) }}
+            {% if form.date_mission.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.date_mission) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
-            {{ form_label(form.heure_debut, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.heure_debut, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.heure_debut) }}
-        </div>
-
-        <div class="form-group-settings">
-            {{ form_label(form.heure_fin, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.heure_fin, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.heure_fin) }}
-        </div>
-
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.zone_survolee.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.zone_survolee, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.zone_survolee, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.zone_survolee) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.zone_survolee, {'attr': {'class': 'form-input form-select', 'required': 'required'}}) }}
+            {% if form.zone_survolee.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.zone_survolee) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.heure_debut.vars.errors|length > 0 %}has-error{% endif %}">
+            {{ form_label(form.heure_debut, null, {'label_attr': {'class': 'form-label'}}) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.heure_debut, {'attr': {'class': 'form-input', 'required': 'required'}}) }}
+            {% if form.heure_debut.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.heure_debut) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group-settings {% if form.heure_fin.vars.errors|length > 0 %}has-error{% endif %}">
+            {{ form_label(form.heure_fin, null, {'label_attr': {'class': 'form-label'}}) }}
+            <span class="form-required">*</span>
+            {{ form_widget(form.heure_fin, {'attr': {'class': 'form-input', 'required': 'required'}}) }}
+            {% if form.heure_fin.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.heure_fin) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group-settings {% if form.distance_parcourue.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.distance_parcourue, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.distance_parcourue, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.distance_parcourue) }}
+            {% if form.distance_parcourue.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.distance_parcourue) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings">
+        <div class="form-group-settings {% if form.altitude_vol.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.altitude_vol, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.altitude_vol, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.altitude_vol) }}
+            {% if form.altitude_vol.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.altitude_vol) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings full-width {% if form.conditions_vol.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.conditions_vol, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.conditions_vol, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.conditions_vol) }}
+            {{ form_widget(form.conditions_vol, {'attr': {'class': 'form-input form-select'}}) }}
+            {% if form.conditions_vol.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.conditions_vol) }}
+                </div>
+            {% endif %}
         </div>
 
-        <div class="form-group-settings full-width">
+        <div class="form-group-settings full-width {% if form.observations.vars.errors|length > 0 %}has-error{% endif %}">
             {{ form_label(form.observations, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.observations, {'attr': {'class': 'form-input', 'rows': 5}}) }}
-            {{ form_errors(form.observations) }}
+            <small class="form-help-text">Maximum 3000 caractères</small>
+            {% if form.observations.vars.errors|length > 0 %}
+                <div class="form-error-message">
+                    {{ form_errors(form.observations) }}
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_mission_drone_index') }}" class="btn btn-secondary">back to list</a>
+        <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
     </div>
+
+    {{ form_rest(form) }}
+{{ form_end(form) }}
 
     {{ form_rest(form) }}
 {{ form_end(form) }}

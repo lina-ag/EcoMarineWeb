@@ -4,10 +4,9 @@ namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\SurvzoneRepository;
+use App\Entity\Zonep;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SurvzoneRepository::class)]
 #[ORM\Table(name: 'survzone')]
@@ -30,6 +29,16 @@ class Survzone
     }
 
     #[ORM\Column(name: 'dateSurv', type: 'date', nullable: false)]
+    #[Assert\NotNull(message: 'La date est obligatoire.')]
+    #[Assert\Type(\DateTimeInterface::class, message: 'La date est invalide.')]
+    #[Assert\LessThanOrEqual(
+        value: 'today',
+        message: 'La date ne peut pas être dans le futur.'
+    )]
+    #[Assert\GreaterThanOrEqual(
+        value: '-10 years',
+        message: 'La date ne peut pas être antérieure à 10 ans.'
+    )]
     private ?\DateTimeInterface $dateSurv = null;
 
     public function getDateSurv(): ?\DateTimeInterface
@@ -37,13 +46,24 @@ class Survzone
         return $this->dateSurv;
     }
 
-    public function setDateSurv(\DateTimeInterface $dateSurv): self
-    {
-        $this->dateSurv = $dateSurv;
-        return $this;
-    }
+   public function setDateSurv(?\DateTimeInterface $dateSurv): self
+{
+    $this->dateSurv = $dateSurv;
+    return $this;
+}
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: "L'observation est obligatoire.")]
+    #[Assert\Length(
+        min: 10,
+        max: 1000,
+        minMessage: "L'observation doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "L'observation ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}\s\-\'\.\,\!\?\(\)\:]+$/u',
+        message: "L'observation contient des caractères non autorisés."
+    )]
     private ?string $observation = null;
 
     public function getObservation(): ?string
@@ -53,22 +73,23 @@ class Survzone
 
     public function setObservation(?string $observation): self
     {
-        $this->observation = $observation;
+        $this->observation = $observation !== null ? trim($observation) : null;
         return $this;
     }
 
-    #[ORM\Column(name: 'idZone', type: 'integer', nullable: false)]
-    private ?int $idZone = null;
+    #[ORM\ManyToOne(targetEntity: Zonep::class, inversedBy: 'survzones')]
+    #[ORM\JoinColumn(name: "idZone", referencedColumnName: "idZone", nullable: false, onDelete: "CASCADE")]
+    #[Assert\NotNull(message: 'La zone est obligatoire.')]
+    private ?Zonep $zone = null;
 
-    public function getIdZone(): ?int
+    public function getZone(): ?Zonep
     {
-        return $this->idZone;
+        return $this->zone;
     }
 
-    public function setIdZone(int $idZone): self
+    public function setZone(?Zonep $zone): self
     {
-        $this->idZone = $idZone;
+        $this->zone = $zone;
         return $this;
     }
-
 }

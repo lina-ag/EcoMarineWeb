@@ -1,13 +1,15 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Volontaire index{% endblock %}
+{% block page_title %}Volontaires{% endblock %}
+{% block navbar_title %}Gestion des volontaires{% endblock %}
 
-{% block body %}
+{% block admin_content %}
     <section class="glass-card">
         <div class="card-header">
             <div>
                 <h2 class="card-title">Volontaires</h2>
-                <p class="card-subtitle">Gestion des volontaires mobilises.</p>
+                <p class="card-subtitle">Gestion des volontaires des actions de nettoyage.</p>
             </div>
             <a href="{{ path('app_volontaire_new') }}" class="btn btn-primary">Create new</a>
         </div>
@@ -19,7 +21,7 @@
                         <th>Id</th>
                         <th>Nom</th>
                         <th>Contact</th>
-                        <th>Id action</th>
+                        <th>Action</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -29,7 +31,13 @@
                         <td>{{ volontaire.idVolontaire }}</td>
                         <td>{{ volontaire.nom }}</td>
                         <td>{{ volontaire.contact }}</td>
-                        <td>{{ volontaire.idAction }}</td>
+                        <td>
+                            {% if volontaire.idAction %}
+                                {{ volontaire.idAction.lieu }} - {{ volontaire.idAction.dateAction|date('Y-m-d') }}
+                            {% else %}
+                                Aucune
+                            {% endif %}
+                        </td>
                         <td>
                             <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-secondary">show</a>
                             <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-primary">edit</a>

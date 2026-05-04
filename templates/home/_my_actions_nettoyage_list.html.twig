@@ -1,0 +1,43 @@
+{% if app.user is null %}
+    <p class="cleaning-empty">Connectez-vous pour consulter vos participations.</p>
+{% elseif mes_inscriptions_nettoyage is iterable and mes_inscriptions_nettoyage|length > 0 %}
+    <div class="table-responsive cleaning-table-shell">
+        <table class="table table-dark table-hover cleaning-table">
+            <thead>
+                <tr>
+                    <th>Lieu</th>
+                    <th>Date</th>
+                    <th>Contact</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscription in mes_inscriptions_nettoyage %}
+                    {% set action = inscription.idAction %}
+                    {% set actionId = action ? action.idAction : null %}
+                    <tr>
+                        <td>{{ action and action.lieu ? action.lieu : 'Action supprimée' }}</td>
+                        <td>{{ action and action.dateAction ? action.dateAction|date('d/m/Y') : 'Non définie' }}</td>
+                        <td>{{ inscription.contact ?: '-' }}</td>
+                        <td>
+                            {% if actionId is not null %}
+                                <form method="post" action="{{ path('app_action_nettoyage_annuler_participation', {'id_action': actionId}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('annuler_participation' ~ actionId) }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
+                                </form>
+                            {% else %}
+                                <span class="cleaning-note">Indisponible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="cleaning-pagination">
+        {{ knp_pagination_render(mes_inscriptions_nettoyage) }}
+    </div>
+{% else %}
+    <p class="cleaning-empty">Vous ne participez à aucune action de nettoyage pour le moment.</p>
+{% endif %}

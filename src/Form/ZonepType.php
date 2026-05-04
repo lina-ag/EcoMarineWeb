@@ -8,9 +8,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Regex;
 
 class ZonepType extends AbstractType
 {
@@ -18,58 +15,32 @@ class ZonepType extends AbstractType
     {
         $builder
             ->add('nomZone', TextType::class, [
-                'label' => 'Nom de la zone',
+                'label' => 'zonep.fields.name',
+                'translation_domain' => 'messages',
                 'trim' => true,
                 'attr' => [
                     'maxlength' => 100,
-                    'placeholder' => 'Ex: Zone Kuriat Nord',
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom de la zone est obligatoire.']),
-                    new Length([
-                        'min' => 3,
-                        'max' => 100,
-                        'minMessage' => 'Le nom doit contenir au moins {{ limit }} caracteres.',
-                        'maxMessage' => 'Le nom ne doit pas depasser {{ limit }} caracteres.',
-                    ]),
-                    new Regex([
-                        'pattern' => '/^[\p{L}\p{N}\s\-\'\.]+$/u',
-                        'message' => 'Le nom contient des caracteres non autorises.',
-                    ]),
+                    'placeholder' => 'zonep.placeholders.name',
                 ],
             ])
             ->add('categorieZone', TextType::class, [
-                'label' => 'Categorie',
+                'label' => 'zonep.fields.category',
+                'translation_domain' => 'messages',
                 'trim' => true,
                 'attr' => [
                     'maxlength' => 80,
-                    'placeholder' => 'Ex: Protection, Tourisme, Surveillance',
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'La categorie est obligatoire.']),
-                    new Length([
-                        'min' => 3,
-                        'max' => 80,
-                        'minMessage' => 'La categorie doit contenir au moins {{ limit }} caracteres.',
-                        'maxMessage' => 'La categorie ne doit pas depasser {{ limit }} caracteres.',
-                    ]),
-                    new Regex([
-                        'pattern' => '/^[\p{L}\p{N}\s\-\'\.]+$/u',
-                        'message' => 'La categorie contient des caracteres non autorises.',
-                    ]),
+                    'placeholder' => 'zonep.placeholders.category',
                 ],
             ])
             ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
-                'placeholder' => 'Choisir un statut',
+                'label' => 'zonep.fields.status',
+                'translation_domain' => 'messages',
+                'placeholder' => 'zonep.placeholders.status',
                 'choices' => [
-                    'Actif' => 'Actif',
-                    'En surveillance' => 'En surveillance',
-                    'En maintenance' => 'En maintenance',
-                    'Inactif' => 'Inactif',
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le statut est obligatoire.']),
+                    'status.actif' => 'Actif',
+                    'status.en_surveillance' => 'En surveillance',
+                    'status.en_maintenance' => 'En maintenance',
+                    'status.inactif' => 'Inactif',
                 ],
             ])
         ;

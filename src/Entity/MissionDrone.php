@@ -6,6 +6,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 use App\Repository\MissionDroneRepository;
 
@@ -30,6 +32,8 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotBlank(message: "La date de mission ne peut pas \u00eatre vide.")]
+    #[Assert\GreaterThanOrEqual('today', message: "La date doit \u00eatre aujourd'hui ou dans le futur.")]
     private ?\DateTimeInterface $date_mission = null;
 
     public function getDate_mission(): ?\DateTimeInterface
@@ -44,6 +48,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'time', nullable: false)]
+    #[Assert\NotBlank(message: "L'heure de d\u00e9but ne peut pas \u00eatre vide.")]
     private ?\DateTimeInterface $heure_debut = null;
 
     public function getHeure_debut(): ?\DateTimeInterface
@@ -58,6 +63,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'time', nullable: false)]
+    #[Assert\NotBlank(message: "L'heure de fin ne peut pas \u00eatre vide.")]
     private ?\DateTimeInterface $heure_fin = null;
 
     public function getHeure_fin(): ?\DateTimeInterface
@@ -72,6 +78,8 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: "La zone survol\u00e9e ne peut pas \u00eatre vide.")]
+    #[Assert\Choice(choices: ['Nord', 'Nord-Est', 'Est', 'Sud-Est', 'Sud', 'Sud-Ouest', 'Ouest', 'Nord-Ouest'], message: "La zone doit \u00eatre parmi: Nord, Nord-Est, Est, Sud-Est, Sud, Sud-Ouest, Ouest, Nord-Ouest.")]
     private ?string $zone_survolee = null;
 
     public function getZone_survolee(): ?string
@@ -86,6 +94,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\Range(min: 0, max: 1000, notInRangeMessage: "La distance doit \u00eatre entre 0 et 1000 km.")]
     private ?float $distance_parcourue = null;
 
     public function getDistance_parcourue(): ?float
@@ -100,6 +109,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'integer', nullable: true)]
+    #[Assert\Range(min: 0, max: 5000, notInRangeMessage: "L'altitude doit \u00eatre entre 0 et 5000 m\u00e8tres.")]
     private ?int $altitude_vol = null;
 
     public function getAltitude_vol(): ?int
@@ -114,6 +124,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\Choice(choices: ['Bon', 'Mod\u00e9r\u00e9', 'Mauvais'], message: "Les conditions de vol doivent \u00eatre: Bon, Mod\u00e9r\u00e9 ou Mauvais.")]
     private ?string $conditions_vol = null;
 
     public function getConditions_vol(): ?string
@@ -128,6 +139,7 @@ class MissionDrone
     }
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(max: 3000, maxMessage: "Les observations ne peuvent pas d\u00e9passer 3000 caract\u00e8res.")]
     private ?string $observations = null;
 
     public function getObservations(): ?string
@@ -139,6 +151,18 @@ class MissionDrone
     {
         $this->observations = $observations;
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateTimes(ExecutionContextInterface $context): void
+    {
+        if ($this->heure_debut && $this->heure_fin) {
+            if ($this->heure_fin <= $this->heure_debut) {
+                $context->buildViolation("L'heure de fin doit être postérieure à l'heure de début.")
+                    ->atPath('heure_fin')
+                    ->addViolation();
+            }
+        }
     }
 
     public function getIdMission(): ?int

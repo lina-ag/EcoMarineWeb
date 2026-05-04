@@ -3,15 +3,22 @@
 {% block title %}DÃƒÂ©tail rÃƒÂ©servation{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
+    <section class="glass-card reservation-admin-shell reservation-admin-shell-show">
         <div class="card-header">
+<<<<<<< HEAD
             <div>
                 <h2 class="card-title">RÃƒÂ©servation de {{ reservation.nom }}</h2>
                 <p class="card-subtitle">Consultation des informations de rÃƒÂ©servation.</p>
+=======
+            <div class="reservation-admin-header">
+                <span class="reservation-admin-kicker">Reservation Panel</span>
+                <h2 class="card-title">Réservation de {{ reservation.nom }}</h2>
+                <p class="card-subtitle">Consultation des informations de réservation.</p>
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
                 <tbody>
                     <tr>
@@ -23,7 +30,21 @@
                         <td>{{ reservation.nom }}</td>
                     </tr>
                     <tr>
+<<<<<<< HEAD
                         <th>Date rÃƒÂ©servation</th>
+=======
+                        <th>Activité</th>
+                        <td>
+                            {% if reservation.activiteEcologique %}
+                                {{ reservation.activiteEcologique.nomActivite }}
+                            {% else %}
+                                <span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background: #fee2e2; color: #b91c1c; font-weight: 600;">Activité annulée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date réservation</th>
+>>>>>>> 163f23d3ff1ed003948dbcee8c3696b66c6027ca
                         <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '' }}</td>
                     </tr>
                     <tr>
@@ -41,6 +62,7 @@
         <div class="btn-group">
             <a href="{{ path('app_reservation_index') }}" class="btn btn-secondary">Retour ÃƒÂ  la liste</a>
             <a href="{{ path('app_reservation_edit', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary">Modifier</a>
+            <a href="{{ path('app_reservation_pdf', {'id_reservation': reservation.id_reservation}) }}" class="btn btn-primary">Exporter PDF</a>
         </div>
 
         {{ include('reservation/_delete_form.html.twig') }}
