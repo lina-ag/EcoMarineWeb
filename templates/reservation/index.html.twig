@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Réservations{% endblock %}
+{% block title %}RÃƒÂ©servations{% endblock %}
 
 {% block body %}
     <section class="glass-card table-card">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Liste des réservations</h2>
-                <p class="card-subtitle">Suivi des réservations enregistrées.</p>
+                <h2 class="card-title">Liste des rÃƒÂ©servations</h2>
+                <p class="card-subtitle">Suivi des rÃƒÂ©servations enregistrÃƒÂ©es.</p>
             </div>
             <div class="card-actions">
-                <a href="{{ path('app_reservation_new') }}" class="btn btn-primary">Créer une réservation</a>
+                <a href="{{ path('app_reservation_new') }}" class="btn btn-primary">CrÃƒÂ©er une rÃƒÂ©servation</a>
             </div>
         </div>
 
@@ -18,9 +18,9 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Id réservation</th>
+                        <th>Id rÃƒÂ©servation</th>
                         <th>Nom</th>
-                        <th>Date réservation</th>
+                        <th>Date rÃƒÂ©servation</th>
                         <th>Email</th>
                         <th>Nombre personnes</th>
                         <th>Actions</th>
@@ -41,7 +41,7 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="6">Aucun enregistrement trouvé</td>
+                        <td colspan="6">Aucun enregistrement trouvÃƒÂ©</td>
                     </tr>
                 {% endfor %}
                 </tbody>

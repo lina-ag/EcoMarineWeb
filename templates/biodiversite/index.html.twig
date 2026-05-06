@@ -1,49 +1,60 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Biodiversite index{% endblock %}
+{% block title %}Biodiversité{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Biodiversite</h2>
-                <p class="card-subtitle">Suivi des especes et observations par zone.</p>
-            </div>
-            <a href="{{ path('app_biodiversite_new') }}" class="btn btn-primary">Create new</a>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Espece</th>
-                        <th>Zone</th>
-                        <th>Nombre</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for biodiversite in biodiversites %}
-                    <tr>
-                        <td>{{ biodiversite.id }}</td>
-                        <td>{{ biodiversite.espece }}</td>
-                        <td>{{ biodiversite.zone }}</td>
-                        <td>{{ biodiversite.nombre }}</td>
-                        <td>{{ biodiversite.date }}</td>
-                        <td>
-                            <a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Biodiversité</h1>
+            <p>Suivi des espèces et observations.</p>
         </div>
-    </section>
+        <div class="module-actions">
+            <a href="{{ path('app_biodiversite_new') }}" class="btn btn-primary">+ Ajouter une observation</a>
+        </div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="label">Total observations</div>
+            <div class="value">{{ biodiversites|length }}</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        {% if biodiversites is empty %}
+            <div class="empty-state">
+                <h3>Aucune observation trouvée</h3>
+            </div>
+        {% else %}
+            <div class="module-grid">
+                {% for biodiversite in biodiversites %}
+                    <div class="entity-card">
+                        <div class="entity-id">{{ biodiversite.id }}</div>
+
+                        <div class="entity-main">
+                            <h3>{{ biodiversite.espece }}</h3>
+                            <p><strong>Zone :</strong> {{ biodiversite.zone }}</p>
+                            <div class="badge-row">
+                                <span class="type-badge">?? Observation</span>
+                            </div>
+                        </div>
+
+                        <div class="entity-meta">
+                            <p><strong>Nombre :</strong> {{ biodiversite.nombre }}</p>
+                            <p><strong>Date :</strong> {{ biodiversite.date }}</p>
+                        </div>
+
+                        <div class="entity-actions">
+                            <a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}" class="btn btn-secondary">Voir</a>
+                            <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}" class="btn btn-primary">Modifier</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

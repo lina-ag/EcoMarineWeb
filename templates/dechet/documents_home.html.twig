@@ -1,0 +1,460 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des dechets - Documents{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ asset('assets_admin/module-plage.css') }}">
+
+<section class="module-shell" style="padding:34px 38px 60px;">
+    <div style="max-width:1350px;">
+        <span class="home-badge-dark">DEVELOPPEMENT DURABLE</span>
+        <h1 class="home-title-dark">Gestion des dechets</h1>
+
+        <nav class="home-tabs-dark">
+            {% if activeTab == 'overview' %}
+                <a href="{{ path('app_dechet_documents', {'tab': 'overview'}) }}" class="home-tab-dark active">Overview</a>
+            {% else %}
+                <a href="{{ path('app_dechet_documents', {'tab': 'overview'}) }}" class="home-tab-dark {{ activeTab == 'overview' ? 'active' : '' }}">Overview</a>
+                <a href="{{ path('app_dechet_documents', {'tab': 'latest'}) }}" class="home-tab-dark {{ activeTab == 'latest' ? 'active' : '' }}">Latest</a>
+                <a href="{{ path('app_dechet_documents', {'tab': 'documents'}) }}" class="home-tab-dark {{ activeTab == 'documents' ? 'active' : '' }}">Documents</a>
+                <a href="{{ path('app_dechet_documents', {'tab': 'contact'}) }}" class="home-tab-dark {{ activeTab == 'contact' ? 'active' : '' }}">Contact</a>
+            {% endif %}
+        </nav>
+
+        {% if activeTab == 'overview' %}
+            <div class="overview-3col-grid">
+                <div class="home-dark-card">
+                    <h2>Vue generale</h2>
+                    <p>Bienvenue dans l espace documentaire du module dechets. Cette page sert de home secondaire pour acceder aux parties detaillees du module.</p>
+
+                    <div class="home-dark-list">
+                        <div class="home-dark-item"><strong>Objectif :</strong> centraliser les ressources et les details du module.</div>
+                        <div class="home-dark-item"><strong>Contenu :</strong> signalements, documents, ressources et contact.</div>
+                        <div class="home-dark-item"><strong>Navigation :</strong> utilisez les onglets pour passer d une section a l autre.</div>
+                    </div>
+                </div>
+
+                <div class="home-dark-card">
+                    <h2>Quick links</h2>
+                    <p>Gestion des dechets resources:</p>
+
+                    <div class="home-dark-links">
+                        <a href="{{ path('app_dechet_documents', {'tab': 'latest'}) }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Latest</div>
+                                <div class="home-dark-link-desc">Signalements detailles, image, meteo, IA et priorite.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+
+                        <a href="{{ path('app_dechet_documents', {'tab': 'documents'}) }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Documents</div>
+                                <div class="home-dark-link-desc">Rapports, cartes, syntheses et ressources.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+
+                        <a href="{{ path('app_dechet_documents', {'tab': 'contact'}) }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Contacts</div>
+                                <div class="home-dark-link-desc">Contact principal du module dechets.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="home-dark-card info-card-highlight">
+                    <h2>Information, communication et sensibilisation</h2>
+                    <p>Contenus de sensibilisation sur la gestion des dechets, le compostage et les visites pedagogiques en Tunisie.</p>
+
+                    <div class="home-dark-links">
+                        <button class="home-dark-link button-like" type="button" id="openInfoBlock">
+                            <div>
+                                <div class="home-dark-link-title">Afficher les informations</div>
+                                <div class="home-dark-link-desc">Missions, objectifs, programmes et actions realisees.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-details-panel" id="infoDetailsPanel">
+                <div class="info-banner">
+                    <div class="info-banner-badge">Information, communication et sensibilisation</div>
+                    <h2>Information, Communication et Sensibilisation</h2>
+                    <p>
+                        Les programmes d information et de sensibilisation sont un maillon essentiel d une gestion durable des dechets.
+                        Ils servent a promouvoir la citoyennete environnementale et a renforcer les comportements positifs envers les dechets.
+                    </p>
+                </div>
+
+                <div class="info-section-grid">
+                    <div class="info-section-card">
+                        <h3>Missions et Objectifs</h3>
+                        <ul>
+                            <li>Definir les bases de la gestion integree et durable des dechets.</li>
+                            <li>Ameliorer les connaissances et les habitudes des citoyens.</li>
+                            <li>Encourager les activites associatives liees a la protection de l environnement.</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-section-card">
+                        <h3>Programmes et Activites</h3>
+                        <ul>
+                            <li>Campagnes de sensibilisation et conferences.</li>
+                            <li>Production de supports d information et de sensibilisation.</li>
+                            <li>Actions de terrain autour du tri, du compostage et de la valorisation.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-section-card" style="margin-top:22px;">
+                    <h3>Actions realisees</h3>
+                    <div class="action-links">
+                        <button class="doc-action-link" type="button"
+                                data-pdf-title="Des sessions de sensibilisation sur le compostage"
+                                data-pdf-src="{{ asset('docs/compostage-sensibilisation.pdf') }}">
+                            Des sessions de sensibilisation sur le compostage
+                        </button>
+
+                        <button class="doc-action-link" type="button"
+                                data-pdf-title="Des visites au centre de tri de Kalaa Sghira"
+                                data-pdf-src="{{ asset('docs/visites-kalaa-sghira.pdf') }}">
+                            Des visites au centre de tri de Kalaa Sghira
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdf-viewer-panel" id="pdfViewerPanel">
+                <div class="doc-inline-header">
+                    <div>
+                        <div class="doc-inline-kicker">DOCUMENT PDF</div>
+                        <h3 id="pdfViewerTitle">Document</h3>
+                    </div>
+                    <button class="doc-inline-close" id="closePdfViewer" type="button">x</button>
+                </div>
+
+                <iframe id="pdfViewerFrame" class="pdf-viewer-frame" src=""></iframe>
+            </div>
+
+        {% elseif activeTab == 'latest' %}
+            <section class="module-shell">
+                <div class="module-hero glass-card">
+                    <div class="module-title-wrap">
+                        <h1>Gestion des dechets intelligents</h1>
+                        <p>Bundle, API, IA et smart metier visibles clairement sur une seule page.</p>
+                    </div>
+
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">+ Ajouter un signalement</a>
+                        <a href="{{ path('app_dechet_stats') }}" class="btn btn-secondary">Statistiques</a>
+                        <a href="{{ path('app_dechet_documents', {'tab': 'documents'}) }}" class="btn btn-secondary">Documents</a>
+                    </div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">B</div>
+                        <h3>Bundle UX Dropzone</h3>
+                        <p>Ajout d image moderne dans le formulaire Symfony.</p>
+                        <div class="smart-badge-row">
+                            <span class="bundle-badge">UX Dropzone</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">C</div>
+                        <h3>API Carte</h3>
+                        <p>Chaque signalement est place sur la carte avec latitude et longitude.</p>
+                        <div class="smart-badge-row">
+                            <span class="api-badge">Leaflet Maps</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">M</div>
+                        <h3>API Meteo</h3>
+                        <p>La meteo et le vent enrichissent l analyse du signalement.</p>
+                        <div class="smart-badge-row">
+                            <span class="weather-badge">OpenWeather</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">I</div>
+                        <h3>IA + Smart metier</h3>
+                        <p>Type suggere par IA, score de priorite et recommandation automatique.</p>
+                        <div class="smart-badge-row">
+                            <span class="ai-badge">OpenAI Vision</span>
+                            <span class="priority-badge priority-moyenne">Moteur metier</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="label">Total signalements</div>
+                        <div class="value">{{ statsCards.totalSignalements|default(dechets|length) }}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">Quantite totale</div>
+                        <div class="value">{{ statsCards.totalQuantite|default(0) }}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">Zones touchees</div>
+                        <div class="value">{{ statsCards.zonesTouchees|default(0) }}</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">Progression nettoyage</div>
+                        <div class="value">{{ statsCards.progressionNettoyage|default(0) }}%</div>
+                    </div>
+                </div>
+            </section>
+
+        {% elseif activeTab == 'documents' %}
+            <section class="docs-showcase">
+                <h2 class="docs-title-main">Nos documents</h2>
+
+                <div class="docs-grid">
+                    <article class="doc-topic-card">
+                        <div class="doc-topic-tag">DOSSIER THEMATIQUE</div>
+                        <div class="doc-topic-text">
+                            Les solutions de reduction, tri et valorisation des dechets menagers sur les zones littorales tunisiennes.
+                        </div>
+                        <button class="doc-read-btn" type="button"
+                                data-doc-title="Reduction et valorisation des dechets menagers"
+                                data-doc-content="Ce dossier presente les bonnes pratiques de reduction a la source, le tri selectif, la collecte differenciee et la valorisation des dechets menagers sur le littoral. Il met en avant les actions de sensibilisation, la coordination municipale et la participation citoyenne.">
+                            Lire le dossier thematique
+                        </button>
+                    </article>
+
+                    <article class="doc-topic-card">
+                        <div class="doc-topic-tag">DOSSIER THEMATIQUE</div>
+                        <div class="doc-topic-text">
+                            Traitement, collecte et suivi des dechets plastiques sur les plages et zones marines sensibles.
+                        </div>
+                        <button class="doc-read-btn" type="button"
+                                data-doc-title="Gestion des dechets plastiques sur le littoral"
+                                data-doc-content="Ce dossier explique comment identifier les dechets plastiques, organiser leur collecte, classer les zones prioritaires et suivre les volumes recuperes. Il inclut aussi des pistes de prevention et de reemploi.">
+                            Lire le dossier thematique
+                        </button>
+                    </article>
+
+                    <article class="doc-topic-card">
+                        <div class="doc-topic-tag">DOSSIER THEMATIQUE</div>
+                        <div class="doc-topic-text">
+                            Nettoyage, prevention et pilotage des interventions dans les zones cotiÃ¨res a forte sensibilite.
+                        </div>
+                        <button class="doc-read-btn" type="button"
+                                data-doc-title="Interventions et prevention dans les zones sensibles"
+                                data-doc-content="Ce dossier regroupe les methodes de priorisation, la planification des interventions, le suivi des zones sensibles et les recommandations automatiques issues du module intelligent de gestion des dechets.">
+                            Lire le dossier thematique
+                        </button>
+                    </article>
+
+                    <article class="doc-search-card">
+                        <div class="doc-search-title">INVENTAIRE GEOGRAPHIQUE</div>
+                        <div class="doc-search-text">
+                            Recherchez une zone, un type de dechet ou un document de synthese, puis affichez un mini dossier directement sur la page.
+                        </div>
+                        <button class="doc-search-btn" id="openSearchPanel" type="button">RECHERCHER</button>
+                    </article>
+                </div>
+
+                <div class="doc-inline-panel" id="docInlinePanel">
+                    <div class="doc-inline-header">
+                        <div>
+                            <div class="doc-inline-kicker">DOSSIER OUVERT</div>
+                            <h3 id="docInlineTitle">Titre du dossier</h3>
+                        </div>
+                        <button class="doc-inline-close" id="closeDocPanel" type="button">x</button>
+                    </div>
+                    <div class="doc-inline-content" id="docInlineContent"></div>
+                </div>
+
+                <div class="doc-search-panel" id="docSearchPanel">
+                    <div class="doc-inline-header">
+                        <div>
+                            <div class="doc-inline-kicker">RECHERCHE DOCUMENTAIRE</div>
+                            <h3>Recherche rapide</h3>
+                        </div>
+                        <button class="doc-inline-close" id="closeSearchPanel" type="button">x</button>
+                    </div>
+
+                    <div class="doc-search-form">
+                        <input type="text" id="docSearchInput" placeholder="Exemple : plastique, plage, tri, nettoyage">
+                        <button type="button" id="docSearchRun">Lancer la recherche</button>
+                    </div>
+
+                    <div class="doc-search-results" id="docSearchResults"></div>
+                </div>
+            </section>
+
+        {% elseif activeTab == 'contact' %}
+            <div class="home-dark-grid">
+                <div class="home-dark-card">
+                    <h2>Regionale</h2>
+
+                    <div class="contact-card-dark">
+                        <div class="contact-name-dark">{{ contact.name }}</div>
+                        <div class="contact-role-dark">{{ contact.role }}</div>
+                        <a class="contact-mail-dark" href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                        <div class="contact-region-dark">{{ contact.region }}</div>
+                    </div>
+                </div>
+
+                <div class="home-dark-card">
+                    <h2>Quick links</h2>
+
+                    <div class="home-dark-links">
+                        <a href="{{ path('app_dechet_documents', {'tab': 'latest'}) }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Latest</div>
+                                <div class="home-dark-link-desc">Voir les signalements detailles.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+
+                        <a href="{{ path('app_dechet_documents', {'tab': 'documents'}) }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Documents</div>
+                                <div class="home-dark-link-desc">Rapports, cartes et ressources.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+
+                        <a href="{{ path('app_dechet_index') }}" class="home-dark-link">
+                            <div>
+                                <div class="home-dark-link-title">Retour dashboard</div>
+                                <div class="home-dark-link-desc">Retourner a la page principale du module.</div>
+                            </div>
+                            <div class="home-dark-arrow">></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const docButtons = document.querySelectorAll('.doc-read-btn');
+    const docPanel = document.getElementById('docInlinePanel');
+    const docTitle = document.getElementById('docInlineTitle');
+    const docContent = document.getElementById('docInlineContent');
+    const closeDocPanel = document.getElementById('closeDocPanel');
+
+    const searchPanel = document.getElementById('docSearchPanel');
+    const openSearchPanel = document.getElementById('openSearchPanel');
+    const closeSearchPanel = document.getElementById('closeSearchPanel');
+    const docSearchRun = document.getElementById('docSearchRun');
+    const docSearchInput = document.getElementById('docSearchInput');
+    const docSearchResults = document.getElementById('docSearchResults');
+
+    const infoPanel = document.getElementById('infoDetailsPanel');
+    const openInfoBlock = document.getElementById('openInfoBlock');
+    const actionLinks = document.querySelectorAll('.doc-action-link');
+    const pdfViewerPanel = document.getElementById('pdfViewerPanel');
+    const pdfViewerTitle = document.getElementById('pdfViewerTitle');
+    const pdfViewerFrame = document.getElementById('pdfViewerFrame');
+    const closePdfViewer = document.getElementById('closePdfViewer');
+
+    const searchData = [
+        { key: 'plastique', title: 'Dossier sur les dechets plastiques', text: 'Synthese sur la reduction, la collecte et le traitement des dechets plastiques sur les plages et zones cotiÃ¨res.' },
+        { key: 'plage', title: 'Guide de gestion des plages', text: 'Document sur la surveillance des plages, la priorisation des interventions et l organisation du nettoyage.' },
+        { key: 'tri', title: 'Guide du tri et de la valorisation', text: 'Mini dossier sur le tri a la source, la valorisation et la coordination entre acteurs locaux.' },
+        { key: 'nettoyage', title: 'Plan d intervention nettoyage', text: 'Document sur la planification des campagnes de nettoyage et le suivi des resultats.' }
+    ];
+
+    if (openInfoBlock && infoPanel) {
+        openInfoBlock.addEventListener('click', function () {
+            infoPanel.classList.add('open');
+            infoPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    }
+
+    actionLinks.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            pdfViewerTitle.textContent = btn.dataset.pdfTitle || 'Document PDF';
+            pdfViewerFrame.src = btn.dataset.pdfSrc || '';
+            pdfViewerPanel.classList.add('open');
+            pdfViewerPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+
+    if (closePdfViewer) {
+        closePdfViewer.addEventListener('click', function () {
+            pdfViewerPanel.classList.remove('open');
+            pdfViewerFrame.src = '';
+        });
+    }
+
+    docButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            docTitle.textContent = btn.dataset.docTitle || 'Dossier thematique';
+            docContent.textContent = btn.dataset.docContent || 'Contenu indisponible.';
+            docPanel.classList.add('open');
+            docPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+
+    if (closeDocPanel) {
+        closeDocPanel.addEventListener('click', function () {
+            docPanel.classList.remove('open');
+        });
+    }
+
+    if (openSearchPanel) {
+        openSearchPanel.addEventListener('click', function () {
+            searchPanel.classList.add('open');
+            searchPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    }
+
+    if (closeSearchPanel) {
+        closeSearchPanel.addEventListener('click', function () {
+            searchPanel.classList.remove('open');
+        });
+    }
+
+    function renderSearchResults() {
+        const query = (docSearchInput.value || '').trim().toLowerCase();
+
+        if (!query) {
+            docSearchResults.innerHTML = '<div class="doc-result-card">Entrez un mot-cle comme plastique, plage, tri ou nettoyage.</div>';
+            return;
+        }
+
+        const results = searchData.filter(function (item) {
+            return item.key.includes(query) || item.title.toLowerCase().includes(query) || item.text.toLowerCase().includes(query);
+        });
+
+        if (!results.length) {
+            docSearchResults.innerHTML = '<div class="doc-result-card">Aucun document trouve pour cette recherche.</div>';
+            return;
+        }
+
+        docSearchResults.innerHTML = results.map(function (item) {
+            return '<div class="doc-result-card"><h4>' + item.title + '</h4><p>' + item.text + '</p></div>';
+        }).join('');
+    }
+
+    if (docSearchRun) {
+        docSearchRun.addEventListener('click', renderSearchResults);
+    }
+
+    if (docSearchInput) {
+        docSearchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                renderSearchResults();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

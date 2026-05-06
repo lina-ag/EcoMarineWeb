@@ -20,14 +20,14 @@
 
         <div class="form-group-settings full-width">
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'DÃƒÂ©crivez lÃ¢â‚¬â„¢activitÃƒÂ©'}}) }}
             {{ form_errors(form.description) }}
         </div>
     </div>
 
     <div class="btn-group">
         <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
-        <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour ÃƒÂ  la liste</a>
     </div>
 
     {{ form_rest(form) }}

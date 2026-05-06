@@ -26,23 +26,23 @@ class ReservationType extends AbstractType
                     new Assert\Length(
                         min: 3,
                         max: 100,
-                        minMessage: 'Le nom doit contenir au moins 3 caractères',
-                        maxMessage: 'Le nom ne peut pas dépasser 100 caractères'
+                        minMessage: 'Le nom doit contenir au moins 3 caractÃƒÂ¨res',
+                        maxMessage: 'Le nom ne peut pas dÃƒÂ©passer 100 caractÃƒÂ¨res'
                     ),
                     new Assert\Regex(
-                        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/',
+                        pattern: '/^[a-zA-ZÃƒâ‚¬-ÃƒÂ¿\s\-]+$/',
                         message: 'Le nom ne doit contenir que des lettres'
                     ),
                 ],
             ])
             ->add('date_reservation', DateType::class, [
-                'label' => 'Date de réservation',
+                'label' => 'Date de rÃƒÂ©servation',
                 'widget' => 'single_text',
                 'constraints' => [
                     new Assert\NotBlank(message: 'La date est obligatoire'),
                     new Assert\GreaterThanOrEqual(
                         value: 'today',
-                        message: 'La date doit être aujourd\'hui ou dans le futur'
+                        message: 'La date doit ÃƒÂªtre aujourd\'hui ou dans le futur'
                     ),
                 ],
             ])
@@ -53,7 +53,7 @@ class ReservationType extends AbstractType
                     new Assert\Email(message: 'Veuillez entrer un email valide'),
                     new Assert\Length(
                         max: 180,
-                        maxMessage: 'L\'email ne peut pas dépasser 180 caractères'
+                        maxMessage: 'L\'email ne peut pas dÃƒÂ©passer 180 caractÃƒÂ¨res'
                     ),
                 ],
             ])
@@ -61,21 +61,21 @@ class ReservationType extends AbstractType
                 'label' => 'Nombre de personnes',
                 'constraints' => [
                     new Assert\NotBlank(message: 'Le nombre de personnes est obligatoire'),
-                    new Assert\Positive(message: 'Le nombre de personnes doit être positif'),
+                    new Assert\Positive(message: 'Le nombre de personnes doit ÃƒÂªtre positif'),
                     new Assert\Range(
                         min: 1,
                         max: 50,
-                        notInRangeMessage: 'Le nombre de personnes doit être entre 1 et 50'
+                        notInRangeMessage: 'Le nombre de personnes doit ÃƒÂªtre entre 1 et 50'
                     ),
                 ],
             ])
             ->add('activiteEcologique', EntityType::class, [
                 'class' => ActiviteEcologique::class,
                 'choice_label' => 'nom_activite',
-                'label' => 'Activité écologique',
-                'placeholder' => '-- Choisissez une activité --',
+                'label' => 'ActivitÃƒÂ© ÃƒÂ©cologique',
+                'placeholder' => '-- Choisissez une activitÃƒÂ© --',
                 'constraints' => [
-                    new Assert\NotNull(message: 'Veuillez sélectionner une activité'),
+                    new Assert\NotNull(message: 'Veuillez sÃƒÂ©lectionner une activitÃƒÂ©'),
                 ],
             ])
         ;
