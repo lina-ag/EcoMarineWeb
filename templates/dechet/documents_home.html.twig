@@ -4,8 +4,23 @@
 
 {% block body %}
 <link rel="stylesheet" href="{{ asset('assets_admin/module-plage.css') }}">
+<style>
+    .dechet-docs-page,
+    .dechet-docs-page .module-shell {
+        margin-top: 0 !important;
+    }
 
-<section class="module-shell" style="padding:34px 38px 60px;">
+    .dechet-docs-page {
+        padding: 34px 38px 60px !important;
+    }
+
+    .dechet-docs-page .module-hero {
+        display: flex !important;
+        margin-top: 0 !important;
+    }
+</style>
+
+<section class="module-shell dechet-docs-page">
     <div style="max-width:1350px;">
         <span class="home-badge-dark">DEVELOPPEMENT DURABLE</span>
         <h1 class="home-title-dark">Gestion des dechets</h1>
@@ -142,11 +157,11 @@
             </div>
 
         {% elseif activeTab == 'latest' %}
-            <section class="module-shell">
+            <section class="module-shell dechet-docs-page">
                 <div class="module-hero glass-card">
                     <div class="module-title-wrap">
-                        <h1>Gestion des dechets intelligents</h1>
-                        <p>Bundle, API, IA et smart metier visibles clairement sur une seule page.</p>
+                        <h1>Dernieres informations terrain</h1>
+                        <p>Suivi operationnel des signalements, zones sensibles et actions prioritaires sur le littoral.</p>
                     </div>
 
                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -158,39 +173,39 @@
 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <div class="feature-icon">B</div>
-                        <h3>Bundle UX Dropzone</h3>
-                        <p>Ajout d image moderne dans le formulaire Symfony.</p>
+                        <div class="feature-icon">S</div>
+                        <h3>Signalements recents</h3>
+                        <p>Les nouvelles observations sont centralisees avec type, quantite, zone et etat de traitement.</p>
                         <div class="smart-badge-row">
-                            <span class="bundle-badge">UX Dropzone</span>
+                            <span class="bundle-badge">{{ statsCards.totalSignalements|default(dechets|length) }} cas suivis</span>
                         </div>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">C</div>
-                        <h3>API Carte</h3>
-                        <p>Chaque signalement est place sur la carte avec latitude et longitude.</p>
+                        <div class="feature-icon">Z</div>
+                        <h3>Zones a surveiller</h3>
+                        <p>Les secteurs touches sont regroupes pour orienter les equipes vers les plages prioritaires.</p>
                         <div class="smart-badge-row">
-                            <span class="api-badge">Leaflet Maps</span>
+                            <span class="api-badge">{{ statsCards.zonesTouchees|default(0) }} zones</span>
                         </div>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">M</div>
-                        <h3>API Meteo</h3>
-                        <p>La meteo et le vent enrichissent l analyse du signalement.</p>
+                        <div class="feature-icon">A</div>
+                        <h3>Actions prioritaires</h3>
+                        <p>Ramassage, tri, securisation et sensibilisation sont planifies selon la gravite du signalement.</p>
                         <div class="smart-badge-row">
-                            <span class="weather-badge">OpenWeather</span>
+                            <span class="weather-badge">{{ statsCards.pollutionElevee|default(0) }} alertes fortes</span>
                         </div>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon">I</div>
-                        <h3>IA + Smart metier</h3>
-                        <p>Type suggere par IA, score de priorite et recommandation automatique.</p>
+                        <div class="feature-icon">D</div>
+                        <h3>Dossiers utiles</h3>
+                        <p>Acces rapide aux guides de tri, documents de prevention et supports de sensibilisation.</p>
                         <div class="smart-badge-row">
-                            <span class="ai-badge">OpenAI Vision</span>
-                            <span class="priority-badge priority-moyenne">Moteur metier</span>
+                            <span class="ai-badge">Guides terrain</span>
+                            <span class="priority-badge priority-moyenne">Ressources</span>
                         </div>
                     </div>
                 </div>
@@ -212,6 +227,35 @@
                         <div class="label">Progression nettoyage</div>
                         <div class="value">{{ statsCards.progressionNettoyage|default(0) }}%</div>
                     </div>
+                </div>
+
+                <div class="feature-grid" style="margin-top:28px;">
+                    {% for dechet in dechets|slice(0, 4) %}
+                        <div class="feature-card">
+                            <div class="feature-icon">{{ dechet.type ? dechet.type|first|upper : 'D' }}</div>
+                            <h3>{{ dechet.zone ?: 'Zone non precisee' }}</h3>
+                            <p>
+                                {{ dechet.type ? dechet.type|capitalize : 'Type non precise' }}
+                                {% if dechet.quantite is not null %} - quantite {{ dechet.quantite }}{% endif %}
+                                {% if dechet.dateSignalement %}<br>Signale le {{ dechet.dateSignalement|date('d/m/Y') }}{% endif %}
+                            </p>
+                            <div class="smart-badge-row">
+                                <span class="api-badge">{{ dechet.statut ?: 'statut non defini' }}</span>
+                                {% if dechet.priorityLabel %}
+                                    <span class="priority-badge priority-moyenne">{{ dechet.priorityLabel }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="feature-card">
+                            <div class="feature-icon">0</div>
+                            <h3>Aucun signalement</h3>
+                            <p>Ajoutez le premier signalement pour alimenter le suivi terrain.</p>
+                            <div class="smart-badge-row">
+                                <span class="bundle-badge">En attente</span>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </section>
 

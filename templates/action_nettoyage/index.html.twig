@@ -1,64 +1,351 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block title %}ActionNettoyage index{% endblock %}
+{% block title %}Actions de nettoyage{% endblock %}
 {% block page_title %}Actions de nettoyage{% endblock %}
-{% block navbar_title %}Gestion des actions de nettoyage{% endblock %}
+{% block navbar_title %}Centre operationnel nettoyage{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .cleanup-page {
+        display: grid;
+        gap: 22px;
+    }
+
+    .cleanup-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 26px;
+        padding: 34px;
+        border: 1px solid rgba(125, 211, 252, .18);
+        background:
+            linear-gradient(135deg, rgba(8, 32, 68, .88), rgba(15, 23, 42, .78)),
+            radial-gradient(circle at 82% 18%, rgba(45, 212, 191, .28), transparent 34%);
+        box-shadow: 0 24px 70px rgba(2, 8, 23, .35);
+    }
+
+    .cleanup-hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .cleanup-kicker {
+        color: #67e8f9;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+    }
+
+    .cleanup-hero h1 {
+        margin: 10px 0 12px;
+        color: #fff;
+        font-size: clamp(34px, 5vw, 60px);
+        line-height: 1;
+        font-weight: 950;
+    }
+
+    .cleanup-hero p {
+        max-width: 720px;
+        color: #dbeafe;
+        font-size: 17px;
+        line-height: 1.65;
+    }
+
+    .cleanup-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .cleanup-radar {
+        min-height: 230px;
+        border-radius: 24px;
+        border: 1px solid rgba(125, 211, 252, .18);
+        background:
+            radial-gradient(circle at center, rgba(34, 211, 238, .2) 0 8%, transparent 9%),
+            repeating-radial-gradient(circle at center, rgba(125, 211, 252, .22) 0 1px, transparent 1px 42px),
+            linear-gradient(145deg, rgba(15, 23, 42, .76), rgba(30, 64, 175, .22));
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cleanup-radar::after {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background: conic-gradient(from 0deg, transparent, rgba(103, 232, 249, .32), transparent 24%);
+        animation: cleanupSweep 5s linear infinite;
+    }
+
+    @keyframes cleanupSweep {
+        to { transform: rotate(360deg); }
+    }
+
+    .cleanup-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .cleanup-kpi {
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid rgba(148, 163, 184, .18);
+        background: rgba(15, 23, 42, .54);
+    }
+
+    .cleanup-kpi .label {
+        color: #a8c7e8;
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .cleanup-kpi .value {
+        margin-top: 10px;
+        color: #fff;
+        font-size: 38px;
+        font-weight: 950;
+    }
+
+    .cleanup-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .cleanup-column {
+        min-height: 260px;
+        border-radius: 22px;
+        padding: 16px;
+        border: 1px solid rgba(148, 163, 184, .16);
+        background: rgba(15, 23, 42, .42);
+    }
+
+    .cleanup-column h3 {
+        margin: 0 0 14px;
+        color: #f8fafc;
+        font-size: 17px;
+    }
+
+    .cleanup-card {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .07);
+        border: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .cleanup-card-title {
+        color: #fff;
+        font-weight: 900;
+    }
+
+    .cleanup-card-meta {
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+
+    .cleanup-progress {
+        height: 9px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148, 163, 184, .18);
+    }
+
+    .cleanup-progress span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #22d3ee, #34d399);
+    }
+
+    .cleanup-table-card {
+        overflow: hidden;
+    }
+
+    @media (max-width: 1100px) {
+        .cleanup-hero-grid,
+        .cleanup-board {
+            grid-template-columns: 1fr;
+        }
+
+        .cleanup-kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .cleanup-hero {
+            padding: 22px;
+        }
+
+        .cleanup-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block admin_content %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Actions de nettoyage</h2>
-                <p class="card-subtitle">Planification et suivi des actions de nettoyage.</p>
+    {% set totalActions = action_nettoyages|length %}
+    {% set completedActions = 0 %}
+    {% set totalCapacity = 0 %}
+    {% set totalParticipants = 0 %}
+    {% for action_nettoyage in action_nettoyages %}
+        {% set totalCapacity = totalCapacity + (action_nettoyage.limiteBenevoles ?: 0) %}
+        {% set totalParticipants = totalParticipants + action_nettoyage.nombreVolontaires %}
+        {% if action_nettoyage.estComplete %}
+            {% set completedActions = completedActions + 1 %}
+        {% endif %}
+    {% endfor %}
+    {% set availableActions = totalActions - completedActions %}
+    {% set fillRate = totalCapacity > 0 ? ((totalParticipants / totalCapacity) * 100)|round : 0 %}
+
+    <section class="cleanup-page">
+        <div class="cleanup-hero">
+            <div class="cleanup-hero-grid">
+                <div>
+                    <div class="cleanup-kicker">Operations littorales</div>
+                    <h1>Centre de nettoyage intelligent</h1>
+                    <p>
+                        Planifiez les campagnes, suivez les benevoles, visualisez les actions completes et reperez
+                        les zones qui demandent une mobilisation rapide.
+                    </p>
+                    <div class="cleanup-actions">
+                        <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">+ Nouvelle action</a>
+                        <a href="#cleanup-board" class="btn btn-secondary">Voir le planning</a>
+                    </div>
+                </div>
+                <div class="cleanup-radar" aria-hidden="true"></div>
             </div>
-            <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Create new</a>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Date</th>
-                        <th>Lieu</th>
+        <div class="cleanup-kpi-grid">
+            <div class="cleanup-kpi">
+                <div class="label">Actions planifiees</div>
+                <div class="value">{{ totalActions }}</div>
+            </div>
+            <div class="cleanup-kpi">
+                <div class="label">Places benevoles</div>
+                <div class="value">{{ totalCapacity }}</div>
+            </div>
+            <div class="cleanup-kpi">
+                <div class="label">Participants</div>
+                <div class="value">{{ totalParticipants }}</div>
+            </div>
+            <div class="cleanup-kpi">
+                <div class="label">Remplissage</div>
+                <div class="value">{{ fillRate }}%</div>
+            </div>
+        </div>
 
-                        <th>Limite bénévoles</th>
-
-                        <th>Participants</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <div class="cleanup-board" id="cleanup-board">
+            <div class="cleanup-column">
+                <h3>Disponibles</h3>
                 {% for action_nettoyage in action_nettoyages %}
-                    <tr>
-                        <td>{{ action_nettoyage.idAction }}</td>
-                        <td>{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('Y-m-d') : '' }}</td>
-                        <td>{{ action_nettoyage.lieu }}</td>
-
-
-                        <td>{{ action_nettoyage.limiteBenevoles }}</td>
-
-                        <td>{{ action_nettoyage.nombreVolontaires }}</td>
-                        <td>
-                            {% if action_nettoyage.estComplete %}
-                                <span class="status-badge pending">Complète</span>
-                            {% else %}
-                                <span class="status-badge completed">Disponible</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
+                    {% if not action_nettoyage.estComplete %}
+                        {% set percent = action_nettoyage.limiteBenevoles ? ((action_nettoyage.nombreVolontaires / action_nettoyage.limiteBenevoles) * 100)|round : 0 %}
+                        <div class="cleanup-card">
+                            <div class="cleanup-card-title">{{ action_nettoyage.lieu }}</div>
+                            <div class="cleanup-card-meta">{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('d/m/Y') : 'Date a definir' }}</div>
+                            <div class="cleanup-progress"><span style="width: {{ percent > 100 ? 100 : percent }}%;"></span></div>
+                            <div class="cleanup-card-meta">{{ action_nettoyage.nombreVolontaires }}/{{ action_nettoyage.limiteBenevoles }} benevoles</div>
+                        </div>
+                    {% endif %}
                 {% else %}
-                    <tr>
-                        <td colspan="7">no records found</td>
-                    </tr>
+                    <div class="cleanup-card"><div class="cleanup-card-meta">Aucune action disponible.</div></div>
                 {% endfor %}
-                </tbody>
-            </table>
+            </div>
+
+            <div class="cleanup-column">
+                <h3>Mobilisation forte</h3>
+                {% for action_nettoyage in action_nettoyages %}
+                    {% set percent = action_nettoyage.limiteBenevoles ? ((action_nettoyage.nombreVolontaires / action_nettoyage.limiteBenevoles) * 100)|round : 0 %}
+                    {% if percent >= 50 and not action_nettoyage.estComplete %}
+                        <div class="cleanup-card">
+                            <div class="cleanup-card-title">{{ action_nettoyage.lieu }}</div>
+                            <div class="cleanup-card-meta">Objectif presque atteint</div>
+                            <div class="cleanup-progress"><span style="width: {{ percent > 100 ? 100 : percent }}%;"></span></div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="cleanup-card"><div class="cleanup-card-meta">Les actions a forte mobilisation apparaitront ici.</div></div>
+                {% endfor %}
+            </div>
+
+            <div class="cleanup-column">
+                <h3>Completes</h3>
+                {% for action_nettoyage in action_nettoyages %}
+                    {% if action_nettoyage.estComplete %}
+                        <div class="cleanup-card">
+                            <div class="cleanup-card-title">{{ action_nettoyage.lieu }}</div>
+                            <div class="cleanup-card-meta">Equipe complete - {{ action_nettoyage.nombreVolontaires }} participants</div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="cleanup-card"><div class="cleanup-card-meta">Aucune action complete pour le moment.</div></div>
+                {% endfor %}
+            </div>
         </div>
+
+        <section class="glass-card cleanup-table-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Registre des actions</h2>
+                    <p class="card-subtitle">Vue complete pour modifier, verifier et suivre chaque intervention.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Date</th>
+                            <th>Lieu</th>
+                            <th>Limite benevoles</th>
+                            <th>Participants</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for action_nettoyage in action_nettoyages %}
+                        <tr>
+                            <td>{{ action_nettoyage.idAction }}</td>
+                            <td>{{ action_nettoyage.dateAction ? action_nettoyage.dateAction|date('Y-m-d') : '' }}</td>
+                            <td>{{ action_nettoyage.lieu }}</td>
+                            <td>{{ action_nettoyage.limiteBenevoles }}</td>
+                            <td>{{ action_nettoyage.nombreVolontaires }}</td>
+                            <td>
+                                {% if action_nettoyage.estComplete %}
+                                    <span class="status-badge pending">Complete</span>
+                                {% else %}
+                                    <span class="status-badge completed">Disponible</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-secondary">Voir</a>
+                                <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-primary">Modifier</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7">Aucune action trouvee</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </section>
 {% endblock %}

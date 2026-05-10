@@ -28,6 +28,11 @@ services:
     bind:
       $openAiApiKey: "%env(OPENAI_API_KEY)%"
 
+  App\Service\AiWasteAnalyzerService:
+    arguments:
+      $openAiApiKey: "%env(OPENAI_API_KEY)%"
+      $openAiModel: "gpt-4o-mini"
+
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
 

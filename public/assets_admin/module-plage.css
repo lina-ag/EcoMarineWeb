@@ -3740,3 +3740,617 @@ body:has(.module-dechet) .module-dechet {
     50%{ transform:rotate(-25deg); }
     75%{ transform:rotate(-65deg); }
 }
+
+/* ===== ECOBOT VIEWPORT FIX ===== */
+.eco-robot-stage{
+    top: 24px !important;
+    right: 24px !important;
+    bottom: auto !important;
+    width: min(430px, calc(100vw - 48px)) !important;
+    max-height: calc(100vh - 48px) !important;
+    overflow: hidden !important;
+}
+
+.eco-robot-stage.show{
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.eco-robot-bubble{
+    flex: 0 0 auto !important;
+    max-height: 130px !important;
+    overflow: auto !important;
+}
+
+.eco-robot-body{
+    flex: 0 0 auto !important;
+    width: 118px !important;
+    height: 126px !important;
+}
+
+.eco-robot-head{
+    width: 74px !important;
+    height: 48px !important;
+}
+
+.eco-robot-panel{
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 14px !important;
+}
+
+.eco-ai-api-box.show{
+    display: block !important;
+    max-height: none !important;
+}
+
+.eco-ai-result{
+    max-height: 32vh !important;
+    overflow-y: auto !important;
+}
+
+@media(max-width:700px){
+    .eco-robot-stage{
+        top: 12px !important;
+        right: 12px !important;
+        width: calc(100vw - 24px) !important;
+        max-height: calc(100vh - 24px) !important;
+    }
+
+    .eco-robot-bubble{
+        max-height: 96px !important;
+    }
+
+    .eco-robot-body{
+        width: 96px !important;
+        height: 104px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .eco-ai-result{
+        max-height: 28vh !important;
+    }
+}
+
+/* ===== ECOBOT WOW REDESIGN ===== */
+.eco-ai-orb{
+    width: 76px !important;
+    height: 76px !important;
+    border-radius: 50% !important;
+    display: grid !important;
+    place-items: center !important;
+    isolation: isolate !important;
+    color: #ffffff !important;
+    background: radial-gradient(circle at 30% 20%, #ffffff 0 7%, #60f1ff 8% 18%, #2563eb 42%, #7c3aed 78%) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.22), 0 0 34px rgba(34,211,238,.7), 0 24px 60px rgba(11,24,64,.45) !important;
+    overflow: visible !important;
+}
+
+.eco-ai-orb-core{
+    position: relative;
+    z-index: 2;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+    font-weight: 950;
+    letter-spacing: .08em;
+    background: rgba(4, 12, 35, .28);
+    backdrop-filter: blur(8px);
+}
+
+.eco-ai-orb-ring{
+    position: absolute;
+    inset: -9px;
+    border-radius: 50%;
+    border: 1px solid rgba(34,211,238,.45);
+    animation: ecoPulseRing 1.9s ease-out infinite;
+}
+
+@keyframes ecoPulseRing{
+    0%{ transform: scale(.72); opacity: .9; }
+    100%{ transform: scale(1.28); opacity: 0; }
+}
+
+.eco-robot-stage{
+    top: 18px !important;
+    right: 18px !important;
+    width: min(460px, calc(100vw - 36px)) !important;
+    max-height: calc(100vh - 36px) !important;
+    color: #ffffff !important;
+}
+
+.eco-robot-stage.show{
+    display: flex !important;
+}
+
+.eco-assistant-shell{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-height: calc(100vh - 36px);
+    padding: 16px;
+    border-radius: 28px;
+    overflow: hidden;
+    background:
+        linear-gradient(145deg, rgba(7,18,48,.95), rgba(11,34,74,.9)),
+        radial-gradient(circle at top left, rgba(45,212,191,.22), transparent 42%);
+    border: 1px solid rgba(125, 211, 252, .34);
+    box-shadow: 0 24px 80px rgba(2, 8, 23, .62), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(22px);
+}
+
+.eco-assistant-glow{
+    position:absolute;
+    inset:-35% -20% auto auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,211,238,.35), transparent 68%);
+    pointer-events:none;
+    filter: blur(4px);
+}
+
+.eco-assistant-header{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 1;
+}
+
+.eco-assistant-titlebox{
+    min-width: 0;
+    flex: 1;
+}
+
+.eco-assistant-kicker{
+    color: #67e8f9;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.eco-assistant-title{
+    margin-top: 2px;
+    font-size: 22px;
+    line-height: 1.1;
+    font-weight: 950;
+    color: #f8fbff;
+}
+
+.eco-assistant-status{
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #c7f9ff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.eco-assistant-status span{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 16px rgba(52,211,153,.9);
+}
+
+.eco-robot-stage .eco-robot-body{
+    margin: 0 !important;
+    width: 82px !important;
+    height: 88px !important;
+    border-radius: 28px !important;
+    background: linear-gradient(145deg, #22d3ee, #2563eb 55%, #8b5cf6) !important;
+    box-shadow: 0 0 34px rgba(34,211,238,.52) !important;
+}
+
+.eco-robot-stage .eco-robot-head{
+    width: 58px !important;
+    height: 38px !important;
+    border-radius: 18px !important;
+}
+
+.eco-robot-stage .eco-robot-eye{
+    width: 10px !important;
+    height: 10px !important;
+}
+
+.eco-robot-stage .eco-robot-mouth{
+    width: 34px !important;
+    height: 6px !important;
+    margin-top: 9px !important;
+}
+
+.eco-robot-stage .eco-robot-arm{
+    width: 14px !important;
+    height: 48px !important;
+    top: 30px !important;
+}
+
+.eco-robot-stage .eco-robot-arm-left{ left: -13px !important; }
+.eco-robot-stage .eco-robot-arm-right{ right: -13px !important; }
+
+.eco-robot-close{
+    position: static !important;
+    flex: 0 0 auto;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,.1) !important;
+    color: #e0f2fe !important;
+    border: 1px solid rgba(255,255,255,.14) !important;
+    box-shadow: none !important;
+    font-size: 15px !important;
+}
+
+.eco-robot-bubble{
+    position: relative;
+    z-index: 1;
+    margin: 0 !important;
+    max-height: 96px !important;
+    padding: 13px 15px !important;
+    border-radius: 18px !important;
+    color: #eaf8ff !important;
+    background: rgba(15, 35, 76, .78) !important;
+    border: 1px solid rgba(125,211,252,.22) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+.eco-robot-panel{
+    position: relative;
+    z-index: 1;
+    border-radius: 22px !important;
+    padding: 12px !important;
+    background: rgba(255,255,255,.055) !important;
+    border: 1px solid rgba(255,255,255,.11) !important;
+    box-shadow: none !important;
+}
+
+.eco-ai-main-action,
+.eco-ai-analyze-btn{
+    min-height: 52px;
+    border-radius: 18px !important;
+    background: linear-gradient(135deg, #06b6d4, #2563eb 50%, #7c3aed) !important;
+    box-shadow: 0 14px 30px rgba(37,99,235,.28) !important;
+}
+
+.eco-ai-choices{
+    gap: 10px !important;
+}
+
+.eco-ai-choice{
+    display: grid !important;
+    gap: 4px !important;
+    min-height: 68px;
+    padding: 14px 16px !important;
+    border-radius: 18px !important;
+    color: #f8fafc !important;
+    background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(125,211,252,.08)) !important;
+    border: 1px solid rgba(125,211,252,.18) !important;
+    text-align: left !important;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease !important;
+}
+
+.eco-ai-choice:hover{
+    transform: translateY(-2px);
+    border-color: rgba(103,232,249,.55) !important;
+    background: linear-gradient(135deg, rgba(34,211,238,.18), rgba(124,58,237,.18)) !important;
+}
+
+.eco-ai-choice span{
+    font-size: 15px;
+    font-weight: 950;
+}
+
+.eco-ai-choice small,
+.eco-ai-upload-card small{
+    color: #b9e9ff;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.eco-ai-api-box{
+    border-radius: 22px !important;
+    padding: 14px !important;
+    background: rgba(4, 12, 35, .42) !important;
+    border: 1px solid rgba(125,211,252,.22) !important;
+}
+
+#ecoAiSelectedTitle{
+    display: block;
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: #f8fbff;
+}
+
+.eco-ai-upload-card{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 74px;
+    padding: 14px;
+    border-radius: 18px;
+    cursor: pointer;
+    color: #f8fafc;
+    background: rgba(255,255,255,.075);
+    border: 1px dashed rgba(125,211,252,.46);
+}
+
+.eco-ai-upload-icon{
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    font-size: 25px;
+    font-weight: 900;
+    background: rgba(34,211,238,.16);
+    color: #67e8f9;
+}
+
+.eco-ai-input{
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.eco-ai-result{
+    display: grid;
+    gap: 9px;
+    max-height: 30vh !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    background: rgba(14, 116, 144, .18) !important;
+    border: 1px solid rgba(103,232,249,.16);
+}
+
+.eco-ai-result-line,
+.eco-ai-empty-state{
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.07);
+    color: #f8fbff;
+    line-height: 1.55;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.eco-ai-loading{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #dff8ff;
+    font-weight: 850;
+}
+
+.eco-ai-loading span{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #67e8f9;
+    animation: ecoDot 1s ease-in-out infinite;
+}
+
+.eco-ai-loading span:nth-child(2){ animation-delay: .15s; }
+.eco-ai-loading span:nth-child(3){ animation-delay: .3s; }
+
+@keyframes ecoDot{
+    0%, 100%{ transform: translateY(0); opacity: .4; }
+    50%{ transform: translateY(-5px); opacity: 1; }
+}
+
+@media(max-width:700px){
+    .eco-robot-stage{
+        top: 10px !important;
+        right: 10px !important;
+        width: calc(100vw - 20px) !important;
+        max-height: calc(100vh - 20px) !important;
+    }
+
+    .eco-assistant-shell{
+        max-height: calc(100vh - 20px);
+        padding: 12px;
+        border-radius: 22px;
+    }
+
+    .eco-assistant-title{ font-size: 18px; }
+    .eco-robot-stage .eco-robot-body{ width: 68px !important; height: 74px !important; }
+    .eco-ai-result{ max-height: 26vh !important; }
+}
+
+/* ===== ECOBOT FULLSCREEN EXPERIENCE ===== */
+.eco-robot-stage.show{
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: none !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: 0 !important;
+    left: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 28px !important;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(34,211,238,.22), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(124,58,237,.26), transparent 34%),
+        rgba(2, 6, 23, .72) !important;
+    backdrop-filter: blur(14px) saturate(1.15) !important;
+    z-index: 2147483647 !important;
+    overflow: hidden !important;
+}
+
+.eco-robot-stage.show .eco-assistant-shell{
+    width: min(1120px, calc(100vw - 56px)) !important;
+    height: min(820px, calc(100vh - 56px)) !important;
+    max-height: calc(100vh - 56px) !important;
+    display: grid !important;
+    grid-template-columns: minmax(250px, 340px) minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 18px !important;
+    padding: 22px !important;
+    border-radius: 32px !important;
+    overflow: hidden !important;
+}
+
+.eco-robot-stage.show .eco-assistant-header{
+    grid-column: 1 / -1 !important;
+    padding: 4px 4px 14px !important;
+    border-bottom: 1px solid rgba(125,211,252,.16) !important;
+}
+
+.eco-robot-stage.show .eco-robot-bubble{
+    grid-column: 1 !important;
+    max-height: none !important;
+    height: 100% !important;
+    overflow: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    padding: 18px !important;
+    font-size: 15px !important;
+    line-height: 1.7 !important;
+}
+
+.eco-robot-stage.show .eco-robot-panel{
+    grid-column: 2 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: auto !important;
+    padding: 18px !important;
+    border-radius: 26px !important;
+}
+
+.eco-robot-stage.show .eco-ai-choices{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+.eco-robot-stage.show .eco-ai-choice{
+    min-height: 92px !important;
+}
+
+.eco-robot-stage.show .eco-ai-api-box.show{
+    display: grid !important;
+    gap: 14px !important;
+}
+
+.eco-robot-stage.show #ecoAiImageZone{
+    display: grid;
+    gap: 12px;
+}
+
+.eco-robot-stage.show .eco-ai-result{
+    max-height: 42vh !important;
+    overflow: auto !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-content: start !important;
+}
+
+.eco-robot-stage.show .eco-ai-result-line:first-child:last-child,
+.eco-robot-stage.show .eco-ai-empty-state,
+.eco-robot-stage.show .eco-ai-loading{
+    grid-column: 1 / -1 !important;
+}
+
+.eco-robot-stage.show .eco-robot-body{
+    cursor: default !important;
+}
+
+body:has(.eco-robot-stage.show){
+    overflow: hidden !important;
+}
+
+@media(max-width:900px){
+    .eco-robot-stage.show{
+        padding: 12px !important;
+    }
+
+    .eco-robot-stage.show .eco-assistant-shell{
+        width: calc(100vw - 24px) !important;
+        height: calc(100vh - 24px) !important;
+        max-height: calc(100vh - 24px) !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto minmax(0, 1fr) !important;
+        gap: 12px !important;
+        padding: 14px !important;
+        border-radius: 24px !important;
+    }
+
+    .eco-robot-stage.show .eco-robot-bubble,
+    .eco-robot-stage.show .eco-robot-panel{
+        grid-column: 1 !important;
+    }
+
+    .eco-robot-stage.show .eco-robot-bubble{
+        height: auto !important;
+        max-height: 110px !important;
+    }
+
+    .eco-robot-stage.show .eco-ai-choices,
+    .eco-robot-stage.show .eco-ai-result{
+        grid-template-columns: 1fr !important;
+    }
+
+    .eco-robot-stage.show .eco-ai-result{
+        max-height: 32vh !important;
+    }
+}
+
+/* ===== ECOBOT CARD DETAILS ===== */
+.eco-assistant-kicker{
+    display: none !important;
+}
+
+.eco-robot-stage.show .eco-ai-choice{
+    position: relative;
+    overflow: hidden;
+    align-content: start;
+    gap: 9px !important;
+    padding: 18px 18px 20px !important;
+}
+
+.eco-robot-stage.show .eco-ai-choice::before{
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, #67e8f9, #8b5cf6);
+    opacity: .9;
+}
+
+.eco-robot-stage.show .eco-ai-choice span{
+    font-size: 20px !important;
+    line-height: 1.15;
+}
+
+.eco-robot-stage.show .eco-ai-choice small{
+    display: block;
+    max-width: 92%;
+    color: #c9eeff !important;
+    font-size: 13px !important;
+    line-height: 1.35;
+}
+
+.eco-ai-choice-label{
+    width: fit-content;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: #082f49 !important;
+    background: linear-gradient(135deg, #67e8f9, #a7f3d0);
+    font-size: 10px !important;
+    font-weight: 950 !important;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}

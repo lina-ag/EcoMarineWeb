@@ -1,57 +1,82 @@
-{% extends 'base.html.twig' %}
+ï»¿{% extends 'base.html.twig' %}
 
-{% block title %}Biodiversité{% endblock %}
+{% block title %}Biodiversite{% endblock %}
 
 {% block body %}
 <link rel="stylesheet" href="/assets_admin/module-plage.css">
+<style>
+    .bio-observatory { display: grid; gap: 24px; }
+    .bio-hero { position: relative; overflow: hidden; min-height: 430px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 28px; align-items: center; padding: 42px; border-radius: 30px; border: 1px solid rgba(125, 211, 252, .2); background: linear-gradient(135deg, rgba(3, 24, 42, .9), rgba(12, 74, 110, .55)), radial-gradient(circle at 80% 20%, rgba(52, 211, 153, .26), transparent 32%); box-shadow: 0 28px 90px rgba(2, 8, 23, .42); }
+    .bio-hero h1 { margin: 10px 0 14px; color: #fff; font-size: clamp(42px, 7vw, 78px); line-height: .95; font-weight: 950; }
+    .bio-kicker { color: #67e8f9; font-size: 12px; font-weight: 950; letter-spacing: .18em; text-transform: uppercase; }
+    .bio-hero p { max-width: 720px; color: #d8f5ff; font-size: 18px; line-height: 1.7; }
+    .bio-orbit { position: relative; aspect-ratio: 1; border-radius: 50%; border: 1px solid rgba(125, 211, 252, .28); background: radial-gradient(circle at center, rgba(34, 211, 238, .24) 0 18%, transparent 19%), repeating-radial-gradient(circle, rgba(255,255,255,.18) 0 1px, transparent 1px 54px); }
+    .bio-orbit span { position: absolute; width: 88px; height: 88px; display: grid; place-items: center; border-radius: 28px; color: #fff; font-weight: 950; background: linear-gradient(145deg, #06b6d4, #2563eb, #10b981); box-shadow: 0 18px 44px rgba(34, 211, 238, .26); }
+    .bio-orbit span:nth-child(1) { top: 8%; left: 40%; } .bio-orbit span:nth-child(2) { top: 44%; right: 5%; } .bio-orbit span:nth-child(3) { bottom: 8%; left: 35%; } .bio-orbit span:nth-child(4) { top: 42%; left: 5%; }
+    .bio-kpis, .bio-insight-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .bio-kpi, .bio-insight, .bio-card { border-radius: 22px; padding: 20px; border: 1px solid rgba(148, 163, 184, .16); background: rgba(15, 23, 42, .5); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+    .bio-kpi .label, .bio-insight .label { color: #9ec9e8; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .bio-kpi .value { margin-top: 12px; color: #fff; font-size: 40px; font-weight: 950; }
+    .bio-insight h3, .bio-card h3 { margin: 8px 0; color: #fff; } .bio-insight p, .bio-card p { color: #cbd5e1; line-height: 1.55; }
+    .bio-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .bio-card { position: relative; overflow: hidden; } .bio-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: linear-gradient(180deg, #22d3ee, #34d399); }
+    .bio-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .bio-id { min-width: 46px; height: 46px; display: grid; place-items: center; border-radius: 16px; color: #082f49; font-weight: 950; background: linear-gradient(135deg, #67e8f9, #a7f3d0); }
+    .bio-meta { display: grid; gap: 7px; margin: 14px 0; color: #dbeafe; font-size: 14px; }
+    .bio-zone-pill { display: inline-flex; width: fit-content; padding: 8px 11px; border-radius: 999px; color: #c7f9ff; background: rgba(34, 211, 238, .12); border: 1px solid rgba(34, 211, 238, .25); font-weight: 800; }
+    @media (max-width: 1150px) { .bio-hero, .bio-grid { grid-template-columns: 1fr; } .bio-orbit { max-width: 360px; margin: auto; } .bio-kpis, .bio-insight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 680px) { .bio-hero { padding: 24px; } .bio-kpis, .bio-insight-grid { grid-template-columns: 1fr; } }
+</style>
 
-<section class="module-shell">
-    <div class="module-hero glass-card">
-        <div class="module-title-wrap">
-            <h1>Biodiversité</h1>
-            <p>Suivi des espèces et observations.</p>
-        </div>
-        <div class="module-actions">
-            <a href="{{ path('app_biodiversite_new') }}" class="btn btn-primary">+ Ajouter une observation</a>
-        </div>
-    </div>
+{% set totalIndividus = 0 %}
+{% set zones = {} %}
+{% set especes = {} %}
+{% for biodiversite in biodiversites %}
+    {% set totalIndividus = totalIndividus + (biodiversite.nombre ?: 0) %}
+    {% if biodiversite.zone %}{% set zones = zones|merge({(biodiversite.zone): true}) %}{% endif %}
+    {% if biodiversite.espece %}{% set especes = especes|merge({(biodiversite.espece): true}) %}{% endif %}
+{% endfor %}
 
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="label">Total observations</div>
-            <div class="value">{{ biodiversites|length }}</div>
-        </div>
-    </div>
-
-    <div class="glass-card">
-        {% if biodiversites is empty %}
-            <div class="empty-state">
-                <h3>Aucune observation trouvée</h3>
+<section class="module-shell bio-observatory">
+    <div class="bio-hero">
+        <div>
+            <div class="bio-kicker">Observatoire vivant</div>
+            <h1>Biodiversite marine</h1>
+            <p>Suivez les especes observees, les zones riches en vie marine et les signaux faibles qui aident a proteger le littoral avant qu il ne se degrade.</p>
+            <div class="module-actions">
+                <a href="{{ path('app_biodiversite_new') }}" class="btn btn-primary">+ Ajouter une observation</a>
+                <a href="#bio-observations" class="btn btn-secondary">Explorer les especes</a>
             </div>
+        </div>
+        <div class="bio-orbit" aria-hidden="true"><span>Faune</span><span>Zones</span><span>Suivi</span><span>Vie</span></div>
+    </div>
+
+    <div class="bio-kpis">
+        <div class="bio-kpi"><div class="label">Observations</div><div class="value">{{ biodiversites|length }}</div></div>
+        <div class="bio-kpi"><div class="label">Individus recenses</div><div class="value">{{ totalIndividus }}</div></div>
+        <div class="bio-kpi"><div class="label">Especes suivies</div><div class="value">{{ especes|length }}</div></div>
+        <div class="bio-kpi"><div class="label">Zones observees</div><div class="value">{{ zones|length }}</div></div>
+    </div>
+
+    <div class="bio-insight-grid">
+        <div class="bio-insight"><div class="label">Priorite</div><h3>Zones sensibles</h3><p>Les observations par zone aident a reperer les habitats qui meritent une surveillance rapprochee.</p></div>
+        <div class="bio-insight"><div class="label">Mission</div><h3>Protection active</h3><p>Chaque fiche alimente une memoire terrain utile pour les nettoyages, evenements et alertes.</p></div>
+        <div class="bio-insight"><div class="label">Lecture</div><h3>Signal ecologique</h3><p>Une hausse ou une baisse d observations peut signaler une perturbation ou une restauration du milieu.</p></div>
+        <div class="bio-insight"><div class="label">Action</div><h3>Coordination locale</h3><p>Les donnees facilitent la coordination entre equipes, associations et gestionnaires du littoral.</p></div>
+    </div>
+
+    <div class="glass-card" id="bio-observations">
+        {% if biodiversites is empty %}
+            <div class="empty-state"><h3>Aucune observation trouvee</h3><p>Ajoutez une premiere espece pour demarrer l observatoire.</p></div>
         {% else %}
-            <div class="module-grid">
+            <div class="bio-grid">
                 {% for biodiversite in biodiversites %}
-                    <div class="entity-card">
-                        <div class="entity-id">{{ biodiversite.id }}</div>
-
-                        <div class="entity-main">
-                            <h3>{{ biodiversite.espece }}</h3>
-                            <p><strong>Zone :</strong> {{ biodiversite.zone }}</p>
-                            <div class="badge-row">
-                                <span class="type-badge">?? Observation</span>
-                            </div>
-                        </div>
-
-                        <div class="entity-meta">
-                            <p><strong>Nombre :</strong> {{ biodiversite.nombre }}</p>
-                            <p><strong>Date :</strong> {{ biodiversite.date }}</p>
-                        </div>
-
-                        <div class="entity-actions">
-                            <a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}" class="btn btn-secondary">Voir</a>
-                            <a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}" class="btn btn-primary">Modifier</a>
-                        </div>
-                    </div>
+                    <article class="bio-card">
+                        <div class="bio-card-top"><div><span class="bio-zone-pill">{{ biodiversite.zone }}</span><h3>{{ biodiversite.espece }}</h3></div><div class="bio-id">{{ biodiversite.id }}</div></div>
+                        <div class="bio-meta"><span>Nombre observe : {{ biodiversite.nombre }}</span><span>Date terrain : {{ biodiversite.date }}</span></div>
+                        <p>Observation integree au suivi de biodiversite pour evaluer la richesse de la zone et orienter les actions de protection.</p>
+                        <div class="entity-actions"><a href="{{ path('app_biodiversite_show', {'id': biodiversite.id}) }}" class="btn btn-secondary">Voir</a><a href="{{ path('app_biodiversite_edit', {'id': biodiversite.id}) }}" class="btn btn-primary">Modifier</a></div>
+                    </article>
                 {% endfor %}
             </div>
         {% endif %}
