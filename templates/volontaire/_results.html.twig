@@ -1,0 +1,46 @@
+<div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Action</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for volontaire in volontaires %}
+            <tr>
+                <td>{{ volontaire.idVolontaire }}</td>
+                <td>{{ volontaire.nom }}</td>
+                <td>{{ volontaire.contact }}</td>
+                <td>
+                    {% if volontaire.idAction %}
+                        {{ volontaire.idAction.lieu }} - {{ volontaire.idAction.dateAction|date('Y-m-d') }}
+                    {% else %}
+                        Aucune
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-secondary">show</a>
+                    <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-primary">edit</a>
+                    <form method="post"
+                          action="{{ path('app_volontaire_delete', {'id_volontaire': volontaire.id_volontaire}) }}"
+                          class="inline-delete-form"
+                          data-admin-delete-form>
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ volontaire.id_volontaire) }}">
+                        <button class="btn btn-secondary" type="submit">delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{{ knp_pagination_render(volontaires, 'admin/_ajax_pagination.html.twig') }}

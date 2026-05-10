@@ -72,10 +72,14 @@ final class HomeController extends AbstractController
         $detectionDroneForm = $this->createForm(DetectionDroneType::class, new DetectionDrone());
 
         $queryBuilder = $actionNettoyageRepository->createQueryBuilder('a')
+            ->leftJoin('a.volontaires', 'v')
+            ->addSelect('COUNT(v.id_volontaire) AS HIDDEN volunteerCount')
+            ->groupBy('a.id_action')
             ->orderBy('a.date_action', 'ASC');
 
         $selectedLieu = trim((string) $request->query->get('cleaning_lieu', ''));
         $selectedDate = trim((string) $request->query->get('cleaning_date', ''));
+        $selectedStatus = trim((string) $request->query->get('cleaning_status', ''));
 
         if ($selectedLieu !== '') {
             $queryBuilder
@@ -93,10 +97,20 @@ final class HomeController extends AbstractController
             }
         }
 
+        if ($selectedStatus === 'available') {
+            $queryBuilder->having('COUNT(v.id_volontaire) < a.limiteBenevoles');
+        } elseif ($selectedStatus === 'complete') {
+            $queryBuilder->having('COUNT(v.id_volontaire) >= a.limiteBenevoles');
+        }
+
         $actionsNettoyage = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
-            3
+            3,
+            [
+                'distinct' => false,
+                'wrap-queries' => true,
+            ]
         );
 
         $allActionsNettoyage = $actionNettoyageRepository->findAll();
@@ -202,6 +216,7 @@ final class HomeController extends AbstractController
             'current_user' => $currentUser,
             'cleaning_filter_lieu' => $selectedLieu,
             'cleaning_filter_date' => $selectedDate,
+            'cleaning_filter_status' => $selectedStatus,
             'cleaning_available_lieux' => array_values($availableLieux),
             'cleaning_available_dates' => array_values($availableDates),
         ]);

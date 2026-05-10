@@ -413,11 +413,12 @@
         color: #e0f2fe;
         font-size: 0.84rem;
         font-weight: 600;
+        user-select: text;
     }
 
     .cleaning-filters {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 14px;
         align-items: end;
         margin-bottom: 22px;
@@ -1249,8 +1250,37 @@
                                 </div>
 
                                 <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningStatus">Filtrer par statut</label>
+                                    <select id="cleaningStatus" name="cleaning_status" class="cleaning-filter-control">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="available" {% if cleaning_filter_status|default('') == 'available' %}selected{% endif %}>Disponible</option>
+                                        <option value="complete" {% if cleaning_filter_status|default('') == 'complete' %}selected{% endif %}>Complete</option>
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
                                     <span class="cleaning-filter-label">Aperçu</span>
-                                    <div class="cleaning-note">Choisissez un lieu, une date, ou les deux.</div>
+                                    <div class="cleaning-note"
+                                         data-cleaning-preview
+                                         data-default-preview="Choisissez un lieu, une date, ou les deux.">
+                                        {% if cleaning_filter_lieu|default('') or cleaning_filter_date|default('') or cleaning_filter_status|default('') %}
+                                            {% set previewParts = [] %}
+                                            {% if cleaning_filter_lieu|default('') %}
+                                                {% set previewParts = previewParts|merge(['Lieu : ' ~ cleaning_filter_lieu]) %}
+                                            {% endif %}
+                                            {% if cleaning_filter_date|default('') %}
+                                                {% set previewParts = previewParts|merge(['Date : ' ~ cleaning_filter_date]) %}
+                                            {% endif %}
+                                            {% if cleaning_filter_status|default('') == 'available' %}
+                                                {% set previewParts = previewParts|merge(['Statut : Disponible']) %}
+                                            {% elseif cleaning_filter_status|default('') == 'complete' %}
+                                                {% set previewParts = previewParts|merge(['Statut : Complete']) %}
+                                            {% endif %}
+                                            {{ previewParts|join(' | ') }}
+                                        {% else %}
+                                            Choisissez un lieu, une date, ou les deux.
+                                        {% endif %}
+                                    </div>
                                 </div>
 
                                 <div class="cleaning-filter-actions">
@@ -1314,6 +1344,256 @@ document.querySelectorAll('[data-nav-url]').forEach(function (button) {
         window.location.href = button.getAttribute('data-nav-url');
     });
 });
+
+var flashToasts = document.querySelectorAll('.flash, .flash-toast');
+if (flashToasts && flashToasts.length) {
+    flashToasts.forEach(function (toast, index) {
+        var visibleDelay = 3200 + (index * 250);
+
+        window.setTimeout(function () {
+            toast.classList.add('is-hiding');
+
+            window.setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+
+                var flashStack = document.getElementById('flashStack');
+                    if (flashStack && flashStack.children.length === 0) {
+                        flashStack.remove();
+                    }
+                }, 450);
+            }, visibleDelay);
+        });
+}
+
+    var navbarToggle = document.querySelector('.navbar-toggle');
+    var navBox = document.querySelector('.nav-box');
+
+    if (navbarToggle && navBox) {
+        navbarToggle.addEventListener('click', function () {
+            navBox.classList.toggle('active');
+        });
+    }
+
+    (function () {
+        var filterForm = document.querySelector('[data-cleaning-filter-form]');
+        var paginationRoots = document.querySelectorAll('[data-cleaning-pagination-root]');
+        var preview = document.querySelector('[data-cleaning-preview]');
+        var lieuSelect = document.getElementById('cleaningLieu');
+        var dateSelect = document.getElementById('cleaningDate');
+        var statusSelect = document.getElementById('cleaningStatus');
+
+        if (!paginationRoots.length) {
+            return;
+        }
+
+        function updatePreview() {
+            if (!preview) {
+                return;
+            }
+
+            var defaultText = preview.getAttribute('data-default-preview') || '';
+            var lieu = lieuSelect ? lieuSelect.value.trim() : '';
+            var date = dateSelect ? dateSelect.value.trim() : '';
+            var parts = [];
+
+            if (lieu) {
+                parts.push('Lieu : ' + lieu);
+            }
+
+            if (date) {
+                var dateParts = date.split('-');
+                var formattedDate = date;
+
+                if (dateParts.length === 3) {
+                    formattedDate = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+                }
+
+                parts.push('Date : ' + formattedDate);
+            }
+
+            if (statusSelect && statusSelect.value.trim()) {
+                parts.push('Statut : ' + (statusSelect.value === 'available' ? 'Disponible' : 'Complete'));
+            }
+
+            preview.textContent = parts.length ? parts.join(' | ') : defaultText;
+        }
+
+        function updateUrl(url) {
+            var nextUrl = new URL(url, window.location.origin);
+            nextUrl.searchParams.delete('section');
+            nextUrl.hash = 'slide12';
+            window.history.pushState({}, '', nextUrl.toString());
+        }
+
+        function buildFilterUrl() {
+            if (!filterForm) {
+                return null;
+            }
+
+            var action = filterForm.getAttribute('action') || window.location.pathname;
+            var nextUrl = new URL(action, window.location.origin);
+            var formData = new FormData(filterForm);
+
+            formData.forEach(function (value, key) {
+                if (key === '_fragment' || value === null || String(value).trim() === '') {
+                    return;
+                }
+
+                nextUrl.searchParams.set(key, value);
+            });
+
+            nextUrl.hash = 'slide12';
+
+            return nextUrl.toString();
+        }
+
+        function loadPage(root, url) {
+            var requestUrl = new URL(url, window.location.origin);
+            var subsection = root.getAttribute('data-cleaning-subsection') || 'available';
+
+            requestUrl.searchParams.set('section', 'nettoyage');
+            requestUrl.searchParams.set('subsection', subsection);
+
+            root.classList.add('is-loading');
+
+            fetch(requestUrl.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Pagination request failed');
+                    }
+
+                    return response.text();
+                })
+                .then(function (html) {
+                    root.innerHTML = html;
+                    updateUrl(url);
+
+                    if (window.location.hash !== '#slide12') {
+                        window.location.hash = 'slide12';
+                    }
+                })
+                .catch(function () {
+                    window.location.href = url;
+                })
+                .finally(function () {
+                    root.classList.remove('is-loading');
+                });
+        }
+
+        paginationRoots.forEach(function (root) {
+            root.addEventListener('click', function (event) {
+                var link = event.target.closest('[data-page-link]');
+
+                if (!link) {
+                    return;
+                }
+
+                event.preventDefault();
+                loadPage(root, link.href);
+            });
+        });
+
+        if (filterForm) {
+            if (lieuSelect) {
+                lieuSelect.addEventListener('change', updatePreview);
+            }
+
+            if (dateSelect) {
+                dateSelect.addEventListener('change', updatePreview);
+            }
+
+            if (statusSelect) {
+                statusSelect.addEventListener('change', updatePreview);
+            }
+
+            filterForm.addEventListener('submit', function (event) {
+                var targetUrl;
+
+                event.preventDefault();
+                targetUrl = buildFilterUrl();
+
+                if (targetUrl) {
+                    paginationRoots.forEach(function (root) {
+                        if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                            loadPage(root, targetUrl);
+                        }
+                    });
+                }
+            });
+
+            filterForm.addEventListener('click', function (event) {
+                var resetLink = event.target.closest('[data-cleaning-filter-reset]');
+
+                if (!resetLink) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                filterForm.reset();
+                paginationRoots.forEach(function (root) {
+                    if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                        loadPage(root, resetLink.href);
+                    }
+                });
+            });
+        }
+
+        updatePreview();
+    })();
+
+    (function () {
+        var FORMS = [
+            { anchor: 'slide08', label: 'Réservations' },
+            { anchor: 'slide09', label: 'Activité Éco.' },
+            { anchor: 'slide11', label: 'Zone Protégée' },
+            { anchor: 'slide10', label: 'Surveillance' },
+            { anchor: 'slide12', label: 'Nettoyage' },
+            { anchor: 'slide209b', label: 'Nvl. Activité' },
+            { anchor: 'slide210', label: 'Faune Marine' },
+            { anchor: 'slide211', label: 'Observation' },
+            { anchor: 'slide212', label: 'Prédiction' },
+            { anchor: 'slide213', label: 'Mission Drone' },
+            { anchor: 'slide214', label: 'Détection Drone' }
+        ];
+
+        var btn = document.getElementById('nav-form-btn');
+        var labelEl = document.getElementById('nav-form-label');
+        var badgeEl = document.getElementById('nav-form-badge');
+        var total = FORMS.length;
+        var nextIdx = 0;
+
+        if (!btn || !labelEl || !badgeEl) return;
+
+        function getCurrentFormIndex() {
+            var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+            for (var i = 0; i < total; i++) {
+                if (FORMS[i].anchor === hash) return i;
+            }
+            return -1;
+        }
+
+        function updateBtn() {
+            var idx = getCurrentFormIndex();
+            nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
+            labelEl.textContent = FORMS[nextIdx].label;
+            badgeEl.textContent = (nextIdx + 1) + '/' + total;
+        }
+
+        btn.addEventListener('click', function () {
+            window.location.hash = '#' + FORMS[nextIdx].anchor;
+            setTimeout(updateBtn, 80);
+        });
+
+        window.addEventListener('hashchange', updateBtn);
+        updateBtn();
+    })();
 </script>
 
 {% endblock %}
