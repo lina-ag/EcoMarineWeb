@@ -6,6 +6,7 @@ use App\Entity\Dechet;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -13,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\UX\Dropzone\Form\DropzoneType;
 
 class DechetType extends AbstractType
 {
@@ -57,11 +57,11 @@ class DechetType extends AbstractType
                 ],
                 'placeholder' => 'Choisir un statut',
             ])
-            ->add('photoFile', DropzoneType::class, [
+            ->add('photoFile', FileType::class, [
                 'label' => 'Photo du signalement',
                 'mapped' => false,
                 'required' => false,
-                'attr' => ['placeholder' => 'Deposez une image ici'],
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
                 'constraints' => [
                     new File([
                         'maxSize' => '5M',

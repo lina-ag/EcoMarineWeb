@@ -1,42 +1,84 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}Gestion des dechets
-</div>
-{% endblock %}
+{% block title %}Gestion des dechets{% endblock %}
 
 {% block body %}
 <link rel="stylesheet" href="/assets_admin/module-plage.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #dechet-main-content,
+    #dechet-main-content .module-shell,
+    #dechet-main-content .page-layout-main { margin-top: 0 !important; }
 
-<section class="dechet-video-hero">
-    <video class="dechet-video-bg" autoplay muted loop playsinline>
-        <source src="/videos/dechet-hero.mp4" type="video/mp4">
-    </video>
+    .dechet-command-hero { position: relative; min-height: calc(100vh - 20px); display: grid; align-items: center; padding: clamp(28px, 5vw, 58px); overflow: hidden; border-radius: 0 0 34px 34px; background: radial-gradient(circle at 12% 15%, rgba(34, 211, 238, .28), transparent 28%), radial-gradient(circle at 86% 78%, rgba(124, 58, 237, .32), transparent 34%), linear-gradient(135deg, #05142e 0%, #08244c 48%, #101640 100%); isolation: isolate; }
+    .dechet-command-hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 54px 54px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), transparent 88%); z-index: -2; }
+    .dechet-command-hero::after { content: ""; position: absolute; width: 520px; height: 520px; right: -170px; top: -170px; border-radius: 50%; border: 1px solid rgba(103, 232, 249, .2); box-shadow: 0 0 80px rgba(34, 211, 238, .22); z-index: -1; }
+    .command-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(440px, 1.05fr); gap: clamp(22px, 4vw, 52px); align-items: center; width: min(1440px, 100%); margin: 0 auto; }
+    .command-kicker { display: inline-flex; align-items: center; gap: 10px; width: fit-content; padding: 10px 14px; border-radius: 999px; color: #bff8ff; background: rgba(34, 211, 238, .11); border: 1px solid rgba(103, 232, 249, .25); font-size: 12px; font-weight: 950; letter-spacing: .16em; text-transform: uppercase; }
+    .command-kicker::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #34d399; box-shadow: 0 0 18px rgba(52, 211, 153, .95); }
+    .command-copy h1 { margin: 18px 0; color: #fff; font-size: clamp(44px, 7vw, 86px); line-height: .95; font-weight: 950; }
+    .command-copy p { max-width: 680px; color: #dbeafe; font-size: 18px; line-height: 1.75; }
+    .command-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
+    .command-actions .btn { min-height: 56px; padding-inline: 24px; }
+    .command-mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 28px; max-width: 720px; }
+    .command-mini-card { padding: 16px; border-radius: 20px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+    .command-mini-card strong { display: block; font-size: 28px; line-height: 1; }
+    .command-mini-card span { display: block; margin-top: 8px; color: #b9d7f2; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .command-panel { position: relative; min-height: 620px; border-radius: 34px; padding: 20px; background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025)); border: 1px solid rgba(125, 211, 252, .22); box-shadow: 0 30px 90px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.08); overflow: hidden; }
+    .command-panel-head { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 14px; }
+    .command-panel-title { color: #fff; font-weight: 950; font-size: 18px; }
+    .command-panel-status { display: inline-flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 999px; color: #c7f9ff; background: rgba(34, 211, 238, .12); border: 1px solid rgba(34, 211, 238, .22); font-size: 12px; font-weight: 850; }
+    .command-map { position: relative; min-height: 420px; border-radius: 28px; overflow: hidden; background: radial-gradient(circle at 48% 45%, rgba(34, 211, 238, .18), transparent 30%), linear-gradient(145deg, rgba(8, 47, 73, .7), rgba(30, 41, 59, .55)); border: 1px solid rgba(125, 211, 252, .18); }
+    .command-map::before { content: ""; position: absolute; inset: 6%; border-radius: 42% 58% 48% 52% / 32% 42% 58% 68%; background: linear-gradient(160deg, rgba(20, 184, 166, .58), rgba(59, 130, 246, .42)); clip-path: polygon(42% 0, 58% 10%, 64% 24%, 57% 38%, 66% 52%, 57% 70%, 61% 92%, 45% 100%, 34% 78%, 25% 62%, 33% 43%, 26% 24%, 34% 9%); filter: drop-shadow(0 26px 50px rgba(34,211,238,.18)); }
+    .command-map::after { content: ""; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 50% 48%, rgba(125,211,252,.22) 0 1px, transparent 1px 54px); opacity: .65; }
+    .scan-line { position: absolute; inset: -20%; background: conic-gradient(from 0deg at 50% 50%, transparent 0 72%, rgba(103,232,249,.34), transparent 84%); animation: commandSweep 6s linear infinite; z-index: 2; pointer-events: none; }
+    @keyframes commandSweep { to { transform: rotate(360deg); } }
+    .command-point { position: absolute; z-index: 4; width: 17px; height: 17px; border-radius: 50%; background: #67e8f9; border: 3px solid rgba(8, 20, 46, .9); box-shadow: 0 0 0 8px rgba(103,232,249,.13), 0 0 28px rgba(103,232,249,.85); }
+    .command-point::after { content: attr(data-zone); position: absolute; left: 18px; top: -10px; min-width: 110px; padding: 7px 9px; border-radius: 11px; color: #e0faff; background: rgba(4, 12, 35, .78); border: 1px solid rgba(125,211,252,.18); font-size: 11px; font-weight: 850; opacity: 0; transform: translateY(6px); transition: .18s ease; pointer-events: none; }
+    .command-point:hover::after { opacity: 1; transform: translateY(0); }
+    .point-1 { left: 51%; top: 18%; } .point-2 { left: 56%; top: 32%; } .point-3 { left: 49%; top: 46%; } .point-4 { left: 54%; top: 58%; } .point-5 { left: 46%; top: 70%; } .point-6 { left: 58%; top: 79%; }
+    .command-briefing { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .brief-card { padding: 14px; border-radius: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+    .brief-card span { display: block; color: #8eeaff; font-size: 11px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+    .brief-card strong { display: block; margin-top: 7px; color: #fff; font-size: 16px; line-height: 1.35; }
+    @media (max-width: 1180px) { .command-grid { grid-template-columns: 1fr; } .command-panel { min-height: auto; } }
+    @media (max-width: 760px) { .dechet-command-hero { padding: 22px; } .command-mini-grid, .command-briefing { grid-template-columns: 1fr; } .command-map { min-height: 340px; } }
+</style>
 
-    <div class="dechet-video-overlay"></div>
-
-    <div class="dechet-video-content">
-    <span class="dechet-video-badge">GESTION INTELLIGENTE DES DÃ‰CHETS</span>
-
-    <h1>Signaler, analyser et protÃ©ger le littoral</h1>
-
-    <p>
-    Photo, carte, mÃ©tÃ©o, IA, biodiversitÃ© et contexte Ã©vÃ©nementiel rÃ©unis
-    dans une seule expÃ©rience moderne.
-</p>
-
-    <div class="dechet-video-actions">
-        <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">
-            + Ajouter un signalement
-        </a>
-
-        <a href="#dechet-main-content" class="btn btn-outline-light">
-            Explorer le module
-        </a>
+<section class="dechet-command-hero">
+    <div class="command-grid">
+        <div class="command-copy">
+            <div class="command-kicker">Mission control dechets</div>
+            <h1>Scanner le littoral. Prioriser. Agir.</h1>
+            <p>Un centre de controle vivant pour suivre les signalements, reperer les zones sensibles et declencher les bonnes actions de nettoyage au bon moment.</p>
+            <div class="command-actions">
+                <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">+ Ajouter un signalement</a>
+                <a href="#dechet-main-content" class="btn btn-secondary">Explorer le module</a>
+                <a href="{{ path('app_dechet_stats') }}" class="btn btn-secondary">Voir les statistiques</a>
+            </div>
+            <div class="command-mini-grid">
+                <div class="command-mini-card"><strong>{{ statsCards.totalSignalements|default(dechets|length) }}</strong><span>Signalements actifs</span></div>
+                <div class="command-mini-card"><strong>{{ statsCards.zonesTouchees|default(0) }}</strong><span>Zones suivies</span></div>
+                <div class="command-mini-card"><strong>{{ statsCards.progressionNettoyage|default(0) }}%</strong><span>Progression nettoyage</span></div>
+            </div>
+        </div>
+        <div class="command-panel">
+            <div class="command-panel-head"><div class="command-panel-title">Carte tactique du littoral tunisien</div><div class="command-panel-status">Scan IA actif</div></div>
+            <div class="command-map">
+                <div class="scan-line"></div>
+                {% for dechet in dechets|slice(0, 6) %}
+                    <span class="command-point point-{{ loop.index }}" data-zone="{{ dechet.zone ?: 'Point signale' }}"></span>
+                {% else %}
+                    <span class="command-point point-1" data-zone="Aucun signalement"></span>
+                {% endfor %}
+            </div>
+            <div class="command-briefing">
+                <div class="brief-card"><span>Briefing IA</span><strong>{{ statsCards.pollutionElevee|default(0) }} zone(s) demandent une intervention rapide.</strong></div>
+                <div class="brief-card"><span>Volume estime</span><strong>{{ statsCards.totalQuantite|default(0) }} unites de dechets suivies dans le systeme.</strong></div>
+            </div>
+        </div>
     </div>
-</div>
 </section>
-
 <div id="dechet-main-content">
 <section class="module-shell">
     <div class="top-utility-bar">
@@ -541,5 +583,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+<script src="/assets_admin/eco-ai-widget.js"></script>
 </div>
 {% endblock %}

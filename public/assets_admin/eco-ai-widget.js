@@ -2,50 +2,78 @@ document.addEventListener("DOMContentLoaded", function () {
   const widget = document.createElement("div");
 
   widget.innerHTML = `
-    <button class="eco-ai-btn" id="ecoAiOpen">AI</button>
+    <button class="eco-ai-btn eco-ai-orb" id="ecoAiOpen" aria-label="Ouvrir EcoBot">
+      <span class="eco-ai-orb-core">AI</span>
+      <span class="eco-ai-orb-ring"></span>
+    </button>
 
     <div class="eco-robot-stage" id="ecoRobotStage">
-      <div class="eco-robot-bubble" id="ecoRobotBubble">
-        Bonjour et bienvenue sur Eco Marine Dechets.
-      </div>
+      <div class="eco-assistant-shell">
+        <div class="eco-assistant-glow"></div>
 
-      <div class="eco-robot-body" id="ecoRobotBody">
-        <div class="eco-robot-arm eco-robot-arm-left"></div>
-        <div class="eco-robot-arm eco-robot-arm-right"></div>
-        <div class="eco-robot-head">
-          <div class="eco-robot-eye"></div>
-          <div class="eco-robot-eye"></div>
-        </div>
-        <div class="eco-robot-mouth"></div>
-        <div class="eco-robot-base">EcoBot</div>
-      </div>
-
-      <div class="eco-robot-panel">
-        <button class="eco-ai-small-btn" id="ecoAiNext">Suivant</button>
-
-        <div class="eco-ai-choices" id="ecoAiChoices" style="display:none;">
-          <button class="eco-ai-choice" data-ai="dechets">Analyse image dechets</button>
-          <button class="eco-ai-choice" data-ai="nature">Voix de la nature</button>
-          <button class="eco-ai-choice" data-ai="guide">Guide ecologique</button>
-        </div>
-
-        <div class="eco-ai-api-box" id="ecoAiOperation">
-          <strong id="ecoAiSelectedTitle">Operation IA</strong>
-
-          <div id="ecoAiImageZone" style="display:none;">
-            <input class="eco-ai-input" id="ecoWasteImage" type="file" accept="image/png,image/jpeg,image/webp">
-            <button class="eco-ai-small-btn" id="ecoAiAnalyze">Analyser l'image reellement</button>
+        <div class="eco-assistant-header">
+          <div class="eco-robot-body" id="ecoRobotBody">
+            <div class="eco-robot-arm eco-robot-arm-left"></div>
+            <div class="eco-robot-arm eco-robot-arm-right"></div>
+            <div class="eco-robot-head">
+              <div class="eco-robot-eye"></div>
+              <div class="eco-robot-eye"></div>
+            </div>
+            <div class="eco-robot-mouth"></div>
           </div>
 
-          <button class="eco-ai-small-btn" id="ecoAiSpeak">Lire le resultat</button>
+          <div class="eco-assistant-titlebox">
+            <div class="eco-assistant-title">Assistant IA Dechets</div>
+            <div class="eco-assistant-status"><span></span> pret a analyser</div>
+          </div>
 
-          <div class="eco-ai-result" id="ecoAiResult">
-            Choisis une intelligence artificielle.
+          <button class="eco-robot-close" id="ecoRobotClose" type="button" aria-label="Fermer">X</button>
+        </div>
+
+        <div class="eco-robot-bubble" id="ecoRobotBubble">
+          Bonjour et bienvenue sur Eco Marine Dechets.
+        </div>
+
+        <div class="eco-robot-panel">
+          <button class="eco-ai-small-btn eco-ai-main-action" id="ecoAiNext" type="button">Choisir une IA</button>
+
+          <div class="eco-ai-choices" id="ecoAiChoices" style="display:none;">
+            <button class="eco-ai-choice" data-ai="dechets" type="button">
+              <span>Analyse image</span>
+              <small>Detecter et classer les dechets</small>
+            </button>
+            <button class="eco-ai-choice" data-ai="nature" type="button">
+              <span>Voix de la nature</span>
+              <small>Transforme les constats terrain en message immersif pour sensibiliser visiteurs, equipes et citoyens.</small>
+            </button>
+            <button class="eco-ai-choice" data-ai="guide" type="button">
+              <small class="eco-ai-choice-label">Plan terrain</small>
+              <span>Guide ecologique</span>
+              <small>Propose des priorites de nettoyage, tri, prevention et suivi pour organiser une intervention plus efficace.</small>
+            </button>
+          </div>
+
+          <div class="eco-ai-api-box" id="ecoAiOperation">
+            <strong id="ecoAiSelectedTitle">Operation IA</strong>
+
+            <div id="ecoAiImageZone" style="display:none;">
+              <label class="eco-ai-upload-card" for="ecoWasteImage">
+                <span class="eco-ai-upload-icon">+</span>
+                <span>
+                  <strong>Ajouter une photo</strong>
+                  <small>JPG, PNG ou WEBP</small>
+                </span>
+              </label>
+              <input class="eco-ai-input" id="ecoWasteImage" type="file" accept="image/png,image/jpeg,image/webp">
+              <button class="eco-ai-small-btn eco-ai-analyze-btn" id="ecoAiAnalyze" type="button">Lancer l'analyse IA</button>
+            </div>
+
+            <div class="eco-ai-result" id="ecoAiResult">
+              Choisis une intelligence artificielle.
+            </div>
           </div>
         </div>
       </div>
-
-      <button class="eco-robot-close" id="ecoRobotClose">X</button>
     </div>
   `;
 
@@ -90,6 +118,16 @@ document.addEventListener("DOMContentLoaded", function () {
     bubble.innerHTML = text.replace(/\n/g, "<br>");
   }
 
+  function formatAnalysis(text) {
+    return text
+      .split("\n")
+      .filter(function (line) { return line.trim() !== ""; })
+      .map(function (line) {
+        return '<div class="eco-ai-result-line">' + line + '</div>';
+      })
+      .join("");
+  }
+
   openBtn.onclick = function () {
     stage.classList.add("show");
     openBtn.style.display = "none";
@@ -119,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (selectedAI === "dechets") {
         title.innerHTML = "Analyse image dechets";
         imageZone.style.display = "block";
-        result.innerHTML = "Ajoute une image JPG, PNG ou WEBP puis clique sur analyser.";
+        result.innerHTML = '<div class="eco-ai-empty-state">Ajoute une image pour obtenir une lecture rapide du type de dechet, du risque et des actions conseillees.</div>';
         say("Analyse image dechets activee. Ajoute une photo et je vais lancer une vraie analyse IA.");
         speak("Analyse image dechets activee. Ajoute une photo et je vais lancer une vraie analyse IA.");
       }
@@ -127,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (selectedAI === "nature") {
         title.innerHTML = "Voix de la nature";
         const text = "Je suis la mer. Chaque bouteille, chaque sac plastique et chaque canette menace les poissons, les oiseaux et les tortues. Protegez-moi aujourd'hui pour garder un littoral vivant demain.";
-        result.innerHTML = text;
+        result.innerHTML = '<div class="eco-ai-result-line">' + text + '</div>';
         say(text);
         speak(text);
       }
@@ -135,16 +173,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (selectedAI === "guide") {
         title.innerHTML = "Guide ecologique";
         const text = "Conseil EcoBot : commence par les zones les plus frequentees, ajoute des poubelles visibles, organise un nettoyage cible, puis suis les resultats chaque semaine avec les signalements.";
-        result.innerHTML = text;
+        result.innerHTML = '<div class="eco-ai-result-line">' + text + '</div>';
         say(text);
         speak(text);
       }
     };
   });
-
-  document.getElementById("ecoAiSpeak").onclick = function () {
-    speak(currentText);
-  };
 
   document.getElementById("ecoAiAnalyze").onclick = async function () {
     const fileInput = document.getElementById("ecoWasteImage");
@@ -160,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const formData = new FormData();
     formData.append("image", file);
 
-    result.innerHTML = "Analyse en cours...";
+    result.innerHTML = '<div class="eco-ai-loading"><span></span><span></span><span></span>Analyse en cours...</div>';
     say("Analyse reelle en cours. J envoie l image au modele IA.");
     speak("Analyse reelle en cours. J envoie l image au modele IA.");
 
@@ -179,10 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      let prefix = data.fallback ? "Analyse estimee :<br><br>" : "Analyse IA reelle :<br><br>";
-      result.innerHTML = prefix + data.analysis.replace(/\n/g, "<br>");
-      say("Analyse terminee. " + data.analysis);
-      speak("Analyse terminee. " + data.analysis);
+      result.innerHTML = formatAnalysis(data.analysis);
+      say("Analyse terminee. Consulte le resultat detaille ci-dessous.");
+      speak("Analyse terminee. Consulte le resultat detaille ci-dessous.");
 
     } catch (e) {
       result.innerHTML = "Erreur reseau ou serveur.";
@@ -196,6 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let offsetY = 0;
 
   robot.addEventListener("mousedown", function (e) {
+    return;
     isDragging = true;
     offsetX = e.clientX - stage.offsetLeft;
     offsetY = e.clientY - stage.offsetTop;

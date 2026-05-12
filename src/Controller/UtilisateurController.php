@@ -158,7 +158,9 @@ final class UtilisateurController extends AbstractController
         UtilisateurRepository $utilisateurRepository
     ): Response {
         $originalPassword = $utilisateur->getMotDePasse();
-        $form = $this->createForm(UtilisateurType::class, $utilisateur);
+        $form = $this->createForm(UtilisateurType::class, $utilisateur, [
+            'is_edit' => true,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

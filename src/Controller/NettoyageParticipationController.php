@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/action-nettoyage')]
@@ -20,12 +21,25 @@ final class NettoyageParticipationController extends AbstractController
         Request $request,
         ActionNettoyage $actionNettoyage,
         EntityManagerInterface $entityManager,
-        VolontaireRepository $volontaireRepository
+        VolontaireRepository $volontaireRepository,
+        SessionInterface $session
     ): Response {
-        $utilisateur = $this->getUser();
+        $utilisateur = $session->get('user');
+
+        if (!$utilisateur instanceof Utilisateur && $this->getUser() instanceof Utilisateur) {
+            $utilisateur = $this->getUser();
+        }
 
         if (!$utilisateur instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté pour participer à une action de nettoyage.');
+
+            return $this->redirectToRoute('app_signIn');
+        }
+
+        $utilisateur = $entityManager->getRepository(Utilisateur::class)->find($utilisateur->getIdUtilisateur());
+
+        if (!$utilisateur instanceof Utilisateur) {
+            $this->addFlash('warning', 'Utilisateur introuvable. Veuillez vous reconnecter.');
 
             return $this->redirectToRoute('app_signIn');
         }
@@ -34,7 +48,7 @@ final class NettoyageParticipationController extends AbstractController
             $this->addFlash('danger', 'Token de sécurité invalide.');
 
             return $this->redirectToRoute('app_home', [
-                '_fragment' => 'slide09',
+                '_fragment' => 'slide12',
             ]);
         }
 
@@ -42,7 +56,7 @@ final class NettoyageParticipationController extends AbstractController
             $this->addFlash('danger', 'Cette action de nettoyage est déjà complète.');
 
             return $this->redirectToRoute('app_home', [
-                '_fragment' => 'slide09',
+                '_fragment' => 'slide12',
             ]);
         }
 
@@ -55,7 +69,7 @@ final class NettoyageParticipationController extends AbstractController
             $this->addFlash('warning', 'Vous êtes déjà inscrit à cette action de nettoyage.');
 
             return $this->redirectToRoute('app_home', [
-                '_fragment' => 'slide09',
+                '_fragment' => 'slide12',
             ]);
         }
 
@@ -83,7 +97,7 @@ final class NettoyageParticipationController extends AbstractController
         $this->addFlash('success', 'Votre participation a été enregistrée avec succès.');
 
         return $this->redirectToRoute('app_home', [
-            '_fragment' => 'slide09',
+            '_fragment' => 'slide12',
         ]);
     }
 
@@ -92,12 +106,25 @@ final class NettoyageParticipationController extends AbstractController
         Request $request,
         ActionNettoyage $actionNettoyage,
         EntityManagerInterface $entityManager,
-        VolontaireRepository $volontaireRepository
+        VolontaireRepository $volontaireRepository,
+        SessionInterface $session
     ): Response {
-        $utilisateur = $this->getUser();
+        $utilisateur = $session->get('user');
+
+        if (!$utilisateur instanceof Utilisateur && $this->getUser() instanceof Utilisateur) {
+            $utilisateur = $this->getUser();
+        }
 
         if (!$utilisateur instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté.');
+
+            return $this->redirectToRoute('app_signIn');
+        }
+
+        $utilisateur = $entityManager->getRepository(Utilisateur::class)->find($utilisateur->getIdUtilisateur());
+
+        if (!$utilisateur instanceof Utilisateur) {
+            $this->addFlash('warning', 'Utilisateur introuvable. Veuillez vous reconnecter.');
 
             return $this->redirectToRoute('app_signIn');
         }
@@ -106,7 +133,7 @@ final class NettoyageParticipationController extends AbstractController
             $this->addFlash('danger', 'Token de sécurité invalide.');
 
             return $this->redirectToRoute('app_home', [
-                '_fragment' => 'slide09',
+                '_fragment' => 'slide12',
             ]);
         }
 
@@ -119,7 +146,7 @@ final class NettoyageParticipationController extends AbstractController
             $this->addFlash('warning', 'Vous n’êtes pas inscrit à cette action de nettoyage.');
 
             return $this->redirectToRoute('app_home', [
-                '_fragment' => 'slide09',
+                '_fragment' => 'slide12',
             ]);
         }
 
@@ -129,7 +156,7 @@ final class NettoyageParticipationController extends AbstractController
         $this->addFlash('success', 'Votre participation a été annulée.');
 
         return $this->redirectToRoute('app_home', [
-            '_fragment' => 'slide09',
+            '_fragment' => 'slide12',
         ]);
     }
 }
