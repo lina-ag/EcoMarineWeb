@@ -510,8 +510,7 @@ final class ActiviteEcologiqueController extends AbstractController
                             $queryBuilder->expr()->like('LOWER(CONCAT(a.id_activite, \'\'))', ':' . $parameter),
                             $queryBuilder->expr()->like('LOWER(a.nom_activite)', ':' . $parameter),
                             $queryBuilder->expr()->like('LOWER(CONCAT(a.date_activite, \'\'))', ':' . $parameter),
-                            $queryBuilder->expr()->like('LOWER(CONCAT(a.capacite, \'\'))', ':' . $parameter),
-                            $queryBuilder->expr()->like('LOWER(COALESCE(a.description, \'\'))', ':' . $parameter)
+                            $queryBuilder->expr()->like('LOWER(CONCAT(a.capacite, \'\'))', ':' . $parameter)
                         )
                     )
                     ->setParameter($parameter, '%' . $token . '%');
@@ -524,7 +523,6 @@ final class ActiviteEcologiqueController extends AbstractController
             'nom'         => 'LOWER(a.nom_activite)',
             'date'        => 'LOWER(CONCAT(a.date_activite, \'\'))',
             'capacite'    => 'LOWER(CONCAT(a.capacite, \'\'))',
-            'description' => 'LOWER(COALESCE(a.description, \'\'))',
             default       => null,
         };
 
