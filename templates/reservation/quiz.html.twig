@@ -23,6 +23,13 @@
             </p>
         </div>
 
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;"></div>
+            <a href="{{ path('app_reservation_index') }}" class="btn" style="padding: 0.65rem 1.5rem; border-radius: 10px; background: rgba(100, 116, 139, 0.15); border: 1px solid rgba(100, 116, 139, 0.3); color: #475569; font-weight: 600; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;">
+                ⏭️ Passer le quiz
+            </a>
+        </div>
+
         {% if questions is empty %}
             <div style="background: rgba(254,243,199,0.9); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1.5rem;">
                 <p style="margin: 0; color: #92400e; font-weight: 600;">⚠️ Quiz temporairement indisponible.</p>
@@ -60,12 +67,12 @@
                     </div>
                 {% endfor %}
 
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); border: none; cursor: pointer; font-weight: 700;">
+                <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); border: none; cursor: pointer; font-weight: 700; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);">
                         🏆 Valider mes réponses
                     </button>
-                    <a href="{{ path('app_reservation_index') }}" style="display: block; margin-top: 1rem; color: #64748b; font-size: 0.88rem; text-decoration: none;">
-                        Passer le quiz et voir mes réservations →
+                    <a href="{{ path('app_reservation_index') }}" class="btn" style="padding: 0.85rem 2.5rem; font-size: 1rem; border-radius: 12px; background: rgba(100, 116, 139, 0.12); border: 1px solid rgba(100, 116, 139, 0.3); color: #475569; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s ease;">
+                        ⏭️ Passer
                     </a>
                 </div>
             </form>

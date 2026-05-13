@@ -1,47 +1,588 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
-{% block title %}Dechet index{% endblock %}
+{% block title %}Gestion des dechets{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Dechets</h2>
-                <p class="card-subtitle">Suivi des dechets recenses par zone.</p>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #dechet-main-content,
+    #dechet-main-content .module-shell,
+    #dechet-main-content .page-layout-main { margin-top: 0 !important; }
+
+    .dechet-command-hero { position: relative; min-height: calc(100vh - 20px); display: grid; align-items: center; padding: clamp(28px, 5vw, 58px); overflow: hidden; border-radius: 0 0 34px 34px; background: radial-gradient(circle at 12% 15%, rgba(34, 211, 238, .28), transparent 28%), radial-gradient(circle at 86% 78%, rgba(124, 58, 237, .32), transparent 34%), linear-gradient(135deg, #05142e 0%, #08244c 48%, #101640 100%); isolation: isolate; }
+    .dechet-command-hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 54px 54px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), transparent 88%); z-index: -2; }
+    .dechet-command-hero::after { content: ""; position: absolute; width: 520px; height: 520px; right: -170px; top: -170px; border-radius: 50%; border: 1px solid rgba(103, 232, 249, .2); box-shadow: 0 0 80px rgba(34, 211, 238, .22); z-index: -1; }
+    .command-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(440px, 1.05fr); gap: clamp(22px, 4vw, 52px); align-items: center; width: min(1440px, 100%); margin: 0 auto; }
+    .command-kicker { display: inline-flex; align-items: center; gap: 10px; width: fit-content; padding: 10px 14px; border-radius: 999px; color: #bff8ff; background: rgba(34, 211, 238, .11); border: 1px solid rgba(103, 232, 249, .25); font-size: 12px; font-weight: 950; letter-spacing: .16em; text-transform: uppercase; }
+    .command-kicker::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #34d399; box-shadow: 0 0 18px rgba(52, 211, 153, .95); }
+    .command-copy h1 { margin: 18px 0; color: #fff; font-size: clamp(44px, 7vw, 86px); line-height: .95; font-weight: 950; }
+    .command-copy p { max-width: 680px; color: #dbeafe; font-size: 18px; line-height: 1.75; }
+    .command-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 26px; }
+    .command-actions .btn { min-height: 56px; padding-inline: 24px; }
+    .command-mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 28px; max-width: 720px; }
+    .command-mini-card { padding: 16px; border-radius: 20px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+    .command-mini-card strong { display: block; font-size: 28px; line-height: 1; }
+    .command-mini-card span { display: block; margin-top: 8px; color: #b9d7f2; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .command-panel { position: relative; min-height: 620px; border-radius: 34px; padding: 20px; background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025)); border: 1px solid rgba(125, 211, 252, .22); box-shadow: 0 30px 90px rgba(2, 8, 23, .44), inset 0 1px 0 rgba(255,255,255,.08); overflow: hidden; }
+    .command-panel-head { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 14px; }
+    .command-panel-title { color: #fff; font-weight: 950; font-size: 18px; }
+    .command-panel-status { display: inline-flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 999px; color: #c7f9ff; background: rgba(34, 211, 238, .12); border: 1px solid rgba(34, 211, 238, .22); font-size: 12px; font-weight: 850; }
+    .command-map { position: relative; min-height: 420px; border-radius: 28px; overflow: hidden; background: radial-gradient(circle at 48% 45%, rgba(34, 211, 238, .18), transparent 30%), linear-gradient(145deg, rgba(8, 47, 73, .7), rgba(30, 41, 59, .55)); border: 1px solid rgba(125, 211, 252, .18); }
+    .command-map::before { content: ""; position: absolute; inset: 6%; border-radius: 42% 58% 48% 52% / 32% 42% 58% 68%; background: linear-gradient(160deg, rgba(20, 184, 166, .58), rgba(59, 130, 246, .42)); clip-path: polygon(42% 0, 58% 10%, 64% 24%, 57% 38%, 66% 52%, 57% 70%, 61% 92%, 45% 100%, 34% 78%, 25% 62%, 33% 43%, 26% 24%, 34% 9%); filter: drop-shadow(0 26px 50px rgba(34,211,238,.18)); }
+    .command-map::after { content: ""; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 50% 48%, rgba(125,211,252,.22) 0 1px, transparent 1px 54px); opacity: .65; }
+    .scan-line { position: absolute; inset: -20%; background: conic-gradient(from 0deg at 50% 50%, transparent 0 72%, rgba(103,232,249,.34), transparent 84%); animation: commandSweep 6s linear infinite; z-index: 2; pointer-events: none; }
+    @keyframes commandSweep { to { transform: rotate(360deg); } }
+    .command-point { position: absolute; z-index: 4; width: 17px; height: 17px; border-radius: 50%; background: #67e8f9; border: 3px solid rgba(8, 20, 46, .9); box-shadow: 0 0 0 8px rgba(103,232,249,.13), 0 0 28px rgba(103,232,249,.85); }
+    .command-point::after { content: attr(data-zone); position: absolute; left: 18px; top: -10px; min-width: 110px; padding: 7px 9px; border-radius: 11px; color: #e0faff; background: rgba(4, 12, 35, .78); border: 1px solid rgba(125,211,252,.18); font-size: 11px; font-weight: 850; opacity: 0; transform: translateY(6px); transition: .18s ease; pointer-events: none; }
+    .command-point:hover::after { opacity: 1; transform: translateY(0); }
+    .point-1 { left: 51%; top: 18%; } .point-2 { left: 56%; top: 32%; } .point-3 { left: 49%; top: 46%; } .point-4 { left: 54%; top: 58%; } .point-5 { left: 46%; top: 70%; } .point-6 { left: 58%; top: 79%; }
+    .command-briefing { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .brief-card { padding: 14px; border-radius: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+    .brief-card span { display: block; color: #8eeaff; font-size: 11px; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
+    .brief-card strong { display: block; margin-top: 7px; color: #fff; font-size: 16px; line-height: 1.35; }
+    @media (max-width: 1180px) { .command-grid { grid-template-columns: 1fr; } .command-panel { min-height: auto; } }
+    @media (max-width: 760px) { .dechet-command-hero { padding: 22px; } .command-mini-grid, .command-briefing { grid-template-columns: 1fr; } .command-map { min-height: 340px; } }
+</style>
+
+<section class="dechet-command-hero">
+    <div class="command-grid">
+        <div class="command-copy">
+            <div class="command-kicker">Mission control dechets</div>
+            <h1>Scanner le littoral. Prioriser. Agir.</h1>
+            <p>Un centre de controle vivant pour suivre les signalements, reperer les zones sensibles et declencher les bonnes actions de nettoyage au bon moment.</p>
+            <div class="command-actions">
+                <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">+ Ajouter un signalement</a>
+                <a href="#dechet-main-content" class="btn btn-secondary">Explorer le module</a>
+                <a href="{{ path('app_dechet_stats') }}" class="btn btn-secondary">Voir les statistiques</a>
             </div>
-            <a href="{{ path('app_dechet_new') }}" class="btn btn-primary">Create new</a>
+            <div class="command-mini-grid">
+                <div class="command-mini-card"><strong>{{ statsCards.totalSignalements|default(dechets|length) }}</strong><span>Signalements actifs</span></div>
+                <div class="command-mini-card"><strong>{{ statsCards.zonesTouchees|default(0) }}</strong><span>Zones suivies</span></div>
+                <div class="command-mini-card"><strong>{{ statsCards.progressionNettoyage|default(0) }}%</strong><span>Progression nettoyage</span></div>
+            </div>
+        </div>
+        <div class="command-panel">
+            <div class="command-panel-head"><div class="command-panel-title">Carte tactique du littoral tunisien</div><div class="command-panel-status">Scan IA actif</div></div>
+            <div class="command-map">
+                <div class="scan-line"></div>
+                {% for dechet in dechets|slice(0, 6) %}
+                    <span class="command-point point-{{ loop.index }}" data-zone="{{ dechet.zone ?: 'Point signale' }}"></span>
+                {% else %}
+                    <span class="command-point point-1" data-zone="Aucun signalement"></span>
+                {% endfor %}
+            </div>
+            <div class="command-briefing">
+                <div class="brief-card"><span>Briefing IA</span><strong>{{ statsCards.pollutionElevee|default(0) }} zone(s) demandent une intervention rapide.</strong></div>
+                <div class="brief-card"><span>Volume estime</span><strong>{{ statsCards.totalQuantite|default(0) }} unites de dechets suivies dans le systeme.</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="dechet-main-content">
+<section class="module-shell">
+    <div class="top-utility-bar">
+        <div class="top-tabs">
+            <button class="top-tab ai-tab" id="aiAssistantToggle" type="button">IA</button>
+            <a href="#" class="top-tab active" data-i18n="news_tab">Actualites</a>
+            <a href="#" class="top-tab" data-i18n="resources_tab">Ressources</a>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Type</th>
-                        <th>Quantite</th>
-                        <th>Zone</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for dechet in dechets %}
-                    <tr>
-                        <td>{{ dechet.idDechet }}</td>
-                        <td>{{ dechet.type }}</td>
-                        <td>{{ dechet.quantite }}</td>
-                        <td>{{ dechet.zone }}</td>
-                        <td>
-                            <a href="{{ path('app_dechet_show', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_dechet_edit', {'id_dechet': dechet.id_dechet}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="top-tools">
+            <button class="lang-switch" id="langToggle" type="button">EN</button>
+
+            <div class="role-dropdown" id="roleDropdown">
+                <button class="role-btn" id="roleButton" type="button">Vous etes v</button>
+                <div class="role-menu">
+                    <a href="#" class="role-item" data-role="Ville, Collectivite">Ville, Collectivite</a>
+                    <a href="#" class="role-item" data-role="Industriel">Industriel</a>
+                    <a href="#" class="role-item" data-role="Gestionnaire de batiment">Gestionnaire de batiment</a>
+                    <a href="#" class="role-item" data-role="Journaliste">Journaliste</a>
+                    <a href="#" class="role-item" data-role="Candidat">Candidat</a>
+                    <a href="#" class="role-item" data-role="Etudiant, Jeune diplome">Etudiant, Jeune diplome</a>
+                    <a href="#" class="role-item" data-role="Investisseur, Actionnaire">Investisseur, Actionnaire</a>
+                    <a href="#" class="role-item" data-role="Curieux">Curieux</a>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
+
+    <div class="page-layout-main">
+        <div class="page-main-content">
+            <div class="module-hero glass-card">
+                <div class="module-title-wrap">
+                    <h1 data-i18n="hero_title">Gestion des dechets intelligents</h1>
+                    <p data-i18n="hero_subtitle">Suivi des zones, analyse terrain et pilotage du nettoyage sur le littoral tunisien.</p>
+                </div>
+
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <a href="{{ path('app_dechet_new') }}" class="btn btn-primary" data-i18n="add_btn">+ Ajouter un signalement</a>
+                    <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary" data-i18n="list_btn">Liste des signalements</a>
+                </div>
+            </div>
+
+            <div class="tunisia-dashboard">
+                <div class="tunisia-map-card glass-card">
+                    <div class="tunisia-section-head">
+                        <div>
+                            <h2 data-i18n="map_title">Nos lieux d intervention en Tunisie</h2>
+                            <p data-i18n="map_subtitle">Carte de suivi des zones littorales et points de signalement.</p>
+                        </div>
+                    </div>
+
+                    <div id="tunisiaMap" class="tunisia-map"></div>
+
+                    <div class="tunisia-legend">
+                        <span><i class="dot dot-blue"></i><span data-i18n="legend_watch">Zone surveillee</span></span>
+                        <span><i class="dot dot-cyan"></i><span data-i18n="legend_reported">Point signale</span></span>
+                        <span><i class="dot dot-gold"></i><span data-i18n="legend_sensitive">Zone sensible</span></span>
+                    </div>
+                </div>
+
+                <div class="tunisia-kpis">
+                    <div class="tunisia-kpi glass-card">
+                        <div class="tunisia-kpi-value">{{ statsCards.totalSignalements|default(dechets|length) }}</div>
+                        <div class="tunisia-kpi-label" data-i18n="kpi_reports">Signalements enregistres</div>
+                    </div>
+
+                    <div class="tunisia-kpi glass-card">
+                        <div class="tunisia-kpi-value">{{ statsCards.totalQuantite|default(0) }}</div>
+                        <div class="tunisia-kpi-label" data-i18n="kpi_qty">Quantite totale collectee</div>
+                    </div>
+
+                    <div class="tunisia-kpi glass-card">
+                        <div class="tunisia-kpi-value">{{ statsCards.zonesTouchees|default(0) }}</div>
+                        <div class="tunisia-kpi-label" data-i18n="kpi_zones">Zones littorales suivies</div>
+                    </div>
+
+                    <div class="tunisia-kpi glass-card">
+                        <div class="tunisia-kpi-value">{{ statsCards.progressionNettoyage|default(0) }}%</div>
+                        <div class="tunisia-kpi-label" data-i18n="kpi_progress">Progression nettoyage</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tunisia-regions glass-card">
+                <div class="tunisia-section-head">
+                    <div>
+                        <h2 data-i18n="regions_title">Zones d intervention prioritaires</h2>
+                        <p data-i18n="regions_subtitle">Selection de zones coherentes avec le littoral tunisien.</p>
+                    </div>
+                </div>
+
+                <div class="region-grid">
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Monastir</div>
+                            <div class="region-desc" data-i18n="region_monastir">Suivi des plages, dechets plastiques et nettoyage cible.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Kuriat Nord</div>
+                            <div class="region-desc" data-i18n="region_kuriat_nord">Protection des zones sensibles et surveillance continue.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Kuriat Sud</div>
+                            <div class="region-desc" data-i18n="region_kuriat_sud">Interventions rapides sur les signalements recents.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Sousse</div>
+                            <div class="region-desc" data-i18n="region_sousse">Coordination nettoyage, collecte et prevention.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Mahdia</div>
+                            <div class="region-desc" data-i18n="region_mahdia">Observation du littoral et tri des dechets recuperes.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+
+                    <div class="region-card">
+                        <div>
+                            <div class="region-title">Sfax</div>
+                            <div class="region-desc" data-i18n="region_sfax">Pilotage regional des operations et suivi de terrain.</div>
+                        </div>
+                        <div class="region-arrow">></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="ai-drawer" id="aiDrawer">
+            <div class="ai-drawer-header">
+                <div>
+                    <h3 data-i18n="ai_help">Besoin d aide ?</h3>
+                    <p data-i18n="ai_subtitle">Assistant du module Dechet</p>
+                </div>
+                <button class="ai-drawer-close" id="aiDrawerClose" type="button">x</button>
+            </div>
+
+            <div class="ai-drawer-body" id="aiDrawerBody">
+                <div class="ai-card">
+                    <div class="ai-card-title" data-i18n="ai_start">Je commence une conversation</div>
+                    <button class="ai-quick-btn" type="button" data-question-fr="Comment ajouter un nouveau signalement ?" data-question-en="How do I add a new report?" data-i18n="ai_new_conv">Nouvelle conversation</button>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-title" data-i18n="ai_useful">Questions utiles</div>
+                    <button class="ai-quick-btn" type="button" data-question-fr="Quelles sont les zones prioritaires en Tunisie ?" data-question-en="What are the priority zones in Tunisia?" data-i18n="ai_q1">Voir les zones prioritaires</button>
+                    <button class="ai-quick-btn" type="button" data-question-fr="Comment fonctionne l analyse IA ?" data-question-en="How does the AI analysis work?" data-i18n="ai_q2">Comprendre l analyse IA</button>
+                    <button class="ai-quick-btn" type="button" data-question-fr="Que signifient les KPI affiches ?" data-question-en="What do the displayed KPIs mean?" data-i18n="ai_q3">Lire les KPI</button>
+                </div>
+
+                <div class="ai-chat-messages" id="aiChatMessages"></div>
+            </div>
+
+            <div class="ai-drawer-footer">
+                <div class="ai-input-row">
+                    <input id="aiChatInput" type="text" placeholder="Posez votre question...">
+                    <button id="aiSendBtn" type="button" data-i18n="send_btn">Envoyer</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="selection-toast" id="selectionToast"></div>
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const translations = {
+        fr: {
+            news_tab: 'Actualites',
+            resources_tab: 'Ressources',
+            hero_title: 'Gestion des dechets intelligents',
+            hero_subtitle: 'Suivi des zones, analyse terrain et pilotage du nettoyage sur le littoral tunisien.',
+            add_btn: '+ Ajouter un signalement',
+            stats_btn: 'Statistiques',
+            docs_btn: 'Documents',
+            map_title: 'Nos lieux d intervention en Tunisie',
+            map_subtitle: 'Carte de suivi des zones littorales et points de signalement.',
+            legend_watch: 'Zone surveillee',
+            legend_reported: 'Point signale',
+            legend_sensitive: 'Zone sensible',
+            kpi_reports: 'Signalements enregistres',
+            kpi_qty: 'Quantite totale collectee',
+            kpi_zones: 'Zones littorales suivies',
+            kpi_progress: 'Progression nettoyage',
+            regions_title: 'Zones d intervention prioritaires',
+            regions_subtitle: 'Selection de zones coherentes avec le littoral tunisien.',
+            region_monastir: 'Suivi des plages, dechets plastiques et nettoyage cible.',
+            region_kuriat_nord: 'Protection des zones sensibles et surveillance continue.',
+            region_kuriat_sud: 'Interventions rapides sur les signalements recents.',
+            region_sousse: 'Coordination nettoyage, collecte et prevention.',
+            region_mahdia: 'Observation du littoral et tri des dechets recuperes.',
+            region_sfax: 'Pilotage regional des operations et suivi de terrain.',
+            ai_help: 'Besoin d aide ?',
+            ai_subtitle: 'Assistant du module Dechet',
+            ai_start: 'Je commence une conversation',
+            ai_new_conv: 'Nouvelle conversation',
+            ai_useful: 'Questions utiles',
+            ai_q1: 'Voir les zones prioritaires',
+            ai_q2: 'Comprendre l analyse IA',
+            ai_q3: 'Lire les KPI',
+            send_btn: 'Envoyer',
+            ai_placeholder: 'Posez votre question...',
+            role_default: 'Vous etes v',
+            welcome_prefix: 'Bienvenue',
+            saved_suffix: 'votre choix a ete pris en consideration.'
+        },
+        en: {
+            news_tab: 'News',
+            resources_tab: 'Resources',
+            hero_title: 'Smart waste management',
+            hero_subtitle: 'Monitoring zones, field analysis and cleanup steering on the Tunisian coastline.',
+            add_btn: '+ Add a report',
+            stats_btn: 'Statistics',
+            docs_btn: 'Documents',
+            map_title: 'Our intervention areas in Tunisia',
+            map_subtitle: 'Monitoring map for coastal areas and reported points.',
+            legend_watch: 'Monitored area',
+            legend_reported: 'Reported point',
+            legend_sensitive: 'Sensitive area',
+            kpi_reports: 'Recorded reports',
+            kpi_qty: 'Total collected quantity',
+            kpi_zones: 'Monitored coastal areas',
+            kpi_progress: 'Cleanup progress',
+            regions_title: 'Priority intervention areas',
+            regions_subtitle: 'Selection of areas consistent with the Tunisian coastline.',
+            region_monastir: 'Beach monitoring, plastic waste tracking and targeted cleanup.',
+            region_kuriat_nord: 'Protection of sensitive areas and continuous monitoring.',
+            region_kuriat_sud: 'Rapid intervention on recent reports.',
+            region_sousse: 'Cleanup coordination, collection and prevention.',
+            region_mahdia: 'Coastline observation and recovered waste sorting.',
+            region_sfax: 'Regional operations steering and field follow-up.',
+            ai_help: 'Need help?',
+            ai_subtitle: 'Waste module assistant',
+            ai_start: 'Start a conversation',
+            ai_new_conv: 'New conversation',
+            ai_useful: 'Useful questions',
+            ai_q1: 'Show priority zones',
+            ai_q2: 'Understand AI analysis',
+            ai_q3: 'Read the KPIs',
+            send_btn: 'Send',
+            ai_placeholder: 'Ask your question...',
+            role_default: 'You are v',
+            welcome_prefix: 'Welcome',
+            saved_suffix: 'your choice has been saved.'
+        }
+    };
+
+    let currentLang = localStorage.getItem('dechet_lang') || 'fr';
+    let selectedRole = localStorage.getItem('dechet_role') || '';
+
+    const langToggle = document.getElementById('langToggle');
+    const roleDropdown = document.getElementById('roleDropdown');
+    const roleButton = document.getElementById('roleButton');
+    const roleItems = document.querySelectorAll('.role-item');
+    const toast = document.getElementById('selectionToast');
+    const aiDrawer = document.getElementById('aiDrawer');
+    const aiToggle = document.getElementById('aiAssistantToggle');
+    const aiClose = document.getElementById('aiDrawerClose');
+    const aiInput = document.getElementById('aiChatInput');
+    const aiSend = document.getElementById('aiSendBtn');
+    const aiMessages = document.getElementById('aiChatMessages');
+    const quickButtons = document.querySelectorAll('.ai-quick-btn');
+
+    function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add('show');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(function () {
+            toast.classList.remove('show');
+        }, 3200);
+    }
+
+    function updateRoleButton() {
+        const t = translations[currentLang];
+        if (selectedRole) {
+            roleButton.textContent = selectedRole + ' v';
+        } else {
+            roleButton.textContent = t.role_default;
+        }
+    }
+
+    function applyLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('dechet_lang', lang);
+
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+            const key = el.getAttribute('data-i18n');
+            if (translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
+        });
+
+        aiInput.placeholder = translations[lang].ai_placeholder;
+        langToggle.textContent = lang === 'fr' ? 'EN' : 'FR';
+        updateRoleButton();
+    }
+
+    if (roleDropdown) {
+        roleButton.addEventListener('click', function (e) {
+            e.stopPropagation();
+            roleDropdown.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function () {
+            roleDropdown.classList.remove('open');
+        });
+
+        roleItems.forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                selectedRole = item.dataset.role || item.textContent.trim();
+                localStorage.setItem('dechet_role', selectedRole);
+                roleDropdown.classList.remove('open');
+                updateRoleButton();
+
+                const t = translations[currentLang];
+                showToast(t.welcome_prefix + ' ' + selectedRole + ', ' + t.saved_suffix);
+            });
+        });
+    }
+
+    if (langToggle) {
+        langToggle.addEventListener('click', function () {
+            applyLanguage(currentLang === 'fr' ? 'en' : 'fr');
+        });
+    }
+
+    function addMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = role === 'user' ? 'ai-message user' : 'ai-message assistant';
+        div.innerHTML = '<div class="ai-bubble">' + text + '</div>';
+        aiMessages.appendChild(div);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    function getReply(question) {
+        const q = question.toLowerCase();
+
+        if (currentLang === 'en') {
+            if (q.includes('add') || q.includes('report')) {
+                return 'To add a report, use the "+ Add a report" button. You can fill in the waste type, area, date, photo and map location.';
+            }
+            if (q.includes('zone') || q.includes('priority') || q.includes('tunisia')) {
+                return 'The highlighted areas are Monastir, Kuriat Nord, Kuriat Sud, Sousse, Mahdia and Sfax. They match the coastal zones monitored on this dashboard.';
+            }
+            if (q.includes('ai')) {
+                return 'The AI analysis suggests a waste type from the image, then helps the business logic define a priority score and an automatic recommendation.';
+            }
+            if (q.includes('kpi') || q.includes('statistics')) {
+                return 'The KPIs summarize the situation through total reports, total quantity, impacted zones and cleanup progress.';
+            }
+            if (q.includes('weather')) {
+                return 'Weather data is linked to the report coordinates. It enriches field analysis with wind and local conditions.';
+            }
+            return 'I can help with reports, Tunisian zones, AI analysis, weather, KPIs and waste module navigation.';
+        }
+
+        if (q.includes('ajouter') || q.includes('signalement')) {
+            return 'Pour ajouter un signalement, utilisez le bouton "+ Ajouter un signalement". Vous pourrez renseigner le type de dechet, la zone, la date, une photo et la localisation sur la carte.';
+        }
+        if (q.includes('zone') || q.includes('prioritaire') || q.includes('tunisie')) {
+            return 'Les zones mises en avant sur cette page sont Monastir, Kuriat Nord, Kuriat Sud, Sousse, Mahdia et Sfax. Elles correspondent aux zones littorales suivies dans le tableau de bord.';
+        }
+        if (q.includes('ia')) {
+            return 'L analyse IA sert a suggerer un type de dechet a partir de l image, puis a aider le moteur metier a definir un score de priorite et une recommandation automatique.';
+        }
+        if (q.includes('kpi') || q.includes('statistique')) {
+            return 'Les KPI resumant la situation sont : le nombre total de signalements, la quantite totale, le nombre de zones touchees et la progression du nettoyage.';
+        }
+        if (q.includes('meteo')) {
+            return 'La meteo est liee aux coordonnees du signalement. Elle permet d enrichir l analyse terrain avec le vent et les conditions locales.';
+        }
+        return 'Je peux vous aider sur les signalements, les zones en Tunisie, l analyse IA, la meteo, les KPI et la navigation du module Dechet.';
+    }
+
+    function sendQuestion(question) {
+        const text = question.trim();
+        if (!text) return;
+        addMessage('user', text);
+
+        setTimeout(function () {
+            addMessage('assistant', getReply(text));
+        }, 300);
+    }
+
+    if (aiToggle) {
+        aiToggle.addEventListener('click', function () {
+            aiDrawer.classList.add('open');
+        });
+    }
+
+    if (aiClose) {
+        aiClose.addEventListener('click', function () {
+            aiDrawer.classList.remove('open');
+        });
+    }
+
+    if (aiSend) {
+        aiSend.addEventListener('click', function () {
+            const text = aiInput.value;
+            aiInput.value = '';
+            sendQuestion(text);
+        });
+    }
+
+    if (aiInput) {
+        aiInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                const text = aiInput.value;
+                aiInput.value = '';
+                sendQuestion(text);
+            }
+        });
+    }
+
+    quickButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const question = currentLang === 'en' ? (btn.dataset.questionEn || btn.textContent) : (btn.dataset.questionFr || btn.textContent);
+            sendQuestion(question);
+            aiDrawer.classList.add('open');
+        });
+    });
+
+    applyLanguage(currentLang);
+
+    const mapElement = document.getElementById('tunisiaMap');
+    if (mapElement && typeof L !== 'undefined' && !mapElement.dataset.loaded) {
+        mapElement.dataset.loaded = '1';
+
+        const map = L.map('tunisiaMap', {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([34.2, 9.6], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const cityPoints = [
+            { name: 'Tunis', lat: 36.8065, lng: 10.1815, level: 'surveillee' },
+            { name: 'Sousse', lat: 35.8256, lng: 10.6084, level: 'surveillee' },
+            { name: 'Monastir', lat: 35.7770, lng: 10.8262, level: 'sensible' },
+            { name: 'Mahdia', lat: 35.5047, lng: 11.0622, level: 'surveillee' },
+            { name: 'Sfax', lat: 34.7406, lng: 10.7603, level: 'surveillee' },
+            { name: 'Djerba', lat: 33.8076, lng: 10.8451, level: 'surveillee' }
+        ];
+
+        function colorFor(level) {
+            if (level === 'sensible') return '#f5b21c';
+            if (level === 'signale') return '#29e0dc';
+            return '#4f7cff';
+        }
+
+        cityPoints.forEach(function (point) {
+            L.circleMarker([point.lat, point.lng], {
+                radius: 8,
+                color: colorFor(point.level),
+                fillColor: colorFor(point.level),
+                fillOpacity: 0.9,
+                weight: 2
+            }).addTo(map).bindPopup(point.name);
+        });
+
+        const dechetPoints = [
+            {% for dechet in dechets %}
+                {% if dechet.latitude and dechet.longitude %}
+                {
+                    name: '{{ (dechet.zone ?: "Point signale")|e('js') }}',
+                    lat: {{ dechet.latitude }},
+                    lng: {{ dechet.longitude }}
+                },
+                {% endif %}
+            {% endfor %}
+        ];
+
+        dechetPoints.forEach(function (point) {
+            L.circleMarker([point.lat, point.lng], {
+                radius: 7,
+                color: '#29e0dc',
+                fillColor: '#29e0dc',
+                fillOpacity: 0.95,
+                weight: 2
+            }).addTo(map).bindPopup(point.name);
+        });
+    }
+});
+</script>
+<script src="/assets_admin/eco-ai-widget.js"></script>
+</div>
 {% endblock %}

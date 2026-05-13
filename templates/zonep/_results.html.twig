@@ -3,9 +3,21 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th>{{ 'common.id'|trans }}</th>
-                <th>{{ 'zonep.fields.name'|trans }}</th>
-                <th>{{ 'zonep.fields.category'|trans }}</th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'idZone', 'sens': sortBy == 'idZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'common.id'|trans }} {{ sortBy == 'idZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'nomZone', 'sens': sortBy == 'nomZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.name'|trans }} {{ sortBy == 'nomZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
+                <th>
+                    <a href="{{ path('app_zonep_index', {'tri': 'categorieZone', 'sens': sortBy == 'categorieZone' and order == 'ASC' ? 'DESC' : 'ASC', 'search': search|default(''), 'status': status|default(''), 'page': 1}) }}">
+                        {{ 'zonep.fields.category'|trans }} {{ sortBy == 'categorieZone' ? (order == 'ASC' ? '↑' : '↓') : '↕' }}
+                    </a>
+                </th>
                 <th>{{ 'zonep.fields.status'|trans }}</th>
                 <th>{{ 'common.actions'|trans }}</th>
             </tr>
@@ -37,6 +49,10 @@
                         <a href="{{ path('app_zonep_edit', {'idZone': zonep.idZone}) }}" class="btn btn-primary">
                             {{ 'common.edit'|trans }}
                         </a>
+                        <a href="{{ path('app_zonep_analyse_risque', {'idZone': zonep.idZone}) }}"
+                           class="btn btn-ai">
+                            Analyser IA
+                        </a>
                     </td>
                 </tr>
             {% else %}
@@ -52,3 +68,33 @@
         {{ knp_pagination_render(zoneps) }}
     </div>
 </div>
+
+<style>
+    .btn-ai {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(125, 211, 252, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(125, 211, 252, 0.35);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-ai::before {
+        content: '🤖';
+        font-size: 13px;
+    }
+
+    .btn-ai:hover {
+        background: rgba(125, 211, 252, 0.28);
+        border-color: rgba(125, 211, 252, 0.6);
+        color: #7dd3fc;
+        transform: translateY(-1px);
+    }
+</style>

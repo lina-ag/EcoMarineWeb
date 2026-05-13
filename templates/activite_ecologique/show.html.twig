@@ -1,14 +1,14 @@
 {% extends 'base_admin.html.twig' %}
 
-{% block page_title %}Détail activité écologique{% endblock %}
-{% block navbar_title %}Détail activité écologique{% endblock %}
+{% block page_title %}DÃƒÂ©tail activitÃƒÂ© ÃƒÂ©cologique{% endblock %}
+{% block navbar_title %}DÃƒÂ©tail activitÃƒÂ© ÃƒÂ©cologique{% endblock %}
 
 {% block admin_content %}
     <section class="glass-card">
         <div class="card-header">
             <div>
                 <h2 class="card-title">{{ activite_ecologique.nomActivite }}</h2>
-                <p class="card-subtitle">Informations détaillées sur l'activité</p>
+                <p class="card-subtitle">Informations dÃƒÂ©taillÃƒÂ©es sur l'activitÃƒÂ©</p>
             </div>
         </div>
 
@@ -16,19 +16,19 @@
             <table class="data-table">
                 <tbody>
                     <tr>
-                        <th>Id activité</th>
+                        <th>Id activitÃƒÂ©</th>
                         <td>{{ activite_ecologique.idActivite }}</td>
                     </tr>
                     <tr>
-                        <th>Nom activité</th>
+                        <th>Nom activitÃƒÂ©</th>
                         <td>{{ activite_ecologique.nomActivite }}</td>
                     </tr>
                     <tr>
-                        <th>Date activité</th>
+                        <th>Date activitÃƒÂ©</th>
                         <td>{{ activite_ecologique.dateActivite ? activite_ecologique.dateActivite|date('Y-m-d') : '' }}</td>
                     </tr>
                     <tr>
-                        <th>Capacité</th>
+                        <th>CapacitÃƒÂ©</th>
                         <td>{{ activite_ecologique.capacite }}</td>
                     </tr>
                     <tr>
@@ -40,7 +40,7 @@
         </div>
 
         <div class="btn-group">
-            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_activite_ecologique_index') }}" class="btn btn-secondary">Retour ÃƒÂ  la liste</a>
             <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary">Modifier</a>
         </div>
 

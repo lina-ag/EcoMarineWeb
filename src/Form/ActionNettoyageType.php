@@ -18,6 +18,7 @@ class ActionNettoyageType extends AbstractType
             ->add('date_action', DateType::class, [
                 'label' => 'Date de l’action',
                 'widget' => 'single_text',
+                'html5' => true,
             ])
             ->add('lieu', TextType::class, [
                 'label' => 'Lieu',
@@ -53,3 +54,4 @@ class ActionNettoyageType extends AbstractType
         ]);
     }
 }
+

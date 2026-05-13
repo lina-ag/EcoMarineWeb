@@ -1,0 +1,116 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Rapport Actions Nettoyage{% endblock %}
+{% block page_title %}Rapport Nettoyage{% endblock %}
+{% block navbar_title %}Rapport des actions de nettoyage{% endblock %}
+
+{% block admin_content %}
+    <section class="glass-card" style="margin-bottom:22px;">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Rapport des actions deja faites</h2>
+                <p class="card-subtitle">Bilan des actions passees, taux de participation et liste des benevoles.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <a href="{{ path('app_action_nettoyage_report_pdf') }}" class="btn btn-primary">Exporter PDF</a>
+                <a href="{{ path('app_action_nettoyage_index') }}" class="btn btn-secondary">Retour</a>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:18px;">
+            <div class="cleaning-stat-card"><div class="cleaning-stat-label">Actions rapportees</div><div class="cleaning-stat-value">{{ stats.past_actions_reported }}</div></div>
+            <div class="cleaning-stat-card"><div class="cleaning-stat-label">Participants cumules</div><div class="cleaning-stat-value">{{ stats.past_participants }}</div></div>
+            <div class="cleaning-stat-card"><div class="cleaning-stat-label">Taux global</div><div class="cleaning-stat-value">{{ stats.fill_rate }}%</div></div>
+        </div>
+
+        <div class="glass-card" style="padding:18px; margin-bottom:18px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
+            <h3 style="margin-top:0;">Conclusion regionale</h3>
+            <p style="margin-bottom:14px;">{{ regional_insights.summary }}</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px;">
+                {% if regional_insights.best_region %}
+                    <div style="padding:14px; border-radius:14px; background:rgba(34,197,94,0.10);">
+                        <strong>Region la plus active</strong>
+                        <div>{{ regional_insights.best_region.region }}</div>
+                        <div>{{ regional_insights.best_region.actions }} action(s) | {{ regional_insights.best_region.participants }} participants | {{ regional_insights.best_region.avg_fill_rate }}%</div>
+                    </div>
+                {% endif %}
+                {% if regional_insights.needs_support_region %}
+                    <div style="padding:14px; border-radius:14px; background:rgba(248,113,113,0.10);">
+                        <strong>Region a renforcer</strong>
+                        <div>{{ regional_insights.needs_support_region.region }}</div>
+                        <div>{{ regional_insights.needs_support_region.actions }} action(s) | {{ regional_insights.needs_support_region.participants }} participants | {{ regional_insights.needs_support_region.avg_fill_rate }}%</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-wrapper" style="margin-bottom:18px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Actions realisees</th>
+                        <th>Participants</th>
+                        <th>Capacite cumulee</th>
+                        <th>Remplissage moyen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for region in regional_insights.regions %}
+                        <tr>
+                            <td>{{ region.region }}</td>
+                            <td>{{ region.actions }}</td>
+                            <td>{{ region.participants }}</td>
+                            <td>{{ region.capacity }}</td>
+                            <td>{{ region.avg_fill_rate }}%</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5">Aucune donnee regionale disponible.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>Participants</th>
+                        <th>Capacite</th>
+                        <th>Remplissage</th>
+                        <th>Benevoles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report_rows %}
+                        <tr>
+                            <td>{{ row.lieu }}</td>
+                            <td>{{ row.date ? row.date|date('d/m/Y') : '' }}</td>
+                            <td>{{ row.participants }}</td>
+                            <td>{{ row.capacity }}</td>
+                            <td>{{ row.fill_rate }}%</td>
+                            <td>
+                                {% if row.volunteers is not empty %}
+                                    {% for volunteer in row.volunteers %}
+                                        <div>{{ volunteer.nom }} - {{ volunteer.contact }}</div>
+                                    {% endfor %}
+                                {% else %}
+                                    Aucun benevole enregistre
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6">Aucune action passee disponible pour le rapport.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

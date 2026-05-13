@@ -11,16 +11,16 @@
 #### Sur Windows :
 ```bash
 cd python_service
-python -m venv venv
-venv\Scripts\activate.bat
+python -m venv .venv
+.venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
 #### Sur Linux/Mac :
 ```bash
 cd python_service
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 

@@ -75,7 +75,9 @@
 
     {{ include('zonep/_results.html.twig') }}
 
-    <div class="zonep-map-panel">
+    <div class="zonep-map-panel"
+         data-controller="zonep-map"
+         data-zonep-map-default-style-value="satellite">
         <div class="zonep-map-toolbar">
             <div>
                 <h3 class="zonep-map-title">{{ 'zonep.map.title'|trans }}</h3>
@@ -119,9 +121,7 @@
         <div id="map-container" class="zonep-map-canvas">
             {{ ux_map(map, {
                 style: 'height: 400px; width: 100%;',
-                class: 'zonep-map-element',
-                'data-controller': 'zonep-map',
-                'data-zonep-map-default-style-value': 'satellite'
+                class: 'zonep-map-element'
             }) }}
         </div>
     </div>
@@ -134,18 +134,19 @@
     // ── Recherche / filtres ──────────────────────────────────────────────
     let searchTimer;
 
-    function doFetch() {
-        const search = document.getElementById('searchInput').value;
-        const status = document.getElementById('statusInput').value;
-        const tri    = document.getElementById('triInput').value;
-        const sens   = document.getElementById('sensInput').value;
-
+    function buildZonepUrl(page = '1') {
         const url = new URL(window.location.origin + '{{ path('app_zonep_index') }}');
-        url.searchParams.set('search', search);
-        url.searchParams.set('status', status);
-        url.searchParams.set('tri', tri);
-        url.searchParams.set('sens', sens);
-        url.searchParams.set('page', '1');
+        url.searchParams.set('search', document.getElementById('searchInput').value);
+        url.searchParams.set('status', document.getElementById('statusInput').value);
+        url.searchParams.set('tri', document.getElementById('triInput').value);
+        url.searchParams.set('sens', document.getElementById('sensInput').value);
+        url.searchParams.set('page', page);
+
+        return url;
+    }
+
+    function doFetch(page = '1') {
+        const url = buildZonepUrl(page);
 
         fetch(url.toString(), {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -158,8 +159,32 @@
             if (nextResults) {
                 document.getElementById('zonepResults').innerHTML = nextResults.innerHTML;
             }
-            window.history.pushState({}, '', url.toString());
+            window.history.replaceState({}, '', url.toString());
         });
+    }
+
+    function handleZonepResultsClick(event) {
+        const link = event.target.closest('#zonepResults thead a, #zonepResults .pagination a');
+        if (!link) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const url = new URL(link.href, window.location.origin);
+        const tri = url.searchParams.get('tri');
+        const sens = url.searchParams.get('sens');
+        const page = url.searchParams.get('page') || '1';
+
+        if (tri) {
+            document.getElementById('triInput').value = tri;
+        }
+
+        if (sens) {
+            document.getElementById('sensInput').value = sens;
+        }
+
+        doFetch(page);
     }
 
     document.getElementById('searchInput').addEventListener('input', function () {
@@ -175,6 +200,8 @@
             doFetch();
         });
     });
+
+    document.addEventListener('click', handleZonepResultsClick);
 
     // ── Recherche vocale ─────────────────────────────────────────────────
     (function () {

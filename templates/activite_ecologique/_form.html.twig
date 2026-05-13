@@ -17,16 +17,38 @@
 
         <div class="form-group-settings">
             {{ form_label(form.capacite, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'min': 1, 'max': 500}}) }}
+            <div class="d-flex gap-2 align-items-start">
+                <div class="flex-grow-1">
+                    {{ form_widget(form.capacite, {'attr': {'class': 'form-input', 'min': 1, 'max': 500}}) }}
+                </div>
+                <button type="button" class="btn btn-outline-primary" id="capacity-analyze-btn" style="white-space:nowrap; margin-top:0.15rem;">
+                    Analyser
+                </button>
+            </div>
             {{ form_errors(form.capacite) }}
+            <div id="live-prediction-container" class="mt-2"></div>
         </div>
 
         <div class="form-group-settings full-width">
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l’activité', 'id': 'description-field'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 5, 'placeholder': 'Décrivez l\'activité', 'id': 'description-field'}}) }}
             {{ form_errors(form.description) }}
-            <div style="margin-top:0.5em;">
-                <label for="activity-rating-stars">Note (étoiles) :</label>
+
+            {# ── Bouton Générer Description IA ── #}
+            <div style="margin-top: 0.6rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <button type="button" id="btn-generate-description"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem;
+                               padding: 0.5rem 1.1rem; border-radius: 12px;
+                               background: linear-gradient(135deg, #1d4ed8, #0f766e);
+                               color: #fff; border: none; font-weight: 600; font-size: 0.88rem;
+                               cursor: pointer; box-shadow: 0 6px 16px rgba(29,78,216,0.22);
+                               transition: opacity 0.2s ease;">
+                    🤖 Générer avec l'IA
+                </button>
+                <span id="generate-description-status" style="font-size: 0.82rem; color: #64748b;"></span>
+            </div>
+
+            <div style="margin-top: 0.5em;">
                 <span class="reservation-rating" id="activity-rating-stars" data-rating="0" data-editable-rating="activity-description"></span>
             </div>
         </div>
@@ -151,5 +173,168 @@
 
     syncVisibility();
     updatePreview();
+})();
+</script>
+
+<script>
+(() => {
+    // Live prediction UI triggered manually by button
+    const capaciteInput = document.getElementById('{{ form.capacite.vars.id }}');
+    const dateInput = document.getElementById('{{ form.date_activite.vars.id }}');
+    const nomInput = document.getElementById('{{ form.nom_activite.vars.id }}');
+    const analyzeButton = document.getElementById('capacity-analyze-btn');
+    const liveContainer = document.getElementById('live-prediction-container');
+
+    if (!capaciteInput || !analyzeButton || !liveContainer) return;
+
+    const getValues = () => {
+        const capacite = parseInt(capaciteInput.value, 10) || 0;
+        const nom = nomInput ? nomInput.value || '' : '';
+        const dateVal = dateInput ? dateInput.value : '';
+        let mois = 0, jour = 0;
+        if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+                mois = d.getMonth() + 1;
+                const jsDay = d.getDay();
+                jour = jsDay === 0 ? 6 : jsDay - 1;
+            }
+        }
+        const type = nom.trim().split(/\s+/)[0] ? nom.trim().split(/\s+/)[0].toLowerCase() : '';
+        return { capacite, mois, jour, type };
+    };
+
+    const render = (data) => {
+        liveContainer.innerHTML = '';
+        if (!data) return;
+        const pct = data.risque_pct !== undefined ? data.risque_pct : null;
+        const niveau = data.niveau || '';
+        const msg = data.message || '';
+        const optimal = data.capacite_optimale !== undefined ? data.capacite_optimale : null;
+        const optimalRisk = data.risque_optimale !== undefined ? data.risque_optimale : null;
+        const historicalCapacity = data.capacite_historique_estimee !== undefined ? data.capacite_historique_estimee : null;
+        const deviation = data.ecart_pourcent !== undefined ? data.ecart_pourcent : null;
+
+        const html = document.createElement('div');
+        html.className = 'alert alert-info mb-2';
+        html.innerHTML = `<strong>Analyse IA</strong><br>${msg}`;
+        liveContainer.appendChild(html);
+
+        if (historicalCapacity !== null) {
+            const demand = document.createElement('div');
+            demand.className = 'small text-muted mb-1';
+            demand.textContent = `Capacité de référence historique: ${historicalCapacity}${deviation !== null ? ` | Écart actuel: ${deviation}%` : ''}`;
+            liveContainer.appendChild(demand);
+        }
+
+        if (optimal && optimal != getValues().capacite) {
+            const sug = document.createElement('div');
+            sug.className = 'small text-muted mt-1 d-flex align-items-center gap-2';
+            sug.innerHTML = `Suggestion: capacité optimale ~ <strong>${optimal}</strong>${optimalRisk !== null ? ` (risque estimé ${optimalRisk}%)` : ''}`;
+
+            const applyBtn = document.createElement('button');
+            applyBtn.type = 'button';
+            applyBtn.className = 'btn btn-sm btn-outline-primary';
+            applyBtn.style.marginLeft = '0.5rem';
+            applyBtn.textContent = 'Appliquer suggestion';
+            applyBtn.addEventListener('click', () => {
+                capaciteInput.value = optimal;
+                analyzePrediction();
+            });
+
+            sug.appendChild(applyBtn);
+            liveContainer.appendChild(sug);
+        }
+    };
+
+    const analyzePrediction = () => {
+        const v = getValues();
+        if (!v.mois || !v.jour) {
+            liveContainer.innerHTML = '<div class="alert alert-warning mb-0">Choisissez une date valide pour analyser le risque.</div>';
+            return;
+        }
+
+        const params = new URLSearchParams({
+            mois: v.mois,
+            jour_semaine: v.jour,
+            capacite: v.capacite || 1,
+            type: v.type || ''
+        });
+
+        fetch('{{ path('app_activite_ecologique_predict_ajax') }}', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() })
+            .then(res => res.json())
+            .then(json => render(json))
+            .catch(() => { liveContainer.innerHTML = '<div class="alert alert-danger mb-0">Analyse indisponible.</div>'; });
+    };
+
+    analyzeButton.addEventListener('click', analyzePrediction);
+    if (dateInput) dateInput.addEventListener('change', () => { liveContainer.innerHTML = ''; });
+    if (nomInput) nomInput.addEventListener('input', () => { liveContainer.innerHTML = ''; });
+})();
+</script>
+
+<script>
+// ── Génération de description IA ──────────────────────────────────────────────
+(() => {
+    const btn    = document.getElementById('btn-generate-description');
+    const status = document.getElementById('generate-description-status');
+
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        const nomField      = document.getElementById('{{ form.nom_activite.vars.id }}');
+        const capaciteField = document.getElementById('{{ form.capacite.vars.id }}');
+        const dateField     = document.getElementById('{{ form.date_activite.vars.id }}');
+        const descField     = document.getElementById('{{ form.description.vars.id }}');
+
+        const nom      = nomField      ? nomField.value.trim()      : '';
+        const capacite = capaciteField ? parseInt(capaciteField.value) || 10 : 10;
+        const date     = dateField     ? dateField.value.trim()     : '';
+
+        if (!nom) {
+            status.textContent = '⚠️ Remplissez d\'abord le nom de l\'activité.';
+            status.style.color = '#f59e0b';
+            return;
+        }
+
+        btn.disabled      = true;
+        btn.style.opacity = '0.6';
+        status.textContent = '⏳ Génération en cours...';
+        status.style.color = '#64748b';
+
+        fetch('{{ path('app_activite_ecologique_generate_description') }}', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ nom, capacite, date })
+        })
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('HTTP ' + r.status + ': ' + r.statusText);
+            }
+            return r.json();
+        })
+        .then(data => {
+            console.log('API Response:', data);
+            if (data.success && descField) {
+                descField.value    = data.description;
+                status.textContent = '✅ Description générée ! (type: ' + (data.type_detecte || '?') + ')';
+                status.style.color = '#16a34a';
+            } else {
+                const errorMsg = data.message || 'Erreur inconnue';
+                status.textContent = '❌ ' + errorMsg;
+                status.style.color = '#dc2626';
+                console.error('Generation error:', errorMsg);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            status.textContent = '❌ Erreur: ' + error.message;
+            status.style.color = '#dc2626';
+        })
+        .finally(() => {
+            btn.disabled      = false;
+            btn.style.opacity = '1';
+        });
+    });
 })();
 </script>

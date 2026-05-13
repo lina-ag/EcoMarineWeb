@@ -1,0 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+.home-shell{
+    font-family:"Poppins", Arial, sans-serif;
+    background:#f3f4f6;
+    min-height:100vh;
+    padding:48px 0 70px;
+}
+
+.home-container{
+    width:min(1180px, calc(100% - 48px));
+    margin:0 auto;
+}
+
+.home-badge{
+    display:inline-flex;
+    align-items:center;
+    padding:8px 14px;
+    border-radius:10px;
+    background:#334e68;
+    color:#ffffff;
+    font-size:0.9rem;
+    font-weight:800;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+}
+
+.home-title{
+    margin:18px 0 26px;
+    font-size:3.2rem;
+    line-height:1.05;
+    font-weight:800;
+    color:#0b0f19;
+}
+
+.home-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    margin-bottom:42px;
+    border-bottom:1px solid #d7dce3;
+}
+
+.home-tab{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:140px;
+    min-height:58px;
+    padding:0 26px;
+    text-decoration:none;
+    color:#334155;
+    background:#ececec;
+    border-right:1px solid #dde3ea;
+    font-size:1rem;
+    font-weight:500;
+    transition:0.2s ease;
+}
+
+.home-tab:hover{
+    background:#e7e7e7;
+}
+
+.home-tab.active{
+    background:#ffffff;
+    color:#000000;
+    font-weight:700;
+    position:relative;
+}
+
+.home-tab.active::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:3px;
+    background:#cc402f;
+}
+
+.home-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:34px;
+    align-items:start;
+}
+
+.home-panel{
+    background:#ffffff;
+    border:1px solid #dde3ea;
+    border-radius:18px;
+    padding:34px;
+    box-shadow:0 8px 20px rgba(15,23,42,0.05);
+}
+
+.home-panel h2{
+    margin:0 0 18px;
+    color:#000000;
+    font-size:1.35rem;
+    font-weight:800;
+}
+
+.home-panel h3{
+    margin:0 0 10px;
+    color:#0b0f19;
+    font-size:1.1rem;
+    font-weight:800;
+}
+
+.home-panel p{
+    margin:0 0 14px;
+    color:#475569;
+    line-height:1.7;
+    font-size:1rem;
+}
+
+.contact-card{
+    border:1px solid #d64a3a;
+    border-left:8px solid #d64a3a;
+    padding:22px 24px;
+    background:#ffffff;
+    max-width:560px;
+}
+
+.contact-name{
+    font-size:1.15rem;
+    font-weight:800;
+    color:#000000;
+    margin-bottom:10px;
+}
+
+.contact-role{
+    color:#475569;
+    margin-bottom:8px;
+    font-size:1rem;
+}
+
+.contact-mail{
+    color:#1459a6;
+    text-decoration:none;
+    font-size:1rem;
+}
+
+.contact-region{
+    display:inline-block;
+    margin-top:18px;
+    background:#c53d2c;
+    color:#ffffff;
+    padding:10px 16px;
+    font-weight:600;
+}
+
+.quick-links{
+    display:grid;
+    gap:18px;
+}
+
+.quick-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    border:1px solid #cfd8e3;
+    background:#ffffff;
+    padding:24px 20px;
+    text-decoration:none;
+    color:inherit;
+    transition:0.2s ease;
+}
+
+.quick-card:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px rgba(15,23,42,0.07);
+}
+
+.quick-card-title{
+    font-size:1.1rem;
+    font-weight:800;
+    color:#000000;
+    margin-bottom:8px;
+}
+
+.quick-card-desc{
+    color:#475569;
+    line-height:1.5;
+}
+
+.quick-arrow{
+    font-size:2rem;
+    color:#111827;
+    font-weight:700;
+}
+
+.overview-list{
+    display:grid;
+    gap:14px;
+    margin-top:12px;
+}
+
+.overview-item{
+    padding:16px 18px;
+    border-radius:14px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    color:#334155;
+}
+
+@media (max-width: 920px){
+    .home-title{
+        font-size:2.3rem;
+    }
+
+    .home-grid{
+        grid-template-columns:1fr;
+    }
+
+    .home-tab{
+        min-width:120px;
+        padding:0 18px;
+    }
+
+    .home-container{
+        width:min(100%, calc(100% - 24px));
+    }
+}

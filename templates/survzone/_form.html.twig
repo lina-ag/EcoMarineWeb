@@ -1,4 +1,9 @@
-{{ form_start(form, {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}}) }}
+{% set survzone_form_options = {'attr': {'class': 'reservation-form', 'novalidate': 'novalidate'}} %}
+{% if form_action is defined and form_action %}
+    {% set survzone_form_options = survzone_form_options|merge({'action': form_action}) %}
+{% endif %}
+
+{{ form_start(form, survzone_form_options) }}
     <div class="form-grid">
         <div class="form-group-settings">
             {{ form_label(form.dateSurv, null, {'label_attr': {'class': 'form-label'}}) }}

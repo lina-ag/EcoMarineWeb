@@ -1,28 +1,95 @@
 {{ form_start(form) }}
-    <div class="form-grid">
-        <div class="form-group-settings">
-            {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.type, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.type) }}
+    <div class="module-form-card">
+        <div class="module-form-grid">
+            <div class="form-field">
+                {{ form_label(form.type) }}
+                {{ form_widget(form.type) }}
+                {{ form_errors(form.type) }}
+            </div>
+
+            <div class="form-field">
+                {{ form_label(form.quantite) }}
+                {{ form_widget(form.quantite) }}
+                {{ form_errors(form.quantite) }}
+            </div>
+
+            <div class="form-field">
+                {{ form_label(form.zone) }}
+                {{ form_widget(form.zone) }}
+                {{ form_errors(form.zone) }}
+            </div>
+
+            <div class="form-field">
+                {{ form_label(form.dateSignalement) }}
+                {{ form_widget(form.dateSignalement) }}
+                {{ form_errors(form.dateSignalement) }}
+            </div>
+
+            <div class="form-field full">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="form-field">
+                {{ form_label(form.statut) }}
+                {{ form_widget(form.statut) }}
+                {{ form_errors(form.statut) }}
+            </div>
+
+            <div class="form-field full">
+                {{ form_row(form.photoFile) }}
+            </div>
+
+            <div class="form-field full">
+                {{ form_widget(form.latitude) }}
+                {{ form_widget(form.longitude) }}
+                <label>Localisation sur carte</label>
+                <div id="dechet-map" style="height: 340px;"></div>
+                <small>Cliquez sur la carte pour placer le signalement. Les coordonnées seront enregistrées automatiquement.</small>
+            </div>
         </div>
 
-        <div class="form-group-settings">
-            {{ form_label(form.quantite, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.quantite, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.quantite) }}
-        </div>
-
-        <div class="form-group-settings full-width">
-            {{ form_label(form.zone, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.zone, {'attr': {'class': 'form-input'}}) }}
-            {{ form_errors(form.zone) }}
+        <div class="module-form-actions">
+            <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+            <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">Retour à la liste</a>
         </div>
     </div>
-
-    <div class="btn-group">
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-        <a href="{{ path('app_dechet_index') }}" class="btn btn-secondary">back to list</a>
-    </div>
-
-    {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const latInput = document.getElementById('{{ form.latitude.vars.id }}');
+    const lonInput = document.getElementById('{{ form.longitude.vars.id }}');
+
+    const map = L.map('dechet-map').setView([36.2570267, 10.6069029], 9);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    if (latInput.value && lonInput.value) {
+        marker = L.marker([latInput.value, lonInput.value]).addTo(map);
+        map.setView([latInput.value, lonInput.value], 13);
+    }
+
+    map.on('click', function (e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+
+        latInput.value = lat;
+        lonInput.value = lng;
+
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng).addTo(map);
+        }
+    });
+});
+</script>

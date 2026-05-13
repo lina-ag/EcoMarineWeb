@@ -1,16 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Dechet{% endblock %}
+{% block title %}Nouveau Dechet{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Create new Dechet</h2>
-                <p class="card-subtitle">Ajouter un nouveau dechet.</p>
-            </div>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
+<style>
+    .dechet-form-page {
+        margin-top: 0 !important;
+        padding-top: 24px !important;
+    }
 
-        {{ include('dechet/_form.html.twig') }}
-    </section>
+    .dechet-form-page .module-hero {
+        display: flex !important;
+        margin-top: 0 !important;
+    }
+</style>
+
+<section class="module-shell dechet-form-page">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Creer un nouveau dechet</h1>
+            <p>Ajouter un nouveau dechet avec photo, localisation et analyse intelligente.</p>
+        </div>
+    </div>
+
+    {{ include('dechet/_form.html.twig') }}
+</section>
 {% endblock %}

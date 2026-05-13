@@ -16,24 +16,10 @@ final class Version20260415103000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
+        $platformClass = strtolower(get_class($this->connection->getDatabasePlatform()));
         $this->abortIf(!str_contains($platformClass, 'mysql') && !str_contains($platformClass, 'maria'), 'Migration can only be executed safely on mysql/mariadb.');
 
-        $databaseName = (string) $this->connection->fetchOne('SELECT DATABASE()');
-        $fkName = $this->connection->fetchOne(
-            "SELECT CONSTRAINT_NAME
-             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-             WHERE TABLE_SCHEMA = ?
-               AND TABLE_NAME = 'reservation'
-               AND COLUMN_NAME = 'id_activite'
-               AND REFERENCED_TABLE_NAME = 'activite_ecologique'
-             LIMIT 1",
-            [$databaseName]
-        );
-
-        if (is_string($fkName) && $fkName !== '') {
-            $this->addSql(sprintf('ALTER TABLE reservation DROP FOREIGN KEY `%s`', $fkName));
-        }
+        $this->addSql('ALTER TABLE reservation DROP FOREIGN KEY `fk_activite`');
 
         $this->addSql('ALTER TABLE reservation CHANGE id_activite id_activite INT DEFAULT NULL');
         $this->addSql('ALTER TABLE reservation ADD CONSTRAINT fk_activite FOREIGN KEY (id_activite) REFERENCES activite_ecologique (id_activite) ON DELETE SET NULL ON UPDATE CASCADE');
@@ -44,21 +30,7 @@ final class Version20260415103000 extends AbstractMigration
         $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
         $this->abortIf(!str_contains($platformClass, 'mysql') && !str_contains($platformClass, 'maria'), 'Migration can only be executed safely on mysql/mariadb.');
 
-        $databaseName = (string) $this->connection->fetchOne('SELECT DATABASE()');
-        $fkName = $this->connection->fetchOne(
-            "SELECT CONSTRAINT_NAME
-             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-             WHERE TABLE_SCHEMA = ?
-               AND TABLE_NAME = 'reservation'
-               AND COLUMN_NAME = 'id_activite'
-               AND REFERENCED_TABLE_NAME = 'activite_ecologique'
-             LIMIT 1",
-            [$databaseName]
-        );
-
-        if (is_string($fkName) && $fkName !== '') {
-            $this->addSql(sprintf('ALTER TABLE reservation DROP FOREIGN KEY `%s`', $fkName));
-        }
+        $this->addSql('ALTER TABLE reservation DROP FOREIGN KEY `FK_42C84955E8AEB980`');
 
         $this->addSql('DELETE FROM reservation WHERE id_activite IS NULL');
         $this->addSql('ALTER TABLE reservation CHANGE id_activite id_activite INT NOT NULL');

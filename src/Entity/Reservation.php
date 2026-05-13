@@ -133,6 +133,21 @@ class Reservation
         return $this;
     }
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_utilisateur', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $utilisateur = null;
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
     public function getIdReservation(): ?int
     {
         return $this->id_reservation;
@@ -166,5 +181,19 @@ class Reservation
     public function validateDateMatchesActivity(ExecutionContextInterface $context): void
     {
         // Validation gérée dans ReservationType via POST_SUBMIT
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $quiz_badge = null;
+
+    public function getQuizBadge(): ?string
+    {
+        return $this->quiz_badge;
+    }
+
+    public function setQuizBadge(?string $quiz_badge): self
+    {
+        $this->quiz_badge = $quiz_badge;
+        return $this;
     }
 }

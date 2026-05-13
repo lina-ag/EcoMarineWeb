@@ -4,25 +4,70 @@
 
 {% block body %}
 
-{% for message in app.flashes('success') %}
-    <div class="alert alert-success alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endfor %}
+{% set flash_messages = app.flashes %}
 
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
+{% if flash_messages is not empty %}
+    <div class="flash-stack" id="flashStack">
+        {% for label, messages in flash_messages %}
+            {% for message in messages %}
+                <div class="flash-toast flash-{{ label }}" data-flash-toast>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
     </div>
-{% endfor %}
+{% endif %}
 
 <style>
+    .flash-stack {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: min(92vw, 720px);
+        pointer-events: none;
+    }
+
+    .flash-toast {
+        padding: 18px 24px;
+        border-radius: 20px;
+        color: #fff;
+        text-align: center;
+        font-size: 1rem;
+        line-height: 1.4;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .flash-toast.is-hiding {
+        opacity: 0;
+        transform: translateY(-14px);
+    }
+
+    .flash-success {
+        background: #198754;
+    }
+
+    .flash-danger,
+    .flash-error {
+        background: #dc3545;
+    }
+
+    .flash-warning {
+        background: #ffc107;
+        color: #1f2937;
+    }
+
+    .flash-info {
+        background: #0d6efd;
+    }
+
     #nav-form-btn {
         display: inline-flex;
         align-items: center;
@@ -41,6 +86,7 @@
         padding: 0.5rem 0.8rem;
         border-radius: 4px;
     }
+
     #nav-form-btn:hover,
     #nav-form-btn:focus-visible {
         background: rgba(255, 255, 255, 0.1);
@@ -49,6 +95,7 @@
         box-shadow: none;
         outline: none;
     }
+
     #nav-form-badge {
         background: rgba(255, 255, 255, 0.2);
         border-radius: 12px;
@@ -57,8 +104,7 @@
         font-weight: 500;
         margin-left: 0.2rem;
     }
-    
-    /* Styles pour une meilleure organisation de la navbar */
+
     .navbar {
         display: flex;
         align-items: center;
@@ -66,26 +112,26 @@
         flex-wrap: wrap;
         padding: 0.5rem 1rem;
     }
-    
+
     .navigation-row {
         display: flex;
         align-items: center;
         flex: 1;
         justify-content: flex-end;
     }
-    
+
     #navigation {
         display: flex;
         align-items: center;
         width: auto;
     }
-    
+
     .nav-box {
         display: flex;
         align-items: center;
         gap: 0.2rem;
     }
-    
+
     .navigation-menu {
         display: flex;
         align-items: center;
@@ -95,11 +141,11 @@
         gap: 0.2rem;
         flex-wrap: wrap;
     }
-    
+
     .navigation-menu li {
         margin: 0;
     }
-    
+
     .navigation-menu li a {
         display: inline-block;
         padding: 0.5rem 0.8rem;
@@ -109,11 +155,11 @@
         font-weight: 500;
         border-radius: 4px;
     }
-    
+
     .navigation-menu li a:hover {
         background: rgba(255, 255, 255, 0.1);
     }
-    
+
     .navbar-toggle {
         display: none;
         background: none;
@@ -122,12 +168,459 @@
         font-size: 1.5rem;
         cursor: pointer;
     }
-    
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.6rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .bg-success {
+        background: #198754;
+        color: #fff;
+    }
+
+    .bg-danger {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .btn-success {
+        background: #198754;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-outline-success {
+        background: transparent;
+        color: #198754;
+        border: 1px solid #198754;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+    }
+
+    .cleaning-actions-panel {
+        display: block;
+    }
+
+    #cleaning-actions-wrapper.is-loading {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .cleaning-card {
+        position: relative;
+        overflow: hidden;
+        padding: 28px 28px 24px;
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background:
+            linear-gradient(145deg, rgba(7, 30, 52, 0.74), rgba(9, 45, 73, 0.56)),
+            rgba(255, 255, 255, 0.08);
+        box-shadow: 0 28px 60px rgba(2, 18, 35, 0.24);
+        backdrop-filter: blur(16px);
+        text-align: left;
+    }
+
+    .cleaning-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, rgba(33, 211, 238, 0.95), rgba(14, 165, 233, 0.25));
+    }
+
+    .cleaning-card h3 {
+        margin-bottom: 10px;
+        font-size: 1.9rem;
+        letter-spacing: 0.04em;
+    }
+
+    .cleaning-card .form-subtitle {
+        margin-bottom: 24px;
+        color: rgba(235, 248, 255, 0.84);
+        font-size: 1rem;
+    }
+
+    .cleaning-table-shell {
+        border-radius: 24px;
+        border: 1px solid rgba(178, 245, 255, 0.24);
+        background:
+            linear-gradient(180deg, rgba(38, 118, 146, 0.24), rgba(34, 166, 179, 0.18)),
+            rgba(42, 103, 126, 0.12);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            0 16px 34px rgba(4, 59, 94, 0.16);
+        overflow: hidden;
+    }
+
+    .cleaning-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #f7fbff;
+        text-align: left;
+    }
+
+    .cleaning-table thead th {
+        padding: 18px 20px;
+        border: none;
+        background: linear-gradient(180deg, rgba(28, 118, 145, 0.52), rgba(34, 170, 192, 0.3));
+        color: #ffffff;
+        font-size: 0.98rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .cleaning-table tbody td {
+        padding: 20px;
+        border: none;
+        border-top: 1px solid rgba(192, 244, 255, 0.16);
+        background: rgba(52, 110, 132, 0.16);
+        color: rgba(247, 252, 255, 0.98);
+        font-size: 1.02rem;
+        vertical-align: middle;
+    }
+
+    .cleaning-table tbody tr {
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cleaning-table tbody tr:nth-child(even) td {
+        background: rgba(61, 126, 150, 0.2);
+    }
+
+    .cleaning-table tbody tr:hover {
+        background: rgba(54, 182, 212, 0.18);
+    }
+
+    .cleaning-table tbody tr:hover td {
+        background: rgba(79, 173, 198, 0.24);
+    }
+
+    .cleaning-table td:last-child,
+    .cleaning-table th:last-child {
+        text-align: center;
+    }
+
+    .cleaning-table td:nth-child(3),
+    .cleaning-table th:nth-child(3),
+    .cleaning-table td:nth-child(4),
+    .cleaning-table th:nth-child(4) {
+        text-align: center;
+    }
+
+    .cleaning-card .badge {
+        padding: 0.5rem 0.95rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-card .bg-success {
+        background: linear-gradient(135deg, #32d583, #16a34a);
+        color: #ffffff;
+    }
+
+    .cleaning-card .bg-danger {
+        background: linear-gradient(135deg, #ff6b81, #dc3545);
+        color: #ffffff;
+    }
+
+    .cleaning-card .btn {
+        min-width: 168px;
+        min-height: 54px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-card .btn-success {
+        background: linear-gradient(135deg, #26d97e, #0f9f61);
+        border: none;
+        color: #fff;
+        box-shadow: 0 14px 24px rgba(15, 159, 97, 0.22);
+    }
+
+    .cleaning-card .btn-outline-success {
+        background: rgba(29, 141, 112, 0.18);
+        border: 1px solid rgba(52, 211, 153, 0.7);
+        color: #d1fae5;
+    }
+
+    .cleaning-card .btn-outline-success:hover,
+    .cleaning-card .btn-outline-success:focus {
+        background: rgba(37, 217, 126, 0.26);
+        border-color: rgba(115, 240, 178, 0.95);
+        color: #ffffff;
+    }
+
+    .cleaning-card .btn-danger {
+        background: rgba(153, 57, 76, 0.2);
+        border: 1px solid rgba(251, 113, 133, 0.62);
+        color: #ffe4e6;
+    }
+
+    .cleaning-card .btn-danger:hover,
+    .cleaning-card .btn-danger:focus {
+        background: rgba(255, 134, 159, 0.28);
+        border-color: rgba(255, 164, 176, 0.75);
+        color: #fff;
+    }
+
+    .cleaning-card .btn-secondary {
+        background: rgba(111, 139, 155, 0.22);
+        border: 1px solid rgba(186, 208, 219, 0.2);
+        color: rgba(241, 245, 249, 0.82);
+    }
+
+    .cleaning-note {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(47, 162, 195, 0.22), rgba(77, 124, 232, 0.18));
+        color: #e0f2fe;
+        font-size: 0.84rem;
+        font-weight: 600;
+        user-select: text;
+    }
+
+    .cleaning-filters {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        align-items: end;
+        margin-bottom: 22px;
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(191, 245, 255, 0.16);
+        background: rgba(229, 249, 255, 0.08);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .cleaning-filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cleaning-filter-label {
+        color: rgba(233, 248, 255, 0.92);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .cleaning-filter-control {
+        width: 100%;
+        min-height: 50px;
+        padding: 0 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(167, 239, 255, 0.25);
+        background: rgba(7, 35, 56, 0.48);
+        color: #f6fcff;
+        font-size: 0.96rem;
+        outline: none;
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cleaning-filter-control:focus {
+        border-color: rgba(73, 212, 255, 0.76);
+        background: rgba(10, 48, 76, 0.68);
+        box-shadow: 0 0 0 3px rgba(35, 200, 255, 0.14);
+    }
+
+    .cleaning-filter-control option {
+        background: #113450;
+        color: #f6fcff;
+    }
+
+    .cleaning-filter-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .cleaning-filter-actions .btn {
+        min-width: 0;
+        min-height: 50px;
+        padding: 0 18px;
+        border-radius: 14px;
+    }
+
+    .cleaning-filter-reset {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(174, 236, 255, 0.24);
+        background: rgba(255, 255, 255, 0.08);
+        color: #f6fcff;
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .cleaning-filter-reset:hover,
+    .cleaning-filter-reset:focus {
+        background: rgba(255, 255, 255, 0.14);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .cleaning-empty {
+        padding: 18px 20px;
+        border-radius: 18px;
+        border: 1px dashed rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(240, 249, 255, 0.82);
+        text-align: center;
+    }
+
+    .cleaning-pagination {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .cleaning-pagination .cleaning-pagination__link {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+        margin: 0;
+        border-radius: 14px;
+        background: rgba(6, 24, 44, 0.34);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f8fbff;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .cleaning-pagination a.cleaning-pagination__link:hover {
+        background: rgba(21, 101, 192, 0.32);
+        border-color: rgba(88, 166, 255, 0.48);
+        transform: translateY(-1px);
+    }
+
+    .cleaning-pagination .current.cleaning-pagination__link {
+        background: linear-gradient(135deg, #23c8ff 0%, #1184ff 100%);
+        color: #042544;
+        box-shadow: 0 14px 28px rgba(17, 132, 255, 0.28);
+    }
+
+    .cleaning-pagination .disabled.cleaning-pagination__link {
+        opacity: 0.35;
+    }
+
+    @media (max-width: 768px) {
+        .cleaning-card {
+            padding: 22px 16px 18px;
+            border-radius: 22px;
+        }
+
+        .cleaning-card h3 {
+            font-size: 1.45rem;
+        }
+
+        .cleaning-table thead th,
+        .cleaning-table tbody td {
+            padding: 14px 12px;
+            font-size: 0.92rem;
+        }
+
+        .cleaning-card .btn {
+            min-width: 130px;
+            min-height: 46px;
+            font-size: 0.84rem;
+        }
+
+        .cleaning-filters {
+            grid-template-columns: 1fr;
+            padding: 16px;
+        }
+
+        .cleaning-filter-actions {
+            justify-content: stretch;
+            flex-direction: column;
+        }
+
+        .cleaning-filter-actions .btn,
+        .cleaning-filter-reset {
+            width: 100%;
+        }
+    }
+
+    .btn-sm {
+        font-size: 0.85rem;
+    }
+
+    select.form-input option {
+        background-color: #1a1a2e;
+        color: #ffffff;
+        padding: 0.75rem;
+    }
+
+    select.form-input option:checked {
+        background: linear-gradient(135deg, #16c2e2 0%, #5268e4 100%);
+        background-color: #5268e4;
+        color: #ffffff;
+    }
+
+    select.form-input option:hover {
+        background-color: #2d2d44;
+    }
+
     @media (max-width: 992px) {
         .navbar-toggle {
             display: block;
         }
-        
+
         .nav-box {
             display: none;
             position: absolute;
@@ -139,30 +632,34 @@
             padding: 1rem;
             z-index: 1000;
         }
-        
+
         .nav-box.active {
             display: flex;
         }
-        
+
         .navigation-menu {
             flex-direction: column;
             width: 100%;
             text-align: center;
         }
-        
+
         .navigation-menu li {
             width: 100%;
         }
-        
+
         .navigation-menu li a {
             display: block;
             padding: 0.8rem;
         }
-        
-        #nav-form-btn {
-            margin: 0.5rem 0;
-            width: 100%;
-            justify-content: center;
+    }
+
+    @media (max-width: 1024px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .glass-card {
+            padding: 28px;
         }
     }
 </style>
@@ -183,11 +680,13 @@
                 <a href="#" id="logo" title="EcoMarine">
                     <img src="/assets/images/logoEco.png" alt="EcoMarine" style="height: 110px; width: auto; vertical-align: middle;">
                 </a>
+
                 <div class="navigation-row">
                     <nav id="navigation">
                         <button type="button" class="navbar-toggle">
                             <i class="fa fa-bars"></i>
                         </button>
+
                         <div class="nav-box navbar-collapse">
                             <ul class="navigation-menu nav navbar-nav navbars" id="nav">
                                 <li data-menuanchor="slide01" class="active"><a href="#slide01">Accueil</a></li>
@@ -196,11 +695,11 @@
                                 <li data-menuanchor="slide05"><a href="#slide05">Galerie</a></li>
                                 <li data-menuanchor="slide06"><a href="#slide06">Témoignages</a></li>
                                 <li data-menuanchor="slide07"><a href="#slide07">Contact</a></li>
-                                <li><button id="nav-form-btn" type="button" aria-label="Formulaire suivant">
-                                    <span>📋</span>
-                                    <span id="nav-form-label">Réservations</span>
-                                    <span id="nav-form-badge">1/10</span>
-                                </button></li>
+                                <li data-menuanchor="slide08"><a href="#slide08">Réservations</a></li>
+                                <li data-menuanchor="slide09"><a href="#slide09">Activités Éco.</a></li>
+                                <li data-menuanchor="slide11"><a href="#slide11">Zones Protégées</a></li>
+                                <li data-menuanchor="slide10"><a href="#slide10">Surveillance</a></li>
+                                <li data-menuanchor="slide12"><a href="#slide12">Nettoyage</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -216,7 +715,7 @@
     <div id="fullpage" class="fullpage-default">
 
         <!-- SLIDE 01 — Accueil -->
-        <div class="section animated-row" data-section="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
+        <div class="section animated-row" data-section="slide01" data-anchor="slide01" style="background-color: rgba(255, 255, 255, 0.05);">
             <div class="section-inner">
                 <div class="welcome-box">
                     <span class="welcome-first animate" data-animate="fadeInUp">Bienvenue sur</span>
@@ -234,7 +733,7 @@
         </div>
 
         <!-- SLIDE 02 — À Propos -->
-        <div class="section animated-row" data-section="slide02">
+        <div class="section animated-row" data-section="slide02" data-anchor="slide02">
             <div class="section-inner">
                 <div class="about-section">
                     <div class="row justify-content-center">
@@ -251,6 +750,7 @@
                                                 de nature avec des expériences uniques tout en protégeant l'écosystème marin.
                                             </p>
                                         </div>
+
                                         <div class="facts-list owl-carousel">
                                             <div class="item animate" data-animate="fadeInUp">
                                                 <div class="counter-box">
@@ -279,6 +779,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <figure class="about-img animate" data-animate="fadeInUp">
                                         <img src="/assets/images/profile-girl.jpg" class="rounded" alt="EcoMarine Team">
@@ -292,7 +793,7 @@
         </div>
 
         <!-- SLIDE 03 — Activités -->
-        <div class="section animated-row" data-section="slide03">
+        <div class="section animated-row" data-section="slide03" data-anchor="slide03">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -300,6 +801,7 @@
                             <span>Nos Activités</span>
                             <h2>Que proposons-nous ?</h2>
                         </div>
+
                         <div class="services-section">
                             <div class="services-list owl-carousel">
                                 <div class="item animate" data-animate="fadeInUp">
@@ -309,6 +811,7 @@
                                         <p>Partez découvrir les fonds marins de Kuriat lors de sorties en bateau encadrées par nos experts.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-life-ring" aria-hidden="true"></i></span>
@@ -316,6 +819,7 @@
                                         <p>Explorez les récifs et grottes sous-marines avec nos moniteurs diplômés d'État.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-camera" aria-hidden="true"></i></span>
@@ -323,6 +827,7 @@
                                         <p>Immortalisez vos découvertes avec notre matériel de prise de vue sous-marine.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-leaf" aria-hidden="true"></i></span>
@@ -330,6 +835,7 @@
                                         <p>Participez à nos programmes de suivi des tortues marines et de protection des coraux.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-map-marker" aria-hidden="true"></i></span>
@@ -337,6 +843,7 @@
                                         <p>Découvrez la faune et la flore de l'île de Kuriat lors de balades guidées sur le littoral.</p>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="service-box">
                                         <span class="service-icon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
@@ -346,13 +853,14 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- SLIDE 05 — Galerie -->
-        <div class="section animated-row" data-section="slide05">
+        <div class="section animated-row" data-section="slide05" data-anchor="slide05">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -360,57 +868,52 @@
                             <span>Galerie</span>
                             <h2>Nos plus beaux moments</h2>
                         </div>
+
                         <div class="gallery-section">
                             <div class="gallery-list owl-carousel">
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-5.jpeg" alt="Plongée à Kuriat">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-5.jpeg" alt="Plongée à Kuriat"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Plongée à Kuriat</h4>
                                             <p>Une immersion unique dans les eaux cristallines de l'île de Kuriat.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-2.jpeg" alt="Tortues marines">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-2.jpeg" alt="Tortues marines"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Tortues marines</h4>
                                             <p>Observation et suivi des tortues Caouannes dans leur habitat naturel.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-3.jpeg" alt="Excursion en mer">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-3.jpeg" alt="Excursion en mer"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Excursion en mer</h4>
                                             <p>Découverte des côtes de Monastir à bord de nos embarcations.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-1.jpeg" alt="Faune marine">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-1.jpeg" alt="Faune marine"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Faune marine</h4>
                                             <p>Richesse et diversité des espèces marines méditerranéennes.</p>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="item animate" data-animate="fadeInUp">
                                     <div class="portfolio-item">
-                                        <div class="thumb">
-                                            <img src="/assets/images/item-4.jpg" alt="Coucher de soleil">
-                                        </div>
+                                        <div class="thumb"><img src="/assets/images/item-4.jpg" alt="Coucher de soleil"></div>
                                         <div class="thumb-inner animate" data-animate="fadeInUp">
                                             <h4>Coucher de soleil</h4>
                                             <p>Des paysages à couper le souffle depuis les rivages de Kuriat.</p>
@@ -419,13 +922,14 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- SLIDE 06 — Témoignages -->
-        <div class="section animated-row" data-section="slide06">
+        <div class="section animated-row" data-section="slide06" data-anchor="slide06">
             <div class="section-inner">
                 <div class="row justify-content-center">
                     <div class="col-md-8 wide-col-laptop">
@@ -433,14 +937,13 @@
                             <span>Témoignages</span>
                             <h2>Ce qu'ils disent</h2>
                         </div>
+
                         <div class="col-md-8 offset-md-2">
                             <div class="testimonials-section">
                                 <div class="testimonials-slider owl-carousel">
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Yasmine">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Yasmine"></div>
                                             <div class="testimonial-content">
                                                 <h4>Yasmine B.</h4>
                                                 <p>"Une expérience inoubliable ! L'équipe EcoMarine est passionnée et très professionnelle. Je recommande vivement."</p>
@@ -448,11 +951,10 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-girl.jpg" class="rounded-circle" alt="Karim">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-girl.jpg" class="rounded-circle" alt="Karim"></div>
                                             <div class="testimonial-content">
                                                 <h4>Karim M.</h4>
                                                 <p>"La plongée à Kuriat était magique. Voir les tortues dans leur milieu naturel est une expérience unique."</p>
@@ -460,11 +962,10 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="item animate" data-animate="fadeInUp">
                                         <div class="testimonial-item">
-                                            <div class="client-row">
-                                                <img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Sofia">
-                                            </div>
+                                            <div class="client-row"><img src="/assets/images/profile-01.jpg" class="rounded-circle" alt="Sofia"></div>
                                             <div class="testimonial-content">
                                                 <h4>Sofia L.</h4>
                                                 <p>"Parfait pour une escapade écologique. La réservation en ligne est simple et l'accueil chaleureux."</p>
@@ -475,6 +976,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -489,21 +991,17 @@
                             <span>Contact</span>
                             <h2>Contactez-nous !</h2>
                         </div>
+
                         <div class="contact-section">
                             <div class="row">
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
                                     <div class="contact-box">
-                                        <div class="contact-row">
-                                            <i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie
-                                        </div>
-                                        <div class="contact-row">
-                                            <i class="fa fa-phone"></i> +216 73 000 000
-                                        </div>
-                                        <div class="contact-row">
-                                            <i class="fa fa-envelope"></i> contact@ecomarine.tn
-                                        </div>
+                                        <div class="contact-row"><i class="fa fa-map-marker"></i> Île de Kuriat, Monastir, Tunisie</div>
+                                        <div class="contact-row"><i class="fa fa-phone"></i> +216 73 000 000</div>
+                                        <div class="contact-row"><i class="fa fa-envelope"></i> contact@ecomarine.tn</div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6 animate" data-animate="fadeInUp">
                                     <form id="ajax-contact" method="post" action="#">
                                         <div class="input-field">
@@ -521,6 +1019,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -535,6 +1034,7 @@
                             <span>Réservez maintenant</span>
                             <h2>Planifiez votre expérience</h2>
                         </div>
+
                         <div class="reservations-section">
                             <div class="row">
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
@@ -551,6 +1051,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -565,6 +1066,7 @@
                             <span>Activités Écologiques</span>
                             <h2>Proposer une activité écologique</h2>
                         </div>
+
                         <div class="reservations-section">
                             <div class="row">
                                 <div class="col-md-7 offset-md-2 animate" data-animate="fadeInUp">
@@ -581,6 +1083,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -595,6 +1098,7 @@
                             <span>Gérer les zones</span>
                             <h2>Ajouter une zone protégée</h2>
                         </div>
+
                         <div class="reservations-section">
                             <div class="row">
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
@@ -611,6 +1115,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -625,6 +1130,7 @@
                             <span>Suivi terrain</span>
                             <h2>Ajouter une surveillance de zone</h2>
                         </div>
+
                         <div class="reservations-section">
                             <div class="row">
                                 <div class="col-md-8 offset-md-2 animate" data-animate="fadeInUp">
@@ -641,138 +1147,172 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 209b — Nouvelle Activité Écologique -->
-        <div class="section animated-row" data-section="slide209b" data-anchor="slide209b">
+        <!-- SLIDE 12 — Nettoyage -->
+        <div class="section animated-row" data-section="slide12" data-anchor="slide12">
             <div class="section-inner">
                 <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle activité</span>
-                            <h2>Ajouter une activité écologique</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('activite_ecologique/_form.html.twig', {
-                                'form': activiteForm,
-                                'button_label': 'Ajouter l\'activité',
-                                'form_action': path('app_activite_ecologique_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    <div class="col-md-10 wide-col-laptop">
 
-        <!-- SLIDE 210 — Faune Marine -->
-        <div class="section animated-row" data-section="slide210" data-anchor="slide210">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
                         <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle observation</span>
-                            <h2>Signaler une faune marine</h2>
+                            <span>Actions de nettoyage</span>
+                            <h2>Participez à la protection du littoral</h2>
                         </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('faune_marine/_form.html.twig', {
-                                'form': fauneMarineForm,
-                                'button_label': 'Ajouter la faune',
-                                'form_action': path('app_faune_marine_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- SLIDE 211 — Observation -->
-        <div class="section animated-row" data-section="slide211" data-anchor="slide211">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Nouvelle observation</span>
-                            <h2>Documenter une observation</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('observation/_form.html.twig', {
-                                'form': observationForm,
-                                'button_label': 'Enregistrer l\'observation',
-                                'form_action': path('app_observation_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <!-- Bloc : Actions recommandées -->
+                        <div class="form-card cleaning-card animate" data-animate="fadeInUp">
+                            <h3>Actions recommandées pour vous</h3>
+                            <p class="form-subtitle">
+                                Recommandations personnalisées sur les actions de nettoyage disponibles.
+                            </p>
 
-        <!-- SLIDE 212 — Prédiction d'Échouage -->
-        <div class="section animated-row" data-section="slide212" data-anchor="slide212">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Prédiction</span>
-                            <h2>Ajouter une prédiction d'échouage</h2>
+                            {% if current_user is not null %}
+                                {% if actions_recommandees is defined and actions_recommandees is not empty %}
+                                    <div class="table-responsive cleaning-table-shell">
+                                        <table class="table table-dark table-hover cleaning-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Lieu</th>
+                                                    <th>Date</th>
+                                                    <th>Places</th>
+                                                    <th>Raison</th>
+                                                    <th>Participation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for rec in actions_recommandees %}
+                                                    {% set action = rec.action %}
+                                                    <tr>
+                                                        <td>{{ action.lieu }}</td>
+                                                        <td>{{ action.getDateAction() ? action.getDateAction()|date('d/m/Y') : 'Non définie' }}</td>
+                                                        <td>{{ action.getNombreVolontaires() }} / {{ action.limiteBenevoles }}</td>
+                                                        <td><span class="cleaning-note">{{ rec.raison }}</span></td>
+                                                        <td>
+                                                            <form method="post" action="{{ path('app_action_nettoyage_participer', {'id_action': action.getIdAction()}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ action.getIdAction()) }}">
+                                                                <button type="submit" class="btn btn-success btn-sm">Participer</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="cleaning-empty">Aucune recommandation disponible pour le moment.</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="cleaning-empty">Connectez-vous pour recevoir des recommandations personnalisées.</p>
+                            {% endif %}
                         </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('prediction_echouage/_form.html.twig', {
-                                'form': predictionForm,
-                                'button_label': 'Ajouter la prédiction',
-                                'form_action': path('app_prediction_echouage_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- SLIDE 213 — Mission Drone -->
-        <div class="section animated-row" data-section="slide213" data-anchor="slide213">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Surveillance aérienne</span>
-                            <h2>Planifier une mission drone</h2>
-                        </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('mission_drone/_form.html.twig', {
-                                'form': missionDroneForm,
-                                'button_label': 'Créer la mission',
-                                'form_action': path('app_mission_drone_new'),
-                                'show_back_button': false
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <!-- Bloc : Actions disponibles -->
+                        <div class="form-card cleaning-card mt-4 animate" data-animate="fadeInUp">
+                            <h3>Actions disponibles</h3>
+                            <p class="form-subtitle">
+                                Consultez les actions de nettoyage disponibles et participez comme bénévole.
+                            </p>
 
-        <!-- SLIDE 214 — Détection Drone -->
-        <div class="section animated-row" data-section="slide214" data-anchor="slide214">
-            <div class="section-inner">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 wide-col-laptop">
-                        <div class="title-block animate" data-animate="fadeInUp">
-                            <span>Résultats IA</span>
-                            <h2>Ajouter une détection drone</h2>
+                            <form method="get"
+                                  action="{{ path('app_home') }}"
+                                  class="cleaning-filters"
+                                  data-cleaning-filter-form>
+                                <input type="hidden" name="_fragment" value="slide12">
+
+                                <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningLieu">Filtrer par lieu</label>
+                                    <select id="cleaningLieu" name="cleaning_lieu" class="cleaning-filter-control">
+                                        <option value="">Tous les lieux</option>
+                                        {% for lieu in cleaning_available_lieux|default([]) %}
+                                            <option value="{{ lieu }}" {% if cleaning_filter_lieu|default('') == lieu %}selected{% endif %}>
+                                                {{ lieu }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningDate">Filtrer par date</label>
+                                    <select id="cleaningDate" name="cleaning_date" class="cleaning-filter-control">
+                                        <option value="">Toutes les dates</option>
+                                        {% for availableDate in cleaning_available_dates|default([]) %}
+                                            {% set optionValue = availableDate|date('Y-m-d') %}
+                                            <option value="{{ optionValue }}" {% if cleaning_filter_date|default('') == optionValue %}selected{% endif %}>
+                                                {{ availableDate|date('d/m/Y') }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
+                                    <label class="cleaning-filter-label" for="cleaningStatus">Filtrer par statut</label>
+                                    <select id="cleaningStatus" name="cleaning_status" class="cleaning-filter-control">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="available" {% if cleaning_filter_status|default('') == 'available' %}selected{% endif %}>Disponible</option>
+                                        <option value="complete" {% if cleaning_filter_status|default('') == 'complete' %}selected{% endif %}>Complete</option>
+                                    </select>
+                                </div>
+
+                                <div class="cleaning-filter-field">
+                                    <span class="cleaning-filter-label">Aperçu</span>
+                                    <div class="cleaning-note"
+                                         data-cleaning-preview
+                                         data-default-preview="Choisissez un lieu, une date, ou les deux.">
+                                        {% if cleaning_filter_lieu|default('') or cleaning_filter_date|default('') or cleaning_filter_status|default('') %}
+                                            {% set previewParts = [] %}
+                                            {% if cleaning_filter_lieu|default('') %}
+                                                {% set previewParts = previewParts|merge(['Lieu : ' ~ cleaning_filter_lieu]) %}
+                                            {% endif %}
+                                            {% if cleaning_filter_date|default('') %}
+                                                {% set previewParts = previewParts|merge(['Date : ' ~ cleaning_filter_date]) %}
+                                            {% endif %}
+                                            {% if cleaning_filter_status|default('') == 'available' %}
+                                                {% set previewParts = previewParts|merge(['Statut : Disponible']) %}
+                                            {% elseif cleaning_filter_status|default('') == 'complete' %}
+                                                {% set previewParts = previewParts|merge(['Statut : Complete']) %}
+                                            {% endif %}
+                                            {{ previewParts|join(' | ') }}
+                                        {% else %}
+                                            Choisissez un lieu, une date, ou les deux.
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="cleaning-filter-actions">
+                                    <button type="submit" class="btn btn-success btn-sm">Filtrer</button>
+                                    <a href="{{ path('app_home', {'_fragment': 'slide12'}) }}"
+                                       class="cleaning-filter-reset"
+                                       data-cleaning-filter-reset>Réinitialiser</a>
+                                </div>
+                            </form>
+
+                            <div id="cleaning-actions-wrapper" data-cleaning-pagination-root>
+                                {{ include('home/_actions_nettoyage_list.html.twig', {
+                                    actions_nettoyage: actions_nettoyage,
+                                    inscriptions_utilisateur: inscriptions_utilisateur
+                                }) }}
+                            </div>
                         </div>
-                        <div class="glass-card animate" data-animate="fadeInUp">
-                            {{ include('detection_drone/_form.html.twig', {
-                                'form': detectionDroneForm,
-                                'button_label': 'Enregistrer la détection',
-                                'form_action': path('app_detection_drone_new'),
-                                'show_back_button': false
-                            }) }}
+
+                        <!-- Bloc : Mes participations -->
+                        <div class="form-card cleaning-card mt-4 animate" data-animate="fadeInUp">
+                            <h3>Mes actions de nettoyage</h3>
+                            <p class="form-subtitle">
+                                Retrouvez les actions de nettoyage auxquelles vous participez déjà.
+                            </p>
+
+                            <div id="my-cleaning-actions-wrapper" data-cleaning-pagination-root data-cleaning-subsection="my">
+                                {{ include('home/_my_actions_nettoyage_list.html.twig', {
+                                    mes_inscriptions_nettoyage: mes_inscriptions_nettoyage
+                                }) }}
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -780,6 +1320,7 @@
 
     </div>{# fin #fullpage #}
 
+    <!-- Réseaux sociaux -->
     <div id="social-icons">
         <div class="text-right">
             <ul class="social-icons">
@@ -794,56 +1335,265 @@
 </div>{# fin #video #}
 
 <script>
-// Menu toggle pour mobile
 document.querySelector('.navbar-toggle').addEventListener('click', function() {
     document.querySelector('.nav-box').classList.toggle('active');
 });
 
-(function () {
-    var FORMS = [
-        { anchor: 'slide08',   label: 'Réservations' },
-        { anchor: 'slide09',   label: 'Activité Éco.' },
-        { anchor: 'slide11',   label: 'Zone Protégée' },
-        { anchor: 'slide10',   label: 'Surveillance' },
-        { anchor: 'slide209b', label: 'Nvl. Activité' },
-        { anchor: 'slide210',  label: 'Faune Marine' },
-        { anchor: 'slide211',  label: 'Observation' },
-        { anchor: 'slide212',  label: 'Prédiction' },
-        { anchor: 'slide213',  label: 'Mission Drone' },
-        { anchor: 'slide214',  label: 'Détection Drone' }
-    ];
-
-    var btn     = document.getElementById('nav-form-btn');
-    var labelEl = document.getElementById('nav-form-label');
-    var badgeEl = document.getElementById('nav-form-badge');
-    var total   = FORMS.length;
-    var nextIdx = 0;
-
-    if (!btn) return;
-
-    function getCurrentFormIndex() {
-        var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
-        for (var i = 0; i < total; i++) {
-            if (FORMS[i].anchor === hash) return i;
-        }
-        return -1;
-    }
-
-    function updateBtn() {
-        var idx = getCurrentFormIndex();
-        nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
-        labelEl.textContent = FORMS[nextIdx].label;
-        badgeEl.textContent = (nextIdx + 1) + '/' + total;
-    }
-
-    btn.addEventListener('click', function () {
-        window.location.hash = '#' + FORMS[nextIdx].anchor;
-        setTimeout(updateBtn, 80);
+document.querySelectorAll('[data-nav-url]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        window.location.href = button.getAttribute('data-nav-url');
     });
+});
 
-    window.addEventListener('hashchange', updateBtn);
-    updateBtn();
-})();
+var flashToasts = document.querySelectorAll('.flash, .flash-toast');
+if (flashToasts && flashToasts.length) {
+    flashToasts.forEach(function (toast, index) {
+        var visibleDelay = 3200 + (index * 250);
+
+        window.setTimeout(function () {
+            toast.classList.add('is-hiding');
+
+            window.setTimeout(function () {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+
+                var flashStack = document.getElementById('flashStack');
+                    if (flashStack && flashStack.children.length === 0) {
+                        flashStack.remove();
+                    }
+                }, 450);
+            }, visibleDelay);
+        });
+}
+
+    var navbarToggle = document.querySelector('.navbar-toggle');
+    var navBox = document.querySelector('.nav-box');
+
+    if (navbarToggle && navBox) {
+        navbarToggle.addEventListener('click', function () {
+            navBox.classList.toggle('active');
+        });
+    }
+
+    (function () {
+        var filterForm = document.querySelector('[data-cleaning-filter-form]');
+        var paginationRoots = document.querySelectorAll('[data-cleaning-pagination-root]');
+        var preview = document.querySelector('[data-cleaning-preview]');
+        var lieuSelect = document.getElementById('cleaningLieu');
+        var dateSelect = document.getElementById('cleaningDate');
+        var statusSelect = document.getElementById('cleaningStatus');
+
+        if (!paginationRoots.length) {
+            return;
+        }
+
+        function updatePreview() {
+            if (!preview) {
+                return;
+            }
+
+            var defaultText = preview.getAttribute('data-default-preview') || '';
+            var lieu = lieuSelect ? lieuSelect.value.trim() : '';
+            var date = dateSelect ? dateSelect.value.trim() : '';
+            var parts = [];
+
+            if (lieu) {
+                parts.push('Lieu : ' + lieu);
+            }
+
+            if (date) {
+                var dateParts = date.split('-');
+                var formattedDate = date;
+
+                if (dateParts.length === 3) {
+                    formattedDate = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+                }
+
+                parts.push('Date : ' + formattedDate);
+            }
+
+            if (statusSelect && statusSelect.value.trim()) {
+                parts.push('Statut : ' + (statusSelect.value === 'available' ? 'Disponible' : 'Complete'));
+            }
+
+            preview.textContent = parts.length ? parts.join(' | ') : defaultText;
+        }
+
+        function updateUrl(url) {
+            var nextUrl = new URL(url, window.location.origin);
+            nextUrl.searchParams.delete('section');
+            nextUrl.hash = 'slide12';
+            window.history.pushState({}, '', nextUrl.toString());
+        }
+
+        function buildFilterUrl() {
+            if (!filterForm) {
+                return null;
+            }
+
+            var action = filterForm.getAttribute('action') || window.location.pathname;
+            var nextUrl = new URL(action, window.location.origin);
+            var formData = new FormData(filterForm);
+
+            formData.forEach(function (value, key) {
+                if (key === '_fragment' || value === null || String(value).trim() === '') {
+                    return;
+                }
+
+                nextUrl.searchParams.set(key, value);
+            });
+
+            nextUrl.hash = 'slide12';
+
+            return nextUrl.toString();
+        }
+
+        function loadPage(root, url) {
+            var requestUrl = new URL(url, window.location.origin);
+            var subsection = root.getAttribute('data-cleaning-subsection') || 'available';
+
+            requestUrl.searchParams.set('section', 'nettoyage');
+            requestUrl.searchParams.set('subsection', subsection);
+
+            root.classList.add('is-loading');
+
+            fetch(requestUrl.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('Pagination request failed');
+                    }
+
+                    return response.text();
+                })
+                .then(function (html) {
+                    root.innerHTML = html;
+                    updateUrl(url);
+
+                    if (window.location.hash !== '#slide12') {
+                        window.location.hash = 'slide12';
+                    }
+                })
+                .catch(function () {
+                    window.location.href = url;
+                })
+                .finally(function () {
+                    root.classList.remove('is-loading');
+                });
+        }
+
+        paginationRoots.forEach(function (root) {
+            root.addEventListener('click', function (event) {
+                var link = event.target.closest('[data-page-link]');
+
+                if (!link) {
+                    return;
+                }
+
+                event.preventDefault();
+                loadPage(root, link.href);
+            });
+        });
+
+        if (filterForm) {
+            if (lieuSelect) {
+                lieuSelect.addEventListener('change', updatePreview);
+            }
+
+            if (dateSelect) {
+                dateSelect.addEventListener('change', updatePreview);
+            }
+
+            if (statusSelect) {
+                statusSelect.addEventListener('change', updatePreview);
+            }
+
+            filterForm.addEventListener('submit', function (event) {
+                var targetUrl;
+
+                event.preventDefault();
+                targetUrl = buildFilterUrl();
+
+                if (targetUrl) {
+                    paginationRoots.forEach(function (root) {
+                        if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                            loadPage(root, targetUrl);
+                        }
+                    });
+                }
+            });
+
+            filterForm.addEventListener('click', function (event) {
+                var resetLink = event.target.closest('[data-cleaning-filter-reset]');
+
+                if (!resetLink) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                filterForm.reset();
+                paginationRoots.forEach(function (root) {
+                    if ((root.getAttribute('data-cleaning-subsection') || 'available') === 'available') {
+                        loadPage(root, resetLink.href);
+                    }
+                });
+            });
+        }
+
+        updatePreview();
+    })();
+
+    (function () {
+        var FORMS = [
+            { anchor: 'slide08', label: 'Réservations' },
+            { anchor: 'slide09', label: 'Activité Éco.' },
+            { anchor: 'slide11', label: 'Zone Protégée' },
+            { anchor: 'slide10', label: 'Surveillance' },
+            { anchor: 'slide12', label: 'Nettoyage' },
+            { anchor: 'slide209b', label: 'Nvl. Activité' },
+            { anchor: 'slide210', label: 'Faune Marine' },
+            { anchor: 'slide211', label: 'Observation' },
+            { anchor: 'slide212', label: 'Prédiction' },
+            { anchor: 'slide213', label: 'Mission Drone' },
+            { anchor: 'slide214', label: 'Détection Drone' }
+        ];
+
+        var btn = document.getElementById('nav-form-btn');
+        var labelEl = document.getElementById('nav-form-label');
+        var badgeEl = document.getElementById('nav-form-badge');
+        var total = FORMS.length;
+        var nextIdx = 0;
+
+        if (!btn || !labelEl || !badgeEl) return;
+
+        function getCurrentFormIndex() {
+            var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+            for (var i = 0; i < total; i++) {
+                if (FORMS[i].anchor === hash) return i;
+            }
+            return -1;
+        }
+
+        function updateBtn() {
+            var idx = getCurrentFormIndex();
+            nextIdx = (idx >= 0) ? (idx + 1) % total : 0;
+            labelEl.textContent = FORMS[nextIdx].label;
+            badgeEl.textContent = (nextIdx + 1) + '/' + total;
+        }
+
+        btn.addEventListener('click', function () {
+            window.location.hash = '#' + FORMS[nextIdx].anchor;
+            setTimeout(updateBtn, 80);
+        });
+
+        window.addEventListener('hashchange', updateBtn);
+        updateBtn();
+    })();
 </script>
 
 {% endblock %}

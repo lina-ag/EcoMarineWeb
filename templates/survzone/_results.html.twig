@@ -28,7 +28,7 @@
                     <td>{{ survzone.idSurv }}</td>
                     <td>{{ survzone.dateSurv ? survzone.dateSurv|date('Y-m-d') : '' }}</td>
                     <td>{{ survzone.observation }}</td>
-                    <td>{{ survzone.zone.nomZone }}</td>
+                    <td>{{ survzone.zone ? survzone.zone.nomZone : 'zonep.not_found'|trans }}</td>
                     <td>
                         <a href="{{ path('app_survzone_show', {'idSurv': survzone.idSurv}) }}" class="btn btn-secondary">{{ 'common.show'|trans }}</a>
                         <a href="{{ path('app_survzone_edit', {'idSurv': survzone.idSurv}) }}" class="btn btn-primary">{{ 'common.edit'|trans }}</a>

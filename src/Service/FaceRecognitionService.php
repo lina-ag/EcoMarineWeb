@@ -9,13 +9,17 @@ use Psr\Log\LoggerInterface;
 
 class FaceRecognitionService
 {
-    private const PYTHON_API = 'http://127.0.0.1:5000';
-
     public function __construct(
         private UtilisateurRepository $utilisateurRepository,
         private HttpClientInterface $httpClient,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private string $pythonFaceServiceUrl
     ) {}
+
+    private function pythonApiUrl(string $path): string
+    {
+        return rtrim($this->pythonFaceServiceUrl, '/') . '/' . ltrim($path, '/');
+    }
 
     /**
      * Extrait l'encodage facial depuis une image base64
@@ -24,7 +28,7 @@ class FaceRecognitionService
    public function extractEncoding(string $base64Image): ?string
 {
     try {
-        $response = $this->httpClient->request('POST', self::PYTHON_API . '/extract_encoding', [
+        $response = $this->httpClient->request('POST', $this->pythonApiUrl('/extract_encoding'), [
             'json'    => ['image' => $base64Image],
             'timeout' => 30,
         ]);
@@ -39,7 +43,7 @@ class FaceRecognitionService
 
         return json_encode($data['encoding']);
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         $this->logger->error('Erreur extractEncoding : ' . $e->getMessage());
         return null;
     }
@@ -53,12 +57,12 @@ class FaceRecognitionService
     {
         try {
             // 1. Extraire l'encodage de l'image capturée
-            $response = $this->httpClient->request('POST', self::PYTHON_API . '/extract_encoding', [
+            $response = $this->httpClient->request('POST', $this->pythonApiUrl('/extract_encoding'), [
                 'json'    => ['image' => $base64Image],
                 'timeout' => 30,
             ]);
 
-            $result = $response->toArray();
+            $result = $response->toArray(false);
 
             if (!$result['success']) {
                 $this->logger->warning('Visage non détecté : ' . ($result['message'] ?? ''));
@@ -77,27 +81,52 @@ class FaceRecognitionService
                 $dbEncoding = json_decode($storedRaw, true);
                 if (!is_array($dbEncoding)) continue;
 
-                $compare = $this->httpClient->request('POST', self::PYTHON_API . '/compare_faces', [
-                    'json' => [
-                        'encoding1' => $loginEncoding,
-                        'encoding2' => $dbEncoding,
-                    ],
-                    'timeout' => 30,
-                ]);
-
-                $compareResult = $compare->toArray();
-
-                if ($compareResult['match']) {
+                if ($this->isFaceMatch($loginEncoding, $dbEncoding)) {
                     return $user;
                 }
             }
 
             return null;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Erreur recognizeFace : ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Compare deux encodages localement pour éviter un appel HTTP par utilisateur.
+     *
+     * @param array<int, float|int|string> $encoding1
+     * @param array<int, float|int|string> $encoding2
+     */
+    private function isFaceMatch(array $encoding1, array $encoding2): bool
+    {
+        if (count($encoding1) === 0 || count($encoding1) !== count($encoding2)) {
+            return false;
+        }
+
+        $dotProduct = 0.0;
+        $norm1 = 0.0;
+        $norm2 = 0.0;
+
+        foreach ($encoding1 as $index => $value1) {
+            $value2 = (float) ($encoding2[$index] ?? 0);
+            $float1 = (float) $value1;
+
+            $dotProduct += $float1 * $value2;
+            $norm1 += $float1 * $float1;
+            $norm2 += $value2 * $value2;
+        }
+
+        $denominator = sqrt($norm1) * sqrt($norm2);
+        if ($denominator <= 0.0) {
+            return false;
+        }
+
+        $cosineDistance = 1 - ($dotProduct / $denominator);
+
+        return $cosineDistance < 0.4;
     }
 
     /**
@@ -106,12 +135,12 @@ class FaceRecognitionService
     public function verifyFace(string $base64Image): array
     {
         try {
-            $response = $this->httpClient->request('POST', self::PYTHON_API . '/verify_face', [
+            $response = $this->httpClient->request('POST', $this->pythonApiUrl('/verify_face'), [
                 'json'    => ['image' => $base64Image],
                 'timeout' => 30,
             ]);
-            return $response->toArray();
-        } catch (\Exception $e) {
+            return $response->toArray(false);
+        } catch (\Throwable $e) {
             $this->logger->error('Erreur verifyFace : ' . $e->getMessage());
             return ['success' => false, 'face_detected' => false, 'message' => $e->getMessage()];
         }
@@ -123,9 +152,9 @@ class FaceRecognitionService
     public function testPythonService(): bool
     {
         try {
-            $response = $this->httpClient->request('GET', self::PYTHON_API . '/health', ['timeout' => 5]);
-            return ($response->toArray()['status'] ?? '') === 'ok';
-        } catch (\Exception $e) {
+            $response = $this->httpClient->request('GET', $this->pythonApiUrl('/health'), ['timeout' => 5]);
+            return ($response->toArray(false)['status'] ?? '') === 'ok';
+        } catch (\Throwable $e) {
             return false;
         }
     }

@@ -125,6 +125,181 @@
                 height: 1.65rem;
             }
 
+            .dna-cell-link {
+                display: block;
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .dna-badge-card {
+                --dna-bg-start: #dbeafe;
+                --dna-bg-end: #c4b5fd;
+                --dna-accent: #4338ca;
+                --dna-glow: rgba(99, 102, 241, 0.28);
+                display: flex;
+                flex-direction: column;
+                gap: 0.45rem;
+                min-width: 180px;
+                padding: 0.8rem 0.9rem 0.72rem;
+                border-radius: 18px;
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                background: linear-gradient(135deg, var(--dna-bg-start), var(--dna-bg-end));
+                box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.3) inset, 0 0 24px var(--dna-glow);
+                backdrop-filter: blur(10px);
+                transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+            }
+
+            .dna-cell-link:hover .dna-badge-card,
+            .dna-cell-link:focus-visible .dna-badge-card {
+                transform: translateY(-2px) scale(1.01);
+                box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.35) inset, 0 0 28px var(--dna-glow);
+                filter: saturate(1.05);
+            }
+
+            .dna-badge-card--hot {
+                --dna-bg-start: #ffedd5;
+                --dna-bg-end: #fb7185;
+                --dna-accent: #dc2626;
+                --dna-glow: rgba(248, 113, 113, 0.4);
+            }
+
+            .dna-badge-card--neutral {
+                --dna-bg-start: #ede9fe;
+                --dna-bg-end: #8b5cf6;
+                --dna-accent: #5b21b6;
+                --dna-glow: rgba(139, 92, 246, 0.34);
+            }
+
+            .dna-badge-card--ice {
+                --dna-bg-start: #e0f2fe;
+                --dna-bg-end: #67e8f9;
+                --dna-accent: #0f766e;
+                --dna-glow: rgba(34, 211, 238, 0.32);
+            }
+
+            .dna-badge-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.65rem;
+            }
+
+            .dna-badge-copy {
+                min-width: 0;
+            }
+
+            .dna-badge-kicker {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(15, 23, 42, 0.72);
+                margin-bottom: 0.15rem;
+            }
+
+            .dna-badge-title {
+                display: block;
+                font-size: 0.98rem;
+                font-weight: 800;
+                line-height: 1.1;
+                color: #0f172a;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .dna-badge-icon {
+                flex: 0 0 auto;
+                width: 2.2rem;
+                height: 2.2rem;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255, 255, 255, 0.34);
+                color: var(--dna-accent);
+                box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.85);
+                animation: dnaPulse 1.8s ease-in-out infinite;
+            }
+
+            .dna-badge-icon svg {
+                width: 1.05rem;
+                height: 1.05rem;
+                stroke-width: 2.2;
+            }
+
+            .dna-badge-meter {
+                display: flex;
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+
+            .dna-badge-track {
+                position: relative;
+                height: 0.52rem;
+                border-radius: 999px;
+                overflow: hidden;
+                background: rgba(255, 255, 255, 0.36);
+                box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.16);
+            }
+
+            .dna-badge-fill {
+                height: 100%;
+                border-radius: inherit;
+                background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), var(--dna-accent));
+                box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+                transition: width 0.28s ease;
+            }
+
+            .dna-badge-meta {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+                font-size: 0.74rem;
+                font-weight: 700;
+                color: rgba(15, 23, 42, 0.78);
+            }
+
+            .dna-badge-meta strong {
+                color: #0f172a;
+            }
+
+            .dna-badge-empty {
+                font-size: 0.74rem;
+                font-weight: 700;
+                color: rgba(15, 23, 42, 0.74);
+            }
+
+            .dna-tooltip .tooltip-inner {
+                max-width: 320px;
+                padding: 0.7rem 0.85rem;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, 0.96);
+                box-shadow: 0 14px 30px rgba(15, 23, 42, 0.28);
+                text-align: left;
+                font-size: 0.82rem;
+                line-height: 1.45;
+            }
+
+            .dna-tooltip .tooltip-arrow::before {
+                border-top-color: rgba(15, 23, 42, 0.96);
+            }
+
+            @keyframes dnaPulse {
+                0%, 100% {
+                    transform: scale(1);
+                    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.85), 0 0 0 rgba(255, 255, 255, 0);
+                }
+                50% {
+                    transform: scale(1.08);
+                    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 0 14px rgba(255, 255, 255, 0.55);
+                }
+            }
+
             .activity-search-row {
                 display: flex;
                 align-items: center;
@@ -182,49 +357,58 @@
                 color: #334155;
             }
 
-            .search-box {
+            /* Zonep-like search bar */
+            #activite-search-form .search-box {
                 position: relative;
                 display: flex;
                 align-items: center;
-                gap: 0.95rem;
                 flex: 1;
-                min-width: 320px;
-                padding: 0.85rem 1rem;
-                border-radius: 24px;
-                border: 1px solid rgba(191, 219, 254, 0.9);
-                background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(229, 246, 255, 0.78));
-                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-                transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+                min-width: 260px;
             }
 
-            .search-box:focus-within {
-                border-color: rgba(59, 130, 246, 0.55);
-                box-shadow: 0 14px 30px rgba(59, 130, 246, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.95);
-                transform: translateY(-1px);
+            #activite-search-form .search-box:focus-within {
+                transform: none;
             }
 
-            .search-box .search-icon {
-                flex: 0 0 auto;
-                width: 3.25rem;
-                height: 3.25rem;
-                padding: 0.72rem;
-                border-radius: 18px;
-                background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.18));
-                color: #1d4ed8;
-                box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.12);
+            #activite-search-form .search-box .search-icon {
+                display: none;
             }
 
-            .search-box .search-input {
+            #activite-search-form .search-box .search-input {
                 min-width: 0;
                 width: 100%;
-                padding: 0.4rem 3rem 0.4rem 0;
-                border: 0;
-                background: transparent;
-                color: #0f172a;
-                font-size: 0.98rem;
+                padding: 12px 48px 12px 18px;
+                border-radius: 12px;
+                border: 1px solid var(--glass-border, #e0e0e0);
+                background: var(--glass-bg, #fff);
+                color: var(--text-primary, #222);
+                font-size: 15px;
                 font-weight: 500;
-                box-shadow: none;
+                box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
                 outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            #activite-search-form .search-box .search-input:focus {
+                border-color: var(--emerald-light, #38bdf8);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+            }
+
+            #activite-search-form .search-input {
+                padding: 12px 18px;
+                border-radius: 12px;
+                border: 1px solid var(--glass-border, #e0e0e0);
+                background: var(--glass-bg, #fff);
+                color: var(--text-primary, #222);
+                font-size: 15px;
+                box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+                outline: none;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+
+            #activite-search-form .search-input:focus {
+                border-color: var(--emerald-light, #38bdf8);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
             }
 
             .search-box .search-input::placeholder {
@@ -573,10 +757,6 @@
                 </select>
                 <div class="admin-live-search-main">
                     <div class="search-box" style="max-width: 100%; flex: 1; margin: 0;">
-                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
                         <input
                             id="activite-search-input"
                             type="text"
@@ -602,13 +782,6 @@
                             {% endfor %}
                         </datalist>
                     </div>
-                    <button id="activite-search-btn" type="submit" class="btn btn-secondary search-icon-btn" aria-label="{{ 'activite.search'|trans }}" title="{{ 'activite.search'|trans }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <span>{{ 'activite.search'|trans }}</span>
-                    </button>
                 </div>
                 <small id="activite-result-count" class="admin-result-count">{{ result_count|default(activite_ecologiques|length) }} {{ 'activite.result_count'|trans }}</small>
             </div>
@@ -668,6 +841,40 @@
         <div id="activite-voice-toast" class="voice-toast" role="status" aria-live="polite"></div>
 
         <div id="activite-empty-message" class="ux-empty-message" style="display: none;">{{ 'activite.empty_message'|trans }}</div>
+{# ── Prédiction AI ──────────────────────────────────────────────────────── #}
+{% for type in ['prediction_success', 'prediction_warning', 'prediction_danger', 'prediction_secondary'] %}
+    {% for message in app.flashes(type) %}
+        {% set couleur = type|replace({'prediction_': ''}) %}
+        <div class="alert alert-{{ couleur }} alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+            {% if couleur == 'danger' %}
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            {% elseif couleur == 'warning' %}
+                <i class="bi bi-exclamation-circle-fill fs-5"></i>
+            {% else %}
+                <i class="bi bi-check-circle-fill fs-5"></i>
+            {% endif %}
+            <div>
+                <strong>Analyse IA — Risque de sous-remplissage</strong><br>
+                {{ message }}
+                {% if 'indisponible' in message|lower %}
+                    <div class="small mt-2">
+                        <strong>Que faire ?</strong>
+                        Vérifiez la présence de <code>model.pkl</code> et <code>label_encoder.pkl</code>, puis réentraînez le modèle avec <code>python train_model.py</code> avant de réessayer.
+                    </div>
+                {% endif %}
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{# Show last prediction error summary in dev if available #}
+{% if prediction_error is defined and prediction_error %}
+    <div class="alert alert-warning">
+        <strong>Analyse IA — erreur récente (dev)</strong><br>
+        Dernière erreur: {{ prediction_error.timestamp }} — code {{ prediction_error.exit_code|default('n/a') }}
+    </div>
+{% endif %}
 
         <div class="table-wrapper reservation-admin-table-wrap">
             <table class="data-table">
@@ -680,6 +887,7 @@
                         <th>{{ 'activite.fill_rate'|trans }}</th>
                         <th>{{ 'activite.description'|trans }}</th>
                         <th>{{ 'activite.status'|trans }}</th>
+                        <th>🧬 DNA</th>
                         <th>{{ 'activite.actions'|trans }}</th>
                     </tr>
                 </thead>
@@ -739,6 +947,61 @@
                             {% endif %}
                         </td>
                         <td>
+    {% set dna = activity_dna[activite_ecologique.idActivite] ?? null %}
+    {% set dnaRate = dna ? (dna.taux|default(0)|round(0)) : 0 %}
+    {% set dnaRateCapped = dnaRate < 0 ? 0 : (dnaRate > 100 ? 100 : dnaRate) %}
+    {% set dnaTone = dnaRateCapped >= 66 ? 'hot' : (dnaRateCapped >= 33 ? 'neutral' : 'ice') %}
+    {% set dnaTooltip = dna
+        ? '<div class="fw-semibold mb-1">' ~ (dna.dna_label|default('Profil DNA')) ~ '</div>' ~
+          '<div>👥 ' ~ (dna.avg_groupe|default(0)|number_format(1, '.', '')) ~ ' pers. · ⏱ ' ~ (dna.avg_delai|default(0)|number_format(0, '.', '')) ~ 'j</div>' ~
+          '<div>📋 ' ~ (dna.nb_reservations|default(0)) ~ ' réservations · 🔥 ' ~ (dnaRateCapped|number_format(0, '.', '')) ~ '%</div>'
+        : '<div class="fw-semibold mb-1">DNA non analysé</div><div>Ouvrir la page détail pour lancer l’analyse.</div>'
+    %}
+    <a href="{{ path('app_activite_ecologique_dna', {'id_activite': activite_ecologique.idActivite}) }}"
+       class="dna-cell-link"
+       aria-label="Voir le détail DNA de {{ activite_ecologique.nomActivite }}"
+       data-bs-toggle="tooltip"
+       data-bs-html="true"
+       data-bs-placement="top"
+       data-bs-custom-class="dna-tooltip"
+       data-bs-title="{{ dnaTooltip|e('html_attr') }}">
+        <div class="dna-badge-card dna-badge-card--{{ dnaTone }}">
+            <div class="dna-badge-head">
+                <div class="dna-badge-copy">
+                    <span class="dna-badge-kicker">DNA</span>
+                    <span class="dna-badge-title">{{ dna ? dna.dna_label : 'Non analysé' }}</span>
+                </div>
+                <span class="dna-badge-icon" aria-hidden="true">
+                    {% if dnaTone == 'hot' %}
+                        🔥
+                    {% elseif dnaTone == 'neutral' %}
+                        📊
+                    {% else %}
+                        🧊
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="dna-badge-meter">
+                <div class="dna-badge-track" aria-hidden="true">
+                    <div class="dna-badge-fill" style="width: {{ dnaRateCapped }}%;"></div>
+                </div>
+                <div class="dna-badge-meta">
+                    <span>{% if dnaTone == 'hot' %}🔥{% elseif dnaTone == 'neutral' %}📊{% else %}🧊{% endif %} {{ dnaTone == 'hot' ? 'Très demandée' : (dnaTone == 'neutral' ? 'Demande stable' : 'Peu demandée') }}</span>
+                    <strong>{{ dnaRateCapped|number_format(0, '.', '') }}%</strong>
+                </div>
+            </div>
+
+            {% if dna %}
+                <div class="dna-badge-empty">👥 {{ dna.avg_groupe|default(0)|number_format(1, '.', '') }} pers. · ⏱ {{ dna.avg_delai|default(0)|number_format(0, '.', '') }}j · 📋 {{ dna.nb_reservations|default(0) }}</div>
+            {% else %}
+                <div class="dna-badge-empty">Ouvrir la page détail DNA</div>
+            {% endif %}
+        </div>
+    </a>
+</td>
+
+                        <td>
                             <div class="reservation-admin-actions">
                                 <a href="{{ path('app_activite_ecologique_show', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-secondary reservation-admin-action-btn" title="{{ 'activite.show_activity'|trans }}">{{ 'activite.view'|trans }}</a>
                                 <a href="{{ path('app_activite_ecologique_edit', {'id_activite': activite_ecologique.id_activite}) }}" class="btn btn-primary reservation-admin-action-btn" title="{{ 'activite.edit_activity'|trans }}">{{ 'activite.edit'|trans }}</a>
@@ -788,6 +1051,27 @@
 {% block admin_javascripts %}
     {{ parent() }}
     <script>
+        (function initActivityDnaTooltips() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+
+            if (!tooltipTriggerList.length || !window.bootstrap || !window.bootstrap.Tooltip) {
+                return;
+            }
+
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                if (tooltipTriggerEl.dataset.dnaTooltipInitialized === '1') {
+                    return;
+                }
+
+                tooltipTriggerEl.dataset.dnaTooltipInitialized = '1';
+                new window.bootstrap.Tooltip(tooltipTriggerEl, {
+                    html: true,
+                    trigger: 'hover focus',
+                    customClass: 'dna-tooltip'
+                });
+            });
+        })();
+
         (function initActiviteLiveSearch() {
             const root = document.getElementById('activite-live-root');
 

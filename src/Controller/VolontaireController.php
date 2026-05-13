@@ -4,22 +4,65 @@ namespace App\Controller;
 
 use App\Entity\Volontaire;
 use App\Form\VolontaireType;
+use App\Repository\ActionNettoyageRepository;
 use App\Repository\VolontaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/volontaire')]
+#[Route('/admin/volontaire')]
 final class VolontaireController extends AbstractController
 {
     #[Route('', name: 'app_volontaire_index', methods: ['GET'])]
-    public function index(VolontaireRepository $repository): Response
+    public function index(
+        Request $request,
+        VolontaireRepository $repository,
+        ActionNettoyageRepository $actionNettoyageRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
+        $search = trim((string) $request->query->get('search', ''));
+        $actionId = $request->query->getInt('action_id', 0);
+
+        $query = $repository->createQueryBuilder('v')
+            ->leftJoin('v.id_action', 'a')
+            ->addSelect('a')
+            ->orderBy('v.id_volontaire', 'DESC');
+
+        if ($search !== '') {
+            $query
+                ->andWhere('LOWER(v.nom) LIKE :search OR LOWER(v.contact) LIKE :search OR LOWER(a.lieu) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        if ($actionId > 0) {
+            $query
+                ->andWhere('a.id_action = :actionId')
+                ->setParameter('actionId', $actionId);
+        }
+
+        $volontaires = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            3
+        );
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('volontaire/_results.html.twig', [
+                'volontaires' => $volontaires,
+            ]);
+        }
+
         return $this->render('volontaire/index.html.twig', [
-            'volontaires' => $repository->findAll(),
+            'volontaires' => $volontaires,
+            'search' => $search,
+            'selectedAction' => $actionId,
+            'actions_nettoyage' => $actionNettoyageRepository->findBy([], ['date_action' => 'DESC']),
         ]);
     }
 
@@ -103,6 +146,14 @@ final class VolontaireController extends AbstractController
         if ($this->isCsrfTokenValid('delete' . $volontaire->getIdVolontaire(), $request->request->get('_token'))) {
             $entityManager->remove($volontaire);
             $entityManager->flush();
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse(['success' => false], Response::HTTP_BAD_REQUEST);
         }
 
         return $this->redirectToRoute('app_volontaire_index');

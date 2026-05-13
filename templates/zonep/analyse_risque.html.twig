@@ -1,0 +1,225 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Analyse IA — {{ zonep.nomZone }}{% endblock %}
+
+{% block body %}
+<section class="glass-card" style="margin-top: 60px;">
+
+    <div class="card-header">
+        <div>
+            <span class="reservation-admin-kicker">Modèle IA</span>
+            <h2 class="card-title">Analyse de Risque</h2>
+            <p class="card-subtitle">
+                Zone : <strong>{{ zonep.nomZone }}</strong> — {{ zonep.categorieZone }}
+            </p>
+        </div>
+        <a href="{{ path('app_zonep_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    {# ── Formulaire ── #}
+    {% if not resultat %}
+    <form method="post" 
+      action="{{ path('app_zonep_analyse_risque', {'idZone': zonep.idZone}) }}" 
+      class="ai-form"
+      data-turbo="false">
+        <div class="form-grid">
+
+            <div class="form-group-settings">
+                <label class="form-label">🌡️ Température de l'eau (°C)</label>
+                <input type="number" name="temperature" class="form-input"
+                       placeholder="Ex: 24" min="15" max="40" required>
+            </div>
+
+            <div class="form-group-settings">
+                <label class="form-label">👥 Activité humaine</label>
+                <select name="activite_humaine" class="form-input" required>
+                    <option value="0">0 — Très faible</option>
+                    <option value="1">1 — Faible</option>
+                    <option value="2">2 — Modérée</option>
+                    <option value="3">3 — Élevée</option>
+                    <option value="4">4 — Très élevée</option>
+                </select>
+            </div>
+
+            <div class="form-group-settings">
+                <label class="form-label">🏭 Pollution</label>
+                <select name="pollution" class="form-input" required>
+                    <option value="0">0 — Aucune</option>
+                    <option value="1">1 — Légère</option>
+                    <option value="2">2 — Modérée</option>
+                    <option value="3">3 — Grave</option>
+                    <option value="4">4 — Critique</option>
+                </select>
+            </div>
+
+            <div class="form-group-settings">
+                <label class="form-label">🐠 Biodiversité</label>
+                <select name="biodiversite" class="form-input" required>
+                    <option value="4">4 — Excellente</option>
+                    <option value="3">3 — Bonne</option>
+                    <option value="2">2 — Moyenne</option>
+                    <option value="1">1 — Faible</option>
+                    <option value="0">0 — Nulle</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                Lancer l'analyse IA
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+    {# ── Résultat ── #}
+    {% if resultat %}
+
+        {% if resultat.niveau_risque == 'Faible' %}
+            {% set couleur = 'actif' %}
+        {% elseif resultat.niveau_risque == 'Moyen' %}
+            {% set couleur = 'surveillance' %}
+        {% elseif resultat.niveau_risque == 'Élevé' %}
+            {% set couleur = 'maintenance' %}
+        {% else %}
+            {% set couleur = 'inactif' %}
+        {% endif %}
+
+        <div class="ai-result">
+
+            {# Badge principal #}
+            <div class="ai-result-header badge badge-{{ couleur }}">
+                <span class="ai-result-niveau">Risque {{ resultat.niveau_risque }}</span>
+                <span class="ai-result-score">{{ resultat.score }} / 100</span>
+                {% if resultat.urgence %}
+                    <span class="badge badge-inactif ai-urgent-badge">URGENT</span>
+                {% endif %}
+            </div>
+
+            {# Barre de progression #}
+            <div class="ai-progress-wrap">
+                <div class="ai-progress-bar badge-{{ couleur }}" style="width: {{ resultat.score }}%;"></div>
+            </div>
+
+            <div class="ai-columns">
+
+                {# Risques #}
+                <div class="ai-box card">
+                    <h4 class="ai-box-title ai-box-title--danger">Risques identifiés</h4>
+                    {% for risque in resultat.risques %}
+                        <div class="badge badge-inactif ai-chip">▸ {{ risque }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Recommandations #}
+                <div class="ai-box card">
+                    <h4 class="ai-box-title ai-box-title--success">Recommandations</h4>
+                    {% for reco in resultat.recommandations %}
+                        <div class="badge badge-actif ai-chip">✓ {{ reco }}</div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <div class="btn-group" style="margin-top: 24px;">
+                <a href="{{ path('app_zonep_analyse_risque', {idZone: zonep.idZone}) }}"
+                   class="btn btn-primary">Nouvelle analyse</a>
+                <a href="{{ path('app_zonep_index') }}"
+                   class="btn btn-secondary">Retour aux zones</a>
+            </div>
+
+        </div>
+    {% endif %}
+
+</section>
+
+<style>
+    /* Container */
+    .glass-card {
+        padding: 32px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(250,250,255,0.72));
+        box-shadow: 0 18px 40px rgba(6, 30, 63, 0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+        border: 1px solid rgba(255,255,255,0.6);
+        backdrop-filter: blur(6px) saturate(1.02);
+    }
+
+    /* Header */
+    .glass-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 22px;
+    }
+
+    .card-title { margin: 0; font-size: 20px; font-weight: 800; }
+    .card-subtitle { margin: 6px 0 0; color: rgba(17,24,39,0.6); }
+
+    /* Form layout */
+    .ai-form .form-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+    .ai-form .form-group-settings { grid-column: span 1; }
+    @media (max-width: 1000px) { .ai-form .form-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .ai-form .form-grid { grid-template-columns: 1fr; } }
+
+    /* Result card */
+    .ai-result { margin-top: 28px; }
+
+    .ai-result-header {
+        display:flex; align-items:center; justify-content:space-between;
+        padding: 22px; border-radius: 14px; margin-bottom: 18px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));
+        border: 1px solid rgba(17,24,39,0.04);
+    }
+
+    .ai-result-left { display:flex; flex-direction:column; }
+    .ai-result-niveau { font-size: 1.55rem; font-weight: 900; color: #0f172a; }
+    .ai-result-score  { font-size: 1.05rem; color: rgba(15,23,42,0.6); margin-top: 6px; }
+
+    .ai-urgent-badge {
+        background: #f87171; color: white; padding: 6px 10px; border-radius: 999px;
+        font-weight:700; font-size:0.75rem; box-shadow: 0 6px 18px rgba(248,113,113,0.18);
+    }
+
+    /* Big progress bar */
+    .ai-progress-wrap {
+        height: 14px; background: linear-gradient(90deg, rgba(2,6,23,0.04), rgba(2,6,23,0.02));
+        border-radius: 999px; overflow:hidden; margin-bottom: 26px; border: 1px solid rgba(2,6,23,0.03);
+    }
+    .ai-progress-bar { height:100%; border-radius:999px; transition: width 0.7s ease; box-shadow: inset 0 -4px 12px rgba(255,255,255,0.05); }
+    .badge-actif.ai-progress-bar       { background: linear-gradient(90deg,#10b981,#34d399); }
+    .badge-surveillance.ai-progress-bar { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .badge-maintenance.ai-progress-bar  { background: linear-gradient(90deg,#6366f1,#818cf8); }
+    .badge-inactif.ai-progress-bar      { background: linear-gradient(90deg,#ef4444,#fb7185); }
+
+    /* Columns */
+    .ai-columns { display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    @media (max-width: 900px) { .ai-columns { grid-template-columns: 1fr; } }
+
+    .ai-box { padding: 20px; }
+    .ai-box-title { margin:0 0 12px; font-weight:800; color:#0f172a; font-size:0.9rem; }
+    .ai-box-title--danger { color:#dc2626; }
+    .ai-box-title--success { color:#059669; }
+
+    .ai-chip { display:block; margin-bottom:10px; padding:10px 12px; border-radius:10px; font-size:0.95rem; background:linear-gradient(90deg, rgba(15,23,42,0.03), rgba(15,23,42,0.01)); border:1px solid rgba(2,6,23,0.03); }
+
+    /* Buttons */
+    .btn-group { display:flex; gap:16px; align-items:center; }
+
+    /* Small tweaks */
+    .badge { display:inline-flex; align-items:center; gap:8px; }
+
+    /* Responsive tweaks */
+    @media (max-width: 520px) {
+        .ai-result-header { flex-direction:column; align-items:flex-start; gap:12px; }
+        .btn-group { flex-direction:column; width:100%; }
+        .btn { width:100%; text-align:center; }
+    }
+</style>
+{% endblock %}

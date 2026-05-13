@@ -227,15 +227,66 @@ final class SurvzoneController extends AbstractController
         ]);
     }
 
+    #[Route('/rapport/ai/export/pdf', name: 'app_survzone_rapport_ai_export_pdf', methods: ['GET'])]
+    public function exportRapportAiPdf(
+        SurvzoneRepository $survzoneRepository,
+        GroqAnalyzer $groqAnalyzer,
+        Pdf $pdf
+    ): Response {
+        $survzones = $survzoneRepository->findAll();
+        $rapport = $groqAnalyzer->analyserSurveillances($survzones);
+
+        $html = $this->renderView('survzone/rapport_ai_pdf.html.twig', [
+            'rapport' => $rapport,
+            'survzones' => $survzones,
+            'generatedAt' => new \DateTimeImmutable(),
+        ]);
+
+        $filename = 'rapport_ai_survzones_'.date('Y-m-d').'.pdf';
+
+        try {
+            return new PdfResponse(
+                $pdf->getOutputFromHtml($html, [
+                    'orientation' => 'Portrait',
+                    'encoding' => 'utf-8',
+                ]),
+                $filename
+            );
+        } catch (\Throwable $exception) {
+            return $this->renderWithDompdfPortrait($html, $filename);
+        }
+    }
+
     private function renderWithDompdf(string $html, string $filename): Response
     {
         $options = new Options();
         $options->set('defaultFont', 'Arial');
-        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isHtml5ParserEnabled', false);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]
+        );
+    }
+
+    private function renderWithDompdfPortrait(string $html, string $filename): Response
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
         return new Response(
@@ -306,15 +357,16 @@ final class SurvzoneController extends AbstractController
     }
 
     #[Route('/rapport/ai', name: 'app_survzone_rapport_ai', methods: ['GET'])]
-public function rapportAi(
-    SurvzoneRepository $survzoneRepository,
-    GroqAnalyzer $groqAnalyzer
-): Response {
-    $survzones = $survzoneRepository->findAll();
-    $rapport = $groqAnalyzer->analyserSurveillances($survzones);
+    public function rapportAi(
+        SurvzoneRepository $survzoneRepository,
+        GroqAnalyzer $groqAnalyzer
+    ): Response {
+        $survzones = $survzoneRepository->findAll();
+        $rapport = $groqAnalyzer->analyserSurveillances($survzones);
 
-    return $this->render('survzone/rapport_ai.html.twig', [
-        'rapport' => $rapport,
-    ]);
-}
+        return $this->render('survzone/rapport_ai.html.twig', [
+            'rapport' => $rapport,
+            'survzones' => $survzones,
+        ]);
+    }
 }

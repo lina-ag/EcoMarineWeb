@@ -4,19 +4,14 @@ namespace App\Service;
 
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GroqMailService
 {
     private const DEFAULT_FROM_EMAIL = 'ecomarine.reservation@outlook.com';
 
-    private string $groqApiKey;
-
     public function __construct(
         private readonly MailerInterface $mailer,
-        private readonly HttpClientInterface $httpClient,
     ) {
-        $this->groqApiKey = $_ENV['GROQ_API_KEY'] ?? '';
     }
 
     public function sendReservationConfirmation(
@@ -83,36 +78,7 @@ class GroqMailService
         string $activityName,
         string $reservationDate,
     ): string {
-        try {
-            $prompt = "Tu es l'assistant de EcoMarine, une plateforme d'écotourisme sur l'île de Kuriat en Tunisie.
-Génère un email de confirmation en français, chaleureux et professionnel, en HTML (inline styles uniquement).
-L'email doit confirmer la réservation de {$name} pour l'activité '{$activityName}' le {$reservationDate}.
-Utilise un style marin avec des couleurs #0f766e (vert marin) et #1d4ed8 (bleu).
-Ajoute un message de bienvenue personnalisé et 3 conseils pratiques pour la visite.
-Retourne uniquement le HTML de l'email, sans balises html/head/body.";
-
-            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->groqApiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'llama3-8b-8192',
-                    'messages' => [
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
-                    'max_tokens' => 900,
-                    'temperature' => 0.7,
-                ],
-            ]);
-
-            $data = $response->toArray();
-
-            return $data['choices'][0]['message']['content']
-                ?? $this->fallbackReservationContent($name, $activityName, $reservationDate);
-        } catch (\Throwable) {
-            return $this->fallbackReservationContent($name, $activityName, $reservationDate);
-        }
+        return $this->fallbackReservationContent($name, $activityName, $reservationDate);
     }
 
     private function generateEmailContent(
@@ -123,37 +89,7 @@ Retourne uniquement le HTML de l'email, sans balises html/head/body.";
         int $total,
         string $badgeLabel
     ): string {
-        try {
-            $prompt = "Tu es l'assistant de EcoMarine, une plateforme d'écotourisme sur l'île de Kuriat en Tunisie. 
-Génère un email de confirmation en français, chaleureux et professionnel, en HTML inline styles uniquement.
-L'email doit confirmer :
-- La réservation de {$name} pour l'activité '{$activityName}' le {$reservationDate}
-- Le résultat du quiz écologique : {$correctCount}/{$total} bonnes réponses
-- Le badge obtenu : {$badgeLabel}
-Utilise un style marin avec des couleurs #0f766e (vert marin) et #1d4ed8 (bleu).
-Inclus un message de bienvenue personnalisé et des conseils pour la visite.
-Retourne uniquement le HTML de l'email, sans balises html/head/body.";
-
-            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->groqApiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'llama3-8b-8192',
-                    'messages' => [
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
-                    'max_tokens' => 1000,
-                    'temperature' => 0.7,
-                ],
-            ]);
-
-            $data = $response->toArray();
-            return $data['choices'][0]['message']['content'] ?? $this->fallbackContent($name, $activityName, $reservationDate, $correctCount, $total, $badgeLabel);
-        } catch (\Throwable) {
-            return $this->fallbackContent($name, $activityName, $reservationDate, $correctCount, $total, $badgeLabel);
-        }
+        return $this->fallbackContent($name, $activityName, $reservationDate, $correctCount, $total, $badgeLabel);
     }
 
     private function fallbackContent(

@@ -51,6 +51,20 @@
             {{ form_label(form.activiteEcologique, null, {'label_attr': {'class': 'form-label'}}) }}
             <div class="capacity-select-shell">
                 {{ form_widget(form.activiteEcologique, {'attr': {'class': 'form-input capacity-select reservation-activity-autocomplete', 'data-autocomplete-theme': 'marine'}}) }}
+                <div style="margin-top: 12px; display: flex; gap: 16px; font-size: 13px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 12px; height: 12px; background: #16a34a; border-radius: 2px;"></span>
+                        <span>Disponible</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 12px; height: 12px; background: #d97706; border-radius: 2px;"></span>
+                        <span>Presque complet</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 12px; height: 12px; background: #dc2626; border-radius: 2px;"></span>
+                        <span>Complet</span>
+                    </div>
+                </div>
             </div>
             {{ form_errors(form.activiteEcologique) }}
         </div>

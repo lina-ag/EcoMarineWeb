@@ -1,0 +1,57 @@
+<header id="header" class="front-home-nav">
+    {% set current_route = app.request ? app.request.get('_route') : '' %}
+    <div class="container-fluid">
+        <div class="navbar">
+            <a href="{{ path('app_home') }}" id="logo" title="EcoMarine">
+                <img src="/assets/images/logoEco.png" alt="EcoMarine" style="height: 110px; width: auto; vertical-align: middle;">
+            </a>
+            <div class="navigation-row">
+                <nav id="navigation">
+                    <button type="button" class="navbar-toggle">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <div class="nav-box navbar-collapse">
+                        <ul class="navigation-menu nav navbar-nav navbars" id="frontNav">
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide01">Accueil</button></li>
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide02">A Propos</button></li>
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide03">Activites</button></li>
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide05">Galerie</button></li>
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide06">Temoignages</button></li>
+                            <li><button type="button" class="front-nav-btn" data-front-url="{{ path('app_home') }}#slide07">Contact</button></li>
+                            <li><button type="button" class="front-nav-btn nav-action-link{{ current_route == 'app_home_zonep_new' ? ' is-active' : '' }}" data-front-url="{{ path('app_home_zonep_new') }}">Zonep</button></li>
+                            <li><button type="button" class="front-nav-btn nav-action-link{{ current_route == 'app_home_survzone_new' ? ' is-active' : '' }}" data-front-url="{{ path('app_home_survzone_new') }}">Survzone</button></li>
+                            <li><button type="button" class="front-nav-btn nav-action-link{{ current_route == 'app_home_activite_ecologique_new' ? ' is-active' : '' }}" data-front-url="{{ path('app_home_activite_ecologique_new') }}">Activite</button></li>
+                            <li><button type="button" class="front-nav-btn nav-action-link{{ current_route == 'app_home_reservation_new' ? ' is-active' : '' }}" data-front-url="{{ path('app_home_reservation_new') }}">Reservation</button></li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+(() => {
+    const toggle = document.querySelector('.front-home-nav .navbar-toggle');
+    const navBox = document.querySelector('.front-home-nav .nav-box');
+
+    if (!toggle || !navBox) {
+        return;
+    }
+
+    toggle.addEventListener('click', function () {
+        navBox.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.front-home-nav [data-front-url]').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const targetUrl = button.getAttribute('data-front-url');
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
+        });
+    });
+})();
+</script>

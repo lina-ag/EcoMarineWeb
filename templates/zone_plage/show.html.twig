@@ -1,31 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}ZonePlage{% endblock %}
+{% block title %}Zone Plage{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Zone plage #{{ zone_plage.id_zone }}</h2>
-                <p class="card-subtitle">Details de la zone de plage.</p>
-            </div>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <tbody>
-                    <tr><th>Id</th><td>{{ zone_plage.id_zone }}</td></tr>
-                    <tr><th>Nom</th><td>{{ zone_plage.nom }}</td></tr>
-                    <tr><th>Localisation</th><td>{{ zone_plage.localisation }}</td></tr>
-                    <tr><th>Statut</th><td>{{ zone_plage.statut }}</td></tr>
-                </tbody>
-            </table>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>{{ zone_plage.nom }}</h1>
+            <p>Détail complet de la zone de plage.</p>
         </div>
+        <div class="module-actions">
+            <a href="{{ path('app_zone_plage_edit', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-primary">Modifier</a>
+            <a href="{{ path('app_zone_plage_index') }}" class="btn btn-secondary">Retour</a>
+        </div>
+    </div>
 
-        <div class="btn-group">
-            <a href="{{ path('app_zone_plage_index') }}" class="btn btn-secondary">back to list</a>
-            <a href="{{ path('app_zone_plage_edit', {'id_zone': zone_plage.id_zone}) }}" class="btn btn-primary">edit</a>
-            {{ include('zone_plage/_delete_form.html.twig') }}
-        </div>
-    </section>
+    <div class="glass-card">
+        <table class="details-table">
+            <tr><th>ID</th><td>{{ zone_plage.idZone }}</td></tr>
+            <tr><th>Nom</th><td>{{ zone_plage.nom }}</td></tr>
+            <tr><th>Localisation</th><td>{{ zone_plage.localisation }}</td></tr>
+            <tr><th>Statut</th><td>{{ zone_plage.statut }}</td></tr>
+        </table>
+    </div>
+</section>
 {% endblock %}

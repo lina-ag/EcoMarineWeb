@@ -67,15 +67,15 @@ final class ReservationControllerTest extends WebTestCase
     {
         $fixture = new Reservation();
         $fixture->setNom('My Title');
-        $fixture->setDateReservation('My Title');
+        $fixture->setDateReservation(new \DateTime('2024-01-01'));
         $fixture->setEmail('My Title');
-        $fixture->setNombrePersonnes('My Title');
-        $fixture->setActiviteEcologique('My Title');
+        $fixture->setNombrePersonnes(3);
+        $fixture->setActiviteEcologique(null);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getIdReservation()));
 
         self::assertResponseStatusCodeSame(200);
         self::assertPageTitleContains('Reservation');
@@ -88,15 +88,15 @@ final class ReservationControllerTest extends WebTestCase
     {
         $fixture = new Reservation();
         $fixture->setNom('Value');
-        $fixture->setDateReservation('Value');
+        $fixture->setDateReservation(new \DateTime('2024-01-01'));
         $fixture->setEmail('Value');
-        $fixture->setNombrePersonnes('Value');
-        $fixture->setActiviteEcologique('Value');
+        $fixture->setNombrePersonnes(2);
+        $fixture->setActiviteEcologique(null);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s/edit', $this->path, $fixture->getIdReservation()));
 
         $this->client->submitForm('Update', [
             'reservation[nom]' => 'Something New',
@@ -111,10 +111,10 @@ final class ReservationControllerTest extends WebTestCase
         $fixture = $this->reservationRepository->findAll();
 
         self::assertSame('Something New', $fixture[0]->getNom());
-        self::assertSame('Something New', $fixture[0]->getDateReservation());
+        self::assertSame('2024-02-02', $fixture[0]->getDateReservation()?->format('Y-m-d'));
         self::assertSame('Something New', $fixture[0]->getEmail());
-        self::assertSame('Something New', $fixture[0]->getNombrePersonnes());
-        self::assertSame('Something New', $fixture[0]->getActiviteEcologique());
+        self::assertSame(5, $fixture[0]->getNombrePersonnes());
+        self::assertNull($fixture[0]->getActiviteEcologique());
 
         $this->markTestIncomplete('This test was generated');
     }
@@ -123,15 +123,15 @@ final class ReservationControllerTest extends WebTestCase
     {
         $fixture = new Reservation();
         $fixture->setNom('Value');
-        $fixture->setDateReservation('Value');
+        $fixture->setDateReservation(new \DateTime('2024-01-01'));
         $fixture->setEmail('Value');
-        $fixture->setNombrePersonnes('Value');
-        $fixture->setActiviteEcologique('Value');
+        $fixture->setNombrePersonnes(2);
+        $fixture->setActiviteEcologique(null);
 
         $this->manager->persist($fixture);
         $this->manager->flush();
 
-        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getId()));
+        $this->client->request('GET', sprintf('%s%s', $this->path, $fixture->getIdReservation()));
         $this->client->submitForm('Delete');
 
         self::assertResponseRedirects('/reservation');

@@ -1,16 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Evenement{% endblock %}
+{% block title %}Nouvel Événement{% endblock %}
 
 {% block body %}
-    <section class="glass-card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Create new Evenement</h2>
-                <p class="card-subtitle">Ajouter un nouvel evenement.</p>
-            </div>
-        </div>
+<link rel="stylesheet" href="/assets_admin/module-plage.css">
 
-        {{ include('evenement/_form.html.twig') }}
-    </section>
+<section class="module-shell">
+    <div class="module-hero glass-card">
+        <div class="module-title-wrap">
+            <h1>Ajouter un événement</h1>
+            <p>Créer un nouvel événement lié à la plage.</p>
+        </div>
+    </div>
+
+    {{ include('evenement/_form.html.twig') }}
+</section>
 {% endblock %}
