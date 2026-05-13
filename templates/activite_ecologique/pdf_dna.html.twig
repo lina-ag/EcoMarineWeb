@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>DNA activité</title>
+    <style>
+        @page {
+            margin: 140px 36px 88px 36px;
+        }
+
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 11px;
+            color: #0f172a;
+            margin: 0;
+            background: #f8fafc;
+        }
+
+        .report-header {
+            position: fixed;
+            top: -110px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            padding: 18px 36px 12px;
+            background: linear-gradient(135deg, #0f766e, #1d4ed8);
+            color: #ffffff;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header-inner,
+        .hero-top,
+        .stats,
+        .grid-2 {
+            display: table;
+            width: 100%;
+        }
+
+        .header-brand,
+        .header-meta,
+        .hero-title,
+        .hero-badge,
+        .stat,
+        .grid-cell {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .header-brand { width: 65%; }
+        .header-meta { text-align: right; }
+        .header-meta-box {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .header-meta-label {
+            margin: 0 0 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.78;
+        }
+        .header-meta-value { margin: 0; font-size: 12px; font-weight: 700; }
+
+        .brand-row { display: table; width: 100%; }
+        .brand-logo,
+        .brand-copy { display: table-cell; vertical-align: middle; }
+        .brand-logo img {
+            width: 58px; height: 58px; object-fit: contain; margin-right: 14px;
+            border-radius: 16px; background: rgba(255, 255, 255, 0.12); padding: 6px;
+        }
+        .brand-kicker {
+            margin: 0 0 4px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85;
+        }
+        .brand-title { margin: 0; font-size: 22px; line-height: 1.1; }
+        .brand-subtitle { margin: 6px 0 0; font-size: 11px; opacity: 0.92; }
+
+        .report-footer {
+            position: fixed;
+            bottom: -66px;
+            left: 0;
+            right: 0;
+            height: 54px;
+            padding: 14px 36px 0;
+            border-top: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 9px;
+            background: #ffffff;
+        }
+
+        .footer-inner { display: table; width: 100%; }
+        .footer-inner > div { display: table-cell; vertical-align: middle; }
+        .footer-right { text-align: right; }
+        .page-number::after { content: "Page " counter(page) " / " counter(pages); font-weight: 700; color: #1e3a8a; }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(226, 239, 255, 0.84));
+            border: 1px solid #dbeafe;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+        }
+
+        .hero-title h1 { margin: 0; font-size: 21px; color: #0f172a; }
+        .hero-title p { margin: 6px 0 0; color: #475569; font-size: 10px; }
+        .hero-badge { text-align: right; }
+        .badge {
+            display: inline-block; padding: 7px 12px; border-radius: 999px;
+            background: #dbeafe; color: #1d4ed8; font-weight: 700; font-size: 10px;
+        }
+
+        .stats { margin-bottom: 14px; table-layout: fixed; }
+        .stat { padding-right: 10px; }
+        .stat-card {
+            background: #ffffff; border: 1px solid #dbeafe; border-radius: 14px;
+            padding: 12px 14px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+        .stat-label { margin: 0 0 6px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; }
+        .stat-value { margin: 0; font-size: 18px; font-weight: 700; color: #0f172a; }
+
+        .section {
+            margin-top: 16px;
+            padding: 16px 18px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: 16px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+        }
+        .section h2 { margin: 0 0 8px; font-size: 16px; color: #0f172a; }
+        .section p { margin: 0 0 10px; color: #475569; font-size: 10px; }
+
+        .summary {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(248,250,252,0.92), rgba(239,246,255,0.88));
+            border: 1px solid #dbeafe;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .grid-2 { table-layout: fixed; margin-top: 12px; }
+        .grid-cell { padding-right: 10px; vertical-align: top; }
+        .panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+        .panel h3 { margin: 0 0 8px; font-size: 12px; color: #0f172a; }
+        .panel p { margin: 0; font-size: 10px; color: #475569; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #dbeafe;
+            padding: 7px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: #eff6ff; color: #1e3a8a; }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="brand-row">
+                    <div class="brand-logo">
+                        <img src="{{ absolute_url(asset('assets/images/logoEco.png')) }}" alt="EcoMarine">
+                    </div>
+                    <div class="brand-copy">
+                        <p class="brand-kicker">EcoMarine</p>
+                        <h2 class="brand-title">Export PDF DNA activité</h2>
+                        <p class="brand-subtitle">Profil comportemental et indicateurs de réservation pour {{ activite_ecologique.nomActivite }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="header-meta-box">
+                    <p class="header-meta-label">Généré le</p>
+                    <p class="header-meta-value">{{ "now"|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="report-footer">
+        <div class="footer-inner">
+            <div>EcoMarine - Analyse DNA des activités</div>
+            <div class="footer-right"><span class="page-number"></span></div>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="hero-top">
+            <div class="hero-title">
+                <h1>🧬 DNA de "{{ activite_ecologique.nomActivite }}"</h1>
+                <p>Activité #{{ activite_ecologique.idActivite }} — {{ profile_summary }}</p>
+            </div>
+            <div class="hero-badge">
+                <span class="badge">{{ dna ? dna.dna_label : 'DNA non analysé' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="stat-card"><p class="stat-label">Réservations</p><p class="stat-value">{{ total_reservations }}</p></div></div>
+        <div class="stat"><div class="stat-card"><p class="stat-label">Participants</p><p class="stat-value">{{ total_people }}</p></div></div>
+        <div class="stat"><div class="stat-card"><p class="stat-label">Taux de retour</p><p class="stat-value">{{ taux_retour }}%</p></div></div>
+        <div class="stat"><div class="stat-card"><p class="stat-label">Remplissage</p><p class="stat-value">{{ fill_rate }}%</p></div></div>
+    </div>
+
+    <div class="section">
+        <h2>Indicateurs clés</h2>
+        <div class="grid-2">
+            <div class="grid-cell">
+                <div class="panel">
+                    <h3>👥 Profil dominant</h3>
+                    <p>{% if dna and dna.min_groupe and dna.max_groupe %}{{ dna.min_groupe|round }} à {{ dna.max_groupe|round }} personnes{% elseif avg_group > 0 %}Moyenne {{ avg_group }} personnes{% else %}Aucune donnée{% endif %}</p>
+                </div>
+            </div>
+            <div class="grid-cell">
+                <div class="panel">
+                    <h3>📅 Réservée à l'avance</h3>
+                    <p>{% if avg_lead_time > 0 %}{{ avg_lead_time|round }} jours{% else %}Aucune donnée{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="grid-2" style="margin-top: 10px;">
+            <div class="grid-cell">
+                <div class="panel">
+                    <h3>🕐 Pic de réservation</h3>
+                    <p>{{ dna and dna.jour_pic ? dna.jour_pic : 'Aucune donnée' }}</p>
+                </div>
+            </div>
+            <div class="grid-cell">
+                <div class="panel">
+                    <h3>⚡ Vitesse de remplissage</h3>
+                    <p>{{ dna and dna.vitesse_remplissage ? dna.vitesse_remplissage : 'Moyen' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Lecture synthétique</h2>
+        <div class="summary">{{ profile_summary }}</div>
+    </div>
+
+    <div class="section">
+        <h2>Réservations récentes</h2>
+        {% if recent_reservations is not empty %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date réservation</th>
+                        <th>Email</th>
+                        <th>Pers.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in recent_reservations %}
+                        <tr>
+                            <td>{{ reservation.idReservation }}</td>
+                            <td>{{ reservation.dateReservation ? reservation.dateReservation|date('Y-m-d') : '—' }}</td>
+                            <td>{{ reservation.email }}</td>
+                            <td>{{ reservation.nombrePersonnes }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Aucune réservation disponible.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,47 +1,252 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
 {% block title %}Volontaire index{% endblock %}
+{% block page_title %}Volontaires{% endblock %}
+{% block navbar_title %}Gestion des volontaires{% endblock %}
 
-{% block body %}
+{% block admin_stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-ajax-loading {
+            opacity: 0.65;
+            transition: opacity 0.2s ease;
+        }
+
+        .cleaning-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .cleaning-pagination__link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            height: 44px;
+            padding: 0 12px;
+            border-radius: 14px;
+            background: rgba(6, 24, 44, 0.34);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f8fbff;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1;
+            text-decoration: none;
+        }
+
+        a.cleaning-pagination__link:hover {
+            background: rgba(21, 101, 192, 0.32);
+            border-color: rgba(88, 166, 255, 0.48);
+            transform: translateY(-1px);
+        }
+
+        .cleaning-pagination__link.current {
+            background: linear-gradient(135deg, #23c8ff 0%, #1184ff 100%);
+            color: #042544;
+            box-shadow: 0 14px 28px rgba(17, 132, 255, 0.28);
+        }
+
+        .cleaning-pagination__link.disabled {
+            opacity: 0.35;
+        }
+
+        .admin-filter-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: end;
+        }
+
+        .admin-filter-form .form-control,
+        .admin-filter-form .form-select {
+            min-height: 46px;
+            border-radius: 12px;
+        }
+
+        .admin-filter-form .btn,
+        .admin-filter-form .btn-secondary {
+            min-height: 46px;
+        }
+
+        .inline-delete-form {
+            display: inline-block;
+            margin-left: 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
     <section class="glass-card">
         <div class="card-header">
             <div>
                 <h2 class="card-title">Volontaires</h2>
-                <p class="card-subtitle">Gestion des volontaires mobilises.</p>
+                <p class="card-subtitle">Gestion des volontaires des actions de nettoyage.</p>
             </div>
             <a href="{{ path('app_volontaire_new') }}" class="btn btn-primary">Create new</a>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nom</th>
-                        <th>Contact</th>
-                        <th>Id action</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for volontaire in volontaires %}
-                    <tr>
-                        <td>{{ volontaire.idVolontaire }}</td>
-                        <td>{{ volontaire.nom }}</td>
-                        <td>{{ volontaire.contact }}</td>
-                        <td>{{ volontaire.idAction }}</td>
-                        <td>
-                            <a href="{{ path('app_volontaire_show', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_volontaire_edit', {'id_volontaire': volontaire.id_volontaire}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5">no records found</td>
-                    </tr>
+        <form method="get"
+              action="{{ path('app_volontaire_index') }}"
+              class="admin-filter-form"
+              data-admin-filter-form
+              data-endpoint="{{ path('app_volontaire_index') }}">
+            <input
+                type="text"
+                name="search"
+                value="{{ search|default('') }}"
+                class="form-control"
+                placeholder="Rechercher par nom, contact ou lieu"
+            >
+            <select name="action_id" class="form-select">
+                <option value="0">Toutes les actions</option>
+                {% for action in actions_nettoyage %}
+                    <option value="{{ action.idAction }}" {% if selectedAction|default(0) == action.idAction %}selected{% endif %}>
+                        {{ action.lieu }} - {{ action.dateAction ? action.dateAction|date('Y-m-d') : '' }}
+                    </option>
                 {% endfor %}
-                </tbody>
-            </table>
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ path('app_volontaire_index') }}" class="btn btn-secondary" data-admin-filter-reset>Reinitialiser</a>
+        </form>
+
+        <div id="volontaire-results" data-admin-pagination-root>
+            {{ include('volontaire/_results.html.twig', { volontaires: volontaires }) }}
         </div>
     </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            var root = document.querySelector('[data-admin-pagination-root]');
+            var filterForm = document.querySelector('[data-admin-filter-form]');
+
+            if (!root) {
+                return;
+            }
+
+            function loadResults(url, pushState) {
+                root.classList.add('admin-ajax-loading');
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Admin request failed');
+                        }
+
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        root.innerHTML = html;
+
+                        if (pushState !== false) {
+                            window.history.pushState({}, '', url);
+                        }
+                    })
+                    .catch(function () {
+                        window.location.href = url;
+                    })
+                    .finally(function () {
+                        root.classList.remove('admin-ajax-loading');
+                    });
+            }
+
+            root.addEventListener('click', function (event) {
+                var link = event.target.closest('[data-page-link]');
+
+                if (!link) {
+                    return;
+                }
+
+                event.preventDefault();
+                loadResults(link.href);
+            });
+
+            root.addEventListener('submit', function (event) {
+                var form = event.target.closest('[data-admin-delete-form]');
+
+                if (!form) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (!window.confirm('Supprimer ce volontaire ?')) {
+                    return;
+                }
+
+                root.classList.add('admin-ajax-loading');
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(form)
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Delete request failed');
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data.success) {
+                            throw new Error('Delete request failed');
+                        }
+
+                        loadResults(window.location.href, false);
+                    })
+                    .catch(function () {
+                        window.location.reload();
+                    })
+                    .finally(function () {
+                        root.classList.remove('admin-ajax-loading');
+                    });
+            });
+
+            if (filterForm) {
+                filterForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    var formAction = filterForm.getAttribute('data-endpoint')
+                        || filterForm.getAttribute('action')
+                        || window.location.pathname;
+                    var url = new URL(formAction, window.location.origin);
+                    var formData = new FormData(filterForm);
+
+                    formData.forEach(function (value, key) {
+                        if (value !== null && String(value).trim() !== '' && String(value) !== '0') {
+                            url.searchParams.set(key, value);
+                        }
+                    });
+
+                    loadResults(url.toString());
+                });
+
+                filterForm.addEventListener('click', function (event) {
+                    var resetLink = event.target.closest('[data-admin-filter-reset]');
+
+                    if (!resetLink) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    filterForm.reset();
+                    loadResults(resetLink.href);
+                });
+            }
+        })();
+    </script>
 {% endblock %}

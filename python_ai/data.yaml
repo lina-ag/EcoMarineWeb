@@ -1,0 +1,12 @@
+# Chemin vers votre dataset (mettez le chemin absolu si besoin)
+path: ./dataset
+train: train/images  # Dossier des images d'entraînement
+val: val/images      # Dossier des images de validation
+
+# Nombre de classes (espèces) que vous voulez détecter
+nc: 2
+
+# Noms des classes (L'ordre est très important ! ID 0 = Caretta caretta, ID 1 = Tursiops truncatus)
+names:
+  0: Caretta caretta
+  1: Tursiops truncatus

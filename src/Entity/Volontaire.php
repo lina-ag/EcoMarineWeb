@@ -2,14 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
+use App\Entity\Utilisateur;
 use App\Repository\VolontaireRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: VolontaireRepository::class)]
 #[ORM\Table(name: 'volontaire')]
+#[UniqueEntity(
+    fields: ['nom', 'contact', 'id_action'],
+    message: 'Ce volontaire est déjà inscrit dans cette action.'
+)]
 class Volontaire
 {
     #[ORM\Id]
@@ -17,19 +21,62 @@ class Volontaire
     #[ORM\Column(type: 'integer')]
     private ?int $id_volontaire = null;
 
+    #[ORM\Column(type: 'string', length: 100, nullable: false)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+    #[Assert\Length(
+        min: 2,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
+        max: 100,
+        maxMessage: "Le nom ne doit pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[\p{L}\s'-]+$/u",
+        message: "Le nom ne doit contenir que des lettres et des espaces."
+    )]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: false)]
+    #[Assert\NotBlank(message: "Le contact est obligatoire.")]
+    #[Assert\Length(
+        min: 8,
+        minMessage: "Le contact doit contenir au moins {{ limit }} caractères.",
+        max: 20,
+        maxMessage: "Le contact ne doit pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: '/^[0-9+\s]+$/',
+        message: 'Le contact doit contenir uniquement des chiffres, espaces ou le signe +.'
+    )]
+    private ?string $contact = null;
+
+    #[ORM\ManyToOne(targetEntity: ActionNettoyage::class, inversedBy: 'volontaires')]
+    #[ORM\JoinColumn(name: 'id_action', referencedColumnName: 'id_action', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: "Vous devez choisir une action de nettoyage.")]
+    private ?ActionNettoyage $id_action = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_utilisateur', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $utilisateur = null;
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
     public function getId_volontaire(): ?int
     {
         return $this->id_volontaire;
     }
 
-    public function setId_volontaire(int $id_volontaire): self
+    public function getIdVolontaire(): ?int
     {
-        $this->id_volontaire = $id_volontaire;
-        return $this;
+        return $this->id_volontaire;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $nom = null;
 
     public function getNom(): ?string
     {
@@ -42,49 +89,36 @@ class Volontaire
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $contact = null;
-
     public function getContact(): ?string
     {
         return $this->contact;
     }
 
-    public function setContact(?string $contact): self
+    public function setContact(string $contact): self
     {
         $this->contact = $contact;
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $id_action = null;
-
-    public function getId_action(): ?int
+    public function getId_action(): ?ActionNettoyage
     {
         return $this->id_action;
     }
 
-    public function setId_action(int $id_action): self
+    public function getIdAction(): ?ActionNettoyage
+    {
+        return $this->id_action;
+    }
+
+    public function setId_action(?ActionNettoyage $id_action): self
     {
         $this->id_action = $id_action;
         return $this;
     }
 
-    public function getIdVolontaire(): ?int
-    {
-        return $this->id_volontaire;
-    }
-
-    public function getIdAction(): ?int
-    {
-        return $this->id_action;
-    }
-
-    public function setIdAction(int $id_action): static
+    public function setIdAction(?ActionNettoyage $id_action): self
     {
         $this->id_action = $id_action;
-
         return $this;
     }
-
 }

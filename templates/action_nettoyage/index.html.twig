@@ -1,45 +1,193 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}ActionNettoyage index{% endblock %}
+{% block title %}Actions de nettoyage{% endblock %}
+{% block page_title %}Actions de nettoyage{% endblock %}
+{% block navbar_title %}Centre operationnel nettoyage{% endblock %}
 
-{% block body %}
-    <section class="glass-card">
+{% block admin_stylesheets %}
+<style>
+    .admin-ajax-loading {
+        opacity: 0.65;
+        transition: opacity 0.2s ease;
+    }
+
+    .cleaning-stat-card {
+        padding: 18px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .cleaning-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .cleaning-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .cleaning-pagination__link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+        border-radius: 14px;
+        background: rgba(6, 24, 44, 0.34);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f8fbff;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+    }
+
+    a.cleaning-pagination__link:hover {
+        background: rgba(21, 101, 192, 0.32);
+        border-color: rgba(88, 166, 255, 0.48);
+        transform: translateY(-1px);
+    }
+
+    .cleaning-pagination__link.current {
+        background: linear-gradient(135deg, #23c8ff 0%, #1184ff 100%);
+        color: #042544;
+        box-shadow: 0 14px 28px rgba(17, 132, 255, 0.28);
+    }
+
+    .cleaning-pagination__link.disabled {
+        opacity: 0.35;
+    }
+
+    .admin-filter-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto;
+        gap: 12px;
+        margin-bottom: 20px;
+        align-items: end;
+    }
+
+    .admin-filter-form .form-control,
+    .admin-filter-form .form-select,
+    .admin-filter-form .btn,
+    .admin-filter-form .btn-secondary {
+        min-height: 46px;
+    }
+
+    .inline-delete-form {
+        display: inline-block;
+        margin-left: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+    <section class="glass-card" style="margin-bottom: 22px;">
         <div class="card-header">
             <div>
-                <h2 class="card-title">Actions de nettoyage</h2>
-                <p class="card-subtitle">Planification et suivi des actions de nettoyage.</p>
+                <h2 class="card-title">Dashboard Nettoyage</h2>
+                <p class="card-subtitle">Vue d ensemble des actions, participants et campagnes deja realisees.</p>
             </div>
-            <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Create new</a>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="{{ path('app_action_nettoyage_new') }}" class="btn btn-primary">Créer</a>
+            </div>
         </div>
 
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Date</th>
-                        <th>Lieu</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for action_nettoyage in action_nettoyages %}
-                    <tr>
-                        <td>{{ action_nettoyage.idAction }}</td>
-                        <td>{{ action_nettoyage.dateAction }}</td>
-                        <td>{{ action_nettoyage.lieu }}</td>
-                        <td>
-                            <a href="{{ path('app_action_nettoyage_show', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-secondary">show</a>
-                            <a href="{{ path('app_action_nettoyage_edit', {'id_action': action_nettoyage.id_action}) }}" class="btn btn-primary">edit</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="4">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="stats-grid-cleaning cleaning-kpi-grid">
+            <div class="cleaning-stat-card">
+                <div class="cleaning-stat-label">Total actions</div>
+                <div class="cleaning-stat-value">{{ stats.total_actions }}</div>
+            </div>
+            <div class="cleaning-stat-card">
+                <div class="cleaning-stat-label">Actions passees</div>
+                <div class="cleaning-stat-value">{{ stats.past_actions }}</div>
+            </div>
+            <div class="cleaning-stat-card">
+                <div class="cleaning-stat-label">Actions a venir</div>
+                <div class="cleaning-stat-value">{{ stats.upcoming_actions }}</div>
+            </div>
+            <div class="cleaning-stat-card">
+                <div class="cleaning-stat-label">Actions completes</div>
+                <div class="cleaning-stat-value">{{ stats.complete_actions }}</div>
+            </div>
         </div>
+
+        <section class="glass-card" style="margin-top:18px;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Liste des actions</h2>
+                    <p class="card-subtitle">Recherche, filtrage et administration rapide.</p>
+                </div>
+            </div>
+
+            <form method="get" action="{{ path('app_action_nettoyage_index') }}" class="admin-filter-form" data-admin-filter-form data-endpoint="{{ path('app_action_nettoyage_index') }}">
+                <input type="text" name="search" value="{{ search|default('') }}" class="form-control" placeholder="Rechercher par lieu">
+                <select name="period" class="form-select">
+                    <option value="all" {% if period|default('all') == 'all' %}selected{% endif %}>Toutes les actions</option>
+                    <option value="upcoming" {% if period|default('all') == 'upcoming' %}selected{% endif %}>A venir</option>
+                    <option value="past" {% if period|default('all') == 'past' %}selected{% endif %}>Deja faites</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <a href="{{ path('app_action_nettoyage_index') }}" class="btn btn-secondary" data-admin-filter-reset>Reinitialiser</a>
+            </form>
+
+            <div id="action-nettoyage-results" data-admin-pagination-root>
+                {{ include('action_nettoyage/_results.html.twig', { action_nettoyages: action_nettoyages }) }}
+            </div>
+        </section>
     </section>
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            var root = document.querySelector('[data-admin-pagination-root]');
+            var filterForm = document.querySelector('[data-admin-filter-form]');
+
+            if (!root) { return; }
+
+            function loadResults(url, pushState) {
+                root.classList.add('admin-ajax-loading');
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { if (!r.ok) throw new Error('Admin request failed'); return r.text(); })
+                    .then(function (html) { root.innerHTML = html; if (pushState !== false) window.history.pushState({}, '', url); })
+                    .catch(function () { window.location.href = url; })
+                    .finally(function () { root.classList.remove('admin-ajax-loading'); });
+            }
+
+            root.addEventListener('click', function (event) {
+                var link = event.target.closest('[data-page-link]'); if (!link) return; event.preventDefault(); loadResults(link.href);
+            });
+
+            root.addEventListener('submit', function (event) {
+                var form = event.target.closest('[data-admin-delete-form]'); if (!form) return; event.preventDefault();
+                if (!window.confirm('Supprimer cette action de nettoyage ?')) return;
+                root.classList.add('admin-ajax-loading');
+                fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) })
+                    .then(function (r) { if (!r.ok) throw new Error('Delete request failed'); return r.json(); })
+                    .then(function (data) { if (!data.success) throw new Error('Delete failed'); loadResults(window.location.href, false); })
+                    .catch(function () { window.location.reload(); })
+                    .finally(function () { root.classList.remove('admin-ajax-loading'); });
+            });
+
+            if (filterForm) {
+                filterForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    var formAction = filterForm.getAttribute('data-endpoint') || filterForm.getAttribute('action') || window.location.pathname;
+                    var url = new URL(formAction, window.location.origin);
+                    var formData = new FormData(filterForm);
+                    formData.forEach(function (value, key) { if (value !== null && String(value).trim() !== '' && String(value) !== 'all') url.searchParams.set(key, value); });
+                    loadResults(url.toString());
+                });
+                filterForm.addEventListener('click', function (event) { var resetLink = event.target.closest('[data-admin-filter-reset]'); if (!resetLink) return; event.preventDefault(); filterForm.reset(); loadResults(resetLink.href); });
+            }
+        })();
+    </script>
 {% endblock %}

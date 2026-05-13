@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+{% block title %}Résultat du Quiz{% endblock %}
+
+{% block body %}
+<section class="glass-card reservation-glass-card reservation-admin-shell reservation-admin-shell-form">
+    <div class="card-header">
+        <div class="reservation-admin-header">
+            <span class="reservation-admin-kicker">🌊 Eco Explorer</span>
+            <h2 class="card-title">Votre Badge</h2>
+            <p class="card-subtitle">{{ correct_count }}/{{ total }} bonnes réponses</p>
+        </div>
+    </div>
+
+    <div style="padding: 2rem;">
+        {% for message in app.flashes('success') %}
+            <div style="margin-bottom: 1rem; padding: 0.85rem 1rem; border-radius: 14px; background: rgba(22, 163, 74, 0.12); border: 1px solid rgba(22, 163, 74, 0.25); color: #166534; font-weight: 700;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div style="margin-bottom: 1rem; padding: 0.85rem 1rem; border-radius: 14px; background: rgba(220, 38, 38, 0.10); border: 1px solid rgba(220, 38, 38, 0.22); color: #991b1b; font-weight: 700;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {# Badge #}
+        <div style="text-align: center; margin-bottom: 2.5rem; padding: 2rem; border-radius: 20px;
+            background: {% if badge == 'gold' %}linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1)){% elseif badge == 'silver' %}linear-gradient(135deg, rgba(148,163,184,0.15), rgba(100,116,139,0.1)){% else %}linear-gradient(135deg, rgba(180,83,9,0.12), rgba(146,64,14,0.08)){% endif %};
+            border: 1px solid {% if badge == 'gold' %}rgba(251,191,36,0.3){% elseif badge == 'silver' %}rgba(148,163,184,0.3){% else %}rgba(180,83,9,0.2){% endif %};">
+
+            <div style="font-size: 5rem; margin-bottom: 0.75rem; animation: badgePop 0.5s ease;">
+                {% if badge == 'gold' %}🥇{% elseif badge == 'silver' %}🥈{% else %}🥉{% endif %}
+            </div>
+
+            {% if badge == 'gold' %}
+                <h3 style="color: #d97706; font-weight: 800; margin: 0 0 0.5rem; font-size: 1.4rem;">Badge OR — Explorateur Expert !</h3>
+                <p style="color: #92400e; margin: 0;">Parfait ! Vous maîtrisez l'écologie marine de Kuriat Island.</p>
+            {% elseif badge == 'silver' %}
+                <h3 style="color: #475569; font-weight: 800; margin: 0 0 0.5rem; font-size: 1.4rem;">Badge ARGENT — Explorateur Confirmé</h3>
+                <p style="color: #64748b; margin: 0;">Bien joué ! Encore un effort pour atteindre le badge or.</p>
+            {% else %}
+                <h3 style="color: #92400e; font-weight: 800; margin: 0 0 0.5rem; font-size: 1.4rem;">Badge BRONZE — Explorateur Débutant</h3>
+                <p style="color: #78716c; margin: 0;">Bonne tentative ! Revenez après votre prochaine réservation.</p>
+            {% endif %}
+
+            <div style="margin-top: 1rem; display: inline-flex; gap: 0.5rem;">
+                {% for i in 1..total %}
+                    <span style="width: 2rem; height: 2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;
+                        background: {{ i <= correct_count ? 'linear-gradient(135deg, #16a34a, #15803d)' : 'rgba(148,163,184,0.3)' }};
+                        color: {{ i <= correct_count ? 'white' : '#94a3b8' }};">
+                        {{ i <= correct_count ? '✓' : '✗' }}
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Correction détaillée #}
+        <h4 style="color: #0f172a; font-weight: 700; margin-bottom: 1rem;">📋 Correction</h4>
+
+        {% for i, question in questions %}
+            {% set userAnswer = answers[i]|default('')|lower|trim %}
+            {% set correctAnswer = question.answer|lower|trim %}
+            {% set isCorrect = userAnswer == correctAnswer %}
+
+            <div style="background: rgba(255,255,255,0.85); border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem;
+                border-left: 4px solid {{ isCorrect ? '#16a34a' : '#dc2626' }};
+                border-top: 1px solid rgba(148,163,184,0.25);
+                border-right: 1px solid rgba(148,163,184,0.25);
+                border-bottom: 1px solid rgba(148,163,184,0.25);
+                box-shadow: 0 3px 10px rgba(0,0,0,0.05);">
+
+                <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.75rem;">
+                    <span style="font-size: 1.1rem;">{{ isCorrect ? '✅' : '❌' }}</span>
+                    <p style="margin: 0; font-weight: 600; color: #0f172a; font-size: 0.95rem; line-height: 1.5;">{{ question.question }}</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.4rem; padding-left: 1.7rem;">
+                    <div style="font-size: 0.88rem; color: #16a34a; font-weight: 600;">
+                        ✅ Bonne réponse : <strong>{{ question.answer }}</strong>
+                    </div>
+                    <div style="font-size: 0.88rem; color: {{ isCorrect ? '#16a34a' : '#dc2626' }}; font-weight: 600;">
+                        {{ isCorrect ? '✅' : '❌' }} Votre réponse : <strong>{{ answers[i]|default('—') }}</strong>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_reservation_index') }}" class="btn btn-primary" style="padding: 0.85rem 2.5rem; border-radius: 12px; background: linear-gradient(135deg, #1d4ed8, #0f766e); font-weight: 700; text-decoration: none; display: inline-block; box-shadow: 0 8px 20px rgba(29,78,216,0.25);">
+                📋 Voir mes réservations
+            </a>
+            <a href="{{ path('app_reservation_index') }}" class="btn" style="padding: 0.85rem 2.5rem; border-radius: 12px; background: rgba(100, 116, 139, 0.12); border: 1px solid rgba(100, 116, 139, 0.3); color: #475569; font-weight: 600; text-decoration: none; display: inline-block;">
+                ⏭️ Retour rapide
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+@keyframes badgePop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style>
+{% endblock %}

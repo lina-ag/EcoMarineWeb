@@ -4,21 +4,65 @@ namespace App\Controller;
 
 use App\Entity\Volontaire;
 use App\Form\VolontaireType;
+use App\Repository\ActionNettoyageRepository;
 use App\Repository\VolontaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/volontaire')]
+#[Route('/admin/volontaire')]
 final class VolontaireController extends AbstractController
 {
-    #[Route(name: 'app_volontaire_index', methods: ['GET'])]
-    public function index(VolontaireRepository $volontaireRepository): Response
+    #[Route('', name: 'app_volontaire_index', methods: ['GET'])]
+    public function index(
+        Request $request,
+        VolontaireRepository $repository,
+        ActionNettoyageRepository $actionNettoyageRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
+        $search = trim((string) $request->query->get('search', ''));
+        $actionId = $request->query->getInt('action_id', 0);
+
+        $query = $repository->createQueryBuilder('v')
+            ->leftJoin('v.id_action', 'a')
+            ->addSelect('a')
+            ->orderBy('v.id_volontaire', 'DESC');
+
+        if ($search !== '') {
+            $query
+                ->andWhere('LOWER(v.nom) LIKE :search OR LOWER(v.contact) LIKE :search OR LOWER(a.lieu) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        if ($actionId > 0) {
+            $query
+                ->andWhere('a.id_action = :actionId')
+                ->setParameter('actionId', $actionId);
+        }
+
+        $volontaires = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            3
+        );
+
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('volontaire/_results.html.twig', [
+                'volontaires' => $volontaires,
+            ]);
+        }
+
         return $this->render('volontaire/index.html.twig', [
-            'volontaires' => $volontaireRepository->findAll(),
+            'volontaires' => $volontaires,
+            'search' => $search,
+            'selectedAction' => $actionId,
+            'actions_nettoyage' => $actionNettoyageRepository->findBy([], ['date_action' => 'DESC']),
         ]);
     }
 
@@ -29,11 +73,22 @@ final class VolontaireController extends AbstractController
         $form = $this->createForm(VolontaireType::class, $volontaire);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($volontaire);
-            $entityManager->flush();
+        if ($form->isSubmitted()) {
+            $action = $volontaire->getIdAction();
 
-            return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+            if ($action && $action->estComplete()) {
+                $form->get('id_action')->addError(
+                    new FormError('Cette action a déjà atteint la limite maximale de bénévoles.')
+                );
+            }
+
+            if ($form->isValid()) {
+                $entityManager->persist($volontaire);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Volontaire ajouté avec succès.');
+                return $this->redirectToRoute('app_volontaire_index');
+            }
         }
 
         return $this->render('volontaire/new.html.twig', [
@@ -53,13 +108,30 @@ final class VolontaireController extends AbstractController
     #[Route('/{id_volontaire}/edit', name: 'app_volontaire_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Volontaire $volontaire, EntityManagerInterface $entityManager): Response
     {
+        $ancienneAction = $volontaire->getIdAction();
+
         $form = $this->createForm(VolontaireType::class, $volontaire);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+        if ($form->isSubmitted()) {
+            $nouvelleAction = $volontaire->getIdAction();
 
-            return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+            if (
+                $nouvelleAction &&
+                $nouvelleAction !== $ancienneAction &&
+                $nouvelleAction->estComplete()
+            ) {
+                $form->get('id_action')->addError(
+                    new FormError('Cette action a déjà atteint la limite maximale de bénévoles.')
+                );
+            }
+
+            if ($form->isValid()) {
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Volontaire modifié avec succès.');
+                return $this->redirectToRoute('app_volontaire_index');
+            }
         }
 
         return $this->render('volontaire/edit.html.twig', [
@@ -71,11 +143,19 @@ final class VolontaireController extends AbstractController
     #[Route('/{id_volontaire}', name: 'app_volontaire_delete', methods: ['POST'])]
     public function delete(Request $request, Volontaire $volontaire, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$volontaire->getId_volontaire(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $volontaire->getIdVolontaire(), $request->request->get('_token'))) {
             $entityManager->remove($volontaire);
             $entityManager->flush();
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
         }
 
-        return $this->redirectToRoute('app_volontaire_index', [], Response::HTTP_SEE_OTHER);
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse(['success' => false], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->redirectToRoute('app_volontaire_index');
     }
 }

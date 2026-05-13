@@ -1,0 +1,43 @@
+{% if pageCount > 1 %}
+    <nav class="cleaning-pagination" aria-label="Pagination actions de nettoyage">
+        {% if previous is defined %}
+            <a
+                class="cleaning-pagination__link"
+                rel="prev"
+                href="{{ path(route, knp_pagination_query(query, previous, options)) }}"
+                data-page-link
+            >
+                &lsaquo;
+            </a>
+        {% else %}
+            <span class="cleaning-pagination__link disabled">&lsaquo;</span>
+        {% endif %}
+
+        {% for page in pagesInRange %}
+            {% if page != current %}
+                <a
+                    class="cleaning-pagination__link"
+                    href="{{ path(route, knp_pagination_query(query, page, options)) }}"
+                    data-page-link
+                >
+                    {{ page }}
+                </a>
+            {% else %}
+                <span class="cleaning-pagination__link current">{{ page }}</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if next is defined %}
+            <a
+                class="cleaning-pagination__link"
+                rel="next"
+                href="{{ path(route, knp_pagination_query(query, next, options)) }}"
+                data-page-link
+            >
+                &rsaquo;
+            </a>
+        {% else %}
+            <span class="cleaning-pagination__link disabled">&rsaquo;</span>
+        {% endif %}
+    </nav>
+{% endif %}

@@ -1,0 +1,172 @@
+﻿.
+|- assets/
+|- bin/
+|- compose.override.yaml
+|- compose.yaml
+|- composer.json
+|- config/
+|- generate_description.py
+|- migrations/
+|- phpunit.xml.dist
+|- predict.py
+|- public/
+|- python_ai/
+|- python_service/
+|- README.md
+|- requirements.txt
+|- src/
+|- templates/
+|- tests/
+|- train_model.py
+|- translations/
+|- var/
+|- vendor/
+
+[src]
+|- Admin/
+|- Bundle/
+|- Command/
+|- Controller/
+|- Entity/
+|- EventSubscriber/
+|- Form/
+|- Kernel.php
+|- Repository/
+|- Service/
+|- Twig/
+
+[templates]
+|- action_nettoyage/
+|- activite_ecologique/
+|- admin/
+|- base.html.twig
+|- base_admin.html.twig
+|- biodiversite/
+|- calendar/
+|- components/
+|- dechet/
+|- detection_drone/
+|- diagnostic/
+|- emails/
+|- evenement/
+|- faune_marine/
+|- home/
+|- mission_drone/
+|- observation/
+|- prediction_echouage/
+|- prediction_map/
+|- reservation/
+|- security/
+|- survzone/
+|- utilisateur/
+|- volontaire/
+|- zone_plage/
+|- zonep/
+
+[config]
+|- bundles.php
+|- packages/
+|- preload.php
+|- routes/
+|- routes.yaml
+|- services.yaml
+
+[public]
+|- assets/
+|- assets_admin/
+|- bundles/
+|- docs/
+|- index.php
+|- styles/
+|- test_security.html
+|- test-camera.html
+|- uploads/
+|- videos/
+
+[assets]
+|- app.js
+|- bootstrap.js
+|- controllers/
+|- controllers.json
+|- react/
+|- styles/
+|- translator.js
+|- vendor/
+
+[tests]
+|- bootstrap.php
+|- Controller/
+
+[translations]
+|- .gitignore
+|- messages.en.yaml
+|- messages.fr.yaml
+
+[migrations]
+|- Version20260504150615.php
+
+[python_ai]
+|- api.py
+|- data.yaml
+|- runs/
+|- train.py
+|- yolov8n-cls.pt
+
+[python_service]
+|- .venv/
+|- __pycache__/
+|- face_recognition_api.py
+|- README.md
+|- requirements.txt
+|- start.bat
+|- start.sh
+|- test_service.py
+|- venv/
+
+[bin]
+|- console
+|- phpunit
+
+[var]
+|- activity_dna.json
+|- cache/
+|- log/
+|- php-server.err.log
+|- php-server.out.log
+|- secrets/
+|- tmp_mail_test.php
+|- translations/
+
+[vendor]
+|- 94noni/
+|- autoload.php
+|- autoload_runtime.php
+|- bin/
+|- composer/
+|- doctrine/
+|- dompdf/
+|- egulias/
+|- elastic/
+|- elasticsearch/
+|- friendsofsymfony/
+|- guzzlehttp/
+|- knplabs/
+|- maennchen/
+|- markbaker/
+|- masterminds/
+|- monolog/
+|- myclabs/
+|- nikic/
+|- open-telemetry/
+|- pagerfanta/
+|- phar-io/
+|- php-ai/
+|- phpdocumentor/
+|- php-http/
+|- phpoffice/
+|- phpstan/
+|- phpunit/
+|- psr/
+|- ralouphie/
+`- ... (11 elements en plus)
+

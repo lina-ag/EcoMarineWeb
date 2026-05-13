@@ -1,4 +1,4 @@
-
+.env
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -22,4 +22,17 @@
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
+/public/build/
 ###< symfony/asset-mapper ###
+
+/.composer-cache/
+/.composer-home/
+
+###> python ###
+__pycache__/
+*.pyc
+python_service/venv/
+python_service/.venv/
+.venv/
+venv/
+###< python ###

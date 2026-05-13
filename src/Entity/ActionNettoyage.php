@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ActionNettoyageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
-use App\Repository\ActionNettoyageRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ActionNettoyageRepository::class)]
 #[ORM\Table(name: 'action_nettoyage')]
@@ -17,33 +17,83 @@ class ActionNettoyage
     #[ORM\Column(type: 'integer')]
     private ?int $id_action = null;
 
+    #[ORM\Column(type: 'date', nullable: false)]
+    #[Assert\NotBlank(message: "La date de l’action est obligatoire.")]
+    #[Assert\GreaterThanOrEqual(
+        "today",
+        message: "La date de l’action doit être aujourd’hui ou dans le futur."
+    )]
+    private ?\DateTimeInterface $date_action = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank(message: "Le lieu est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        minMessage: "Le lieu doit contenir au moins {{ limit }} caractères.",
+        max: 255,
+        maxMessage: "Le lieu ne doit pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[\p{L}\s'\-0-9,]+$/u",
+        message: "Le lieu contient des caractères non autorisés."
+    )]
+    private ?string $lieu = null;
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    #[Assert\NotBlank(message: "La limite de bénévoles est obligatoire.")]
+    #[Assert\Positive(message: "La limite de bénévoles doit être un nombre positif.")]
+    #[Assert\Range(
+        min: 1,
+        max: 1000,
+        notInRangeMessage: "La limite doit être entre {{ min }} et {{ max }}."
+    )]
+    private ?int $limiteBenevoles = null;
+
+    #[ORM\OneToMany(mappedBy: 'id_action', targetEntity: Volontaire::class, orphanRemoval: false)]
+    private Collection $volontaires;
+
+    public function __construct()
+    {
+        $this->volontaires = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        $date = $this->date_action ? $this->date_action->format('Y-m-d') : 'Sans date';
+        return $this->lieu . ' - ' . $date;
+    }
+
     public function getId_action(): ?int
     {
         return $this->id_action;
     }
 
-    public function setId_action(int $id_action): self
+    public function getIdAction(): ?int
     {
-        $this->id_action = $id_action;
-        return $this;
+        return $this->id_action;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $date_action = null;
-
-    public function getDate_action(): ?string
+    public function getDate_action(): ?\DateTimeInterface
     {
         return $this->date_action;
     }
 
-    public function setDate_action(string $date_action): self
+    public function getDateAction(): ?\DateTimeInterface
+    {
+        return $this->date_action;
+    }
+
+    public function setDate_action(\DateTimeInterface $date_action): self
     {
         $this->date_action = $date_action;
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $lieu = null;
+    public function setDateAction(\DateTimeInterface $date_action): self
+    {
+        $this->date_action = $date_action;
+        return $this;
+    }
 
     public function getLieu(): ?string
     {
@@ -56,21 +106,59 @@ class ActionNettoyage
         return $this;
     }
 
-    public function getIdAction(): ?int
+
+    public function getLimiteBenevoles(): ?int
     {
-        return $this->id_action;
+        return $this->limiteBenevoles;
     }
 
-    public function getDateAction(): ?string
+    public function setLimiteBenevoles(int $limiteBenevoles): self
     {
-        return $this->date_action;
+        $this->limiteBenevoles = $limiteBenevoles;
+        return $this;
     }
 
-    public function setDateAction(string $date_action): static
+    /**
+     * @return Collection<int, Volontaire>
+     */
+    public function getVolontaires(): Collection
     {
-        $this->date_action = $date_action;
+        return $this->volontaires;
+    }
+
+    public function addVolontaire(Volontaire $volontaire): self
+    {
+        if (!$this->volontaires->contains($volontaire)) {
+            $this->volontaires->add($volontaire);
+            $volontaire->setIdAction($this);
+        }
 
         return $this;
     }
 
+    public function removeVolontaire(Volontaire $volontaire): self
+    {
+        if ($this->volontaires->removeElement($volontaire)) {
+            if ($volontaire->getIdAction() === $this) {
+                $volontaire->setIdAction(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getNombreVolontaires(): int
+    {
+        return $this->volontaires->count();
+    }
+
+    public function estComplete(): bool
+    {
+        if ($this->limiteBenevoles === null) {
+            return false;
+        }
+
+        return $this->getNombreVolontaires() >= $this->limiteBenevoles;
+    }
 }
+

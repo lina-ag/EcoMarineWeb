@@ -1,0 +1,220 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrement visage - EcoMarine{% endblock %}
+
+{% block body %}
+<div class="face-container">
+    <div class="face-card">
+        <div class="face-header">
+            <h2>📸 Enregistrement de votre visage</h2>
+            <p>Positionnez-vous face à la caméra et cliquez sur "Capturer"</p>
+        </div>
+
+        <div class="camera-container">
+            <video id="camera" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+            <div id="overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button id="startCamera" class="btn-primary">📷 Démarrer la caméra</button>
+            <button id="capture" class="btn-success" disabled>📸 Capturer mon visage</button>
+            <button id="retry" class="btn-secondary" style="display: none;">⟳ Recommencer</button>
+        </div>
+
+        <div id="result" class="result-message"></div>
+
+        <div class="back-link">
+            <a href="{{ path('app_signUp') }}">← Retour à l'inscription</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .face-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0f2b4f, #1a4a7a);
+        padding: 20px;
+    }
+
+    .face-card {
+        background: rgba(255,255,255,0.95);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .face-header h2 {
+        color: #1e3c72;
+        margin-bottom: 10px;
+    }
+
+    .camera-container {
+        position: relative;
+        margin: 20px 0;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+    }
+
+    #camera {
+        width: 100%;
+        height: auto;
+        transform: scaleX(-1);
+    }
+
+    .controls {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+
+    .btn-primary, .btn-success, .btn-secondary {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2ec4b6, #1b9aaa);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+
+    .btn-success:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .result-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .result-message.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .result-message.error {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .back-link {
+        margin-top: 20px;
+    }
+
+    .back-link a {
+        color: #2ec4b6;
+        text-decoration: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const startBtn = document.getElementById('startCamera');
+        const captureBtn = document.getElementById('capture');
+        const retryBtn = document.getElementById('retry');
+        const resultDiv = document.getElementById('result');
+
+        let stream = null;
+        
+        // Démarrer la caméra automatiquement
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                startBtn.disabled = true;
+                startBtn.style.display = 'none';
+                captureBtn.disabled = false;
+                resultDiv.innerHTML = '<div class="result-message success">✅ Caméra activée ! Cliquez sur "Capturer"</div>';
+            } catch (err) {
+                resultDiv.innerHTML = '<div class="result-message error">❌ Impossible d\'accéder à la caméra</div>';
+                console.error(err);
+            }
+        }
+        
+        // Lancer la caméra au chargement
+        startCamera();
+
+        startBtn.addEventListener('click', function() {
+            startCamera();
+        });
+
+        captureBtn.addEventListener('click', function() {
+            if (!stream) return;
+
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            resultDiv.innerHTML = '<div class="result-message">⏳ Enregistrement en cours...</div>';
+            captureBtn.disabled = true;
+
+            fetch('{{ path('face_register') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = '<div class="result-message success">✅ ' + data.message + '</div>';
+                    setTimeout(() => {
+                        window.location.href = '{{ path('app_signIn') }}';
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = '<div class="result-message error">❌ ' + data.message + '</div>';
+                    captureBtn.disabled = false;
+                    retryBtn.style.display = 'inline-block';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                resultDiv.innerHTML = '<div class="result-message error">❌ Erreur lors de l\'enregistrement</div>';
+                captureBtn.disabled = false;
+            });
+        });
+
+        retryBtn.addEventListener('click', function() {
+            retryBtn.style.display = 'none';
+            captureBtn.disabled = false;
+            resultDiv.innerHTML = '';
+        });
+    });
+</script>
+{% endblock %}
