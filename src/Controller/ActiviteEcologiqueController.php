@@ -23,7 +23,6 @@ use App\Service\DescriptionAIService;
 final class ActiviteEcologiqueController extends AbstractController
 {
     #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
-    #[Route(name: 'app_activite_ecologique_index', methods: ['GET'])]
     public function index(Request $request, ActiviteEcologiqueRepository $activiteEcologiqueRepository, WeatherService $weatherService): Response
     {
         $searchTerm     = trim((string) $request->query->get('q', ''));
@@ -236,7 +235,7 @@ final class ActiviteEcologiqueController extends AbstractController
         ]);
     }
     #[Route('/generate-description', name: 'app_activite_ecologique_generate_description', methods: ['POST'])]
-    public function generateDescription(Request $request, DescriptionAIService $descriptionAIService): \Symfony\Component\HttpFoundation\JsonResponse
+    public function generateDescription(Request $request, DescriptionAIService $descriptionAIService): JsonResponse
     {
         try {
             $data        = json_decode($request->getContent(), true);
@@ -348,7 +347,8 @@ final class ActiviteEcologiqueController extends AbstractController
     #[Route('/{id_activite}', name: 'app_activite_ecologique_delete', methods: ['POST'])]
     public function delete(Request $request, ActiviteEcologique $activiteEcologique, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$activiteEcologique->getId_activite(), $request->getPayload()->getString('_token'))) {
+        $token = (string) $request->request->get('_token', '');
+        if ($this->isCsrfTokenValid('delete'.$activiteEcologique->getIdActivite(), $token)) {
             foreach ($activiteEcologique->getReservations() as $reservation) {
                 $reservation->setActiviteEcologique(null);
             }
